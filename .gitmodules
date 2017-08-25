@@ -1,0 +1,9 @@
+[submodule "vim/command-t"]
+	path = vim/command-t
+	url = https://github.com/wincent/command-t.git
+[submodule "vim/bundle/command-t"]
+	path = vim/bundle/command-t
+	url = https://github.com/wincent/command-t.git
+[submodule "vim/bundle/lightline"]
+	path = vim/bundle/lightline
+	url = https://github.com/itchyny/lightline.vim.git
