@@ -1,0 +1,19 @@
+# This is Git's per-user configuration file.
+[user]
+# Please adapt and uncomment the following lines:
+#	name = Ian Vu
+#	email = ian.vu@team.telstra.com
+[user]
+	name = Ian Vu
+	email = ian.vu@team.telstra.com
+[core]
+	excludesfile = /Users/ivu/.gitignore_global
+[difftool "sourcetree"]
+	cmd = opendiff \"$LOCAL\" \"$REMOTE\"
+	path = 
+[mergetool "sourcetree"]
+	cmd = /Applications/SourceTree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
+	trustExitCode = true
+[credential]
+	helper = !aws codecommit credential-helper $@
+	UseHttpPath = true

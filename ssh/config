@@ -1,0 +1,14 @@
+Host git-codecommit.*.amazonaws.com
+  User APKAICRT5KWUU7LU37FA
+  IdentityFile ~/.ssh/id_rsa
+  ProxyCommand=nc -X connect -x localhost:3128 %h %p
+
+Host github.com
+  ProxyCommand=nc -X connect -x localhost:3128 %h %p
+Host bitbucket.org
+  ProxyCommand=nc -X connect -x localhost:3128 %h %p
+
+Host *.amazonaws.com Host *.bappy.inside.telstra.com
+    IdentityFile ~/.ssh/id_rsa
+    User ec2-user
+    ProxyCommand=nc -X connect -x localhost:3128 %h %p

@@ -4,6 +4,12 @@
 [submodule "vim/bundle/command-t"]
 	path = vim/bundle/command-t
 	url = https://github.com/wincent/command-t.git
-[submodule "vim/bundle/lightline"]
-	path = vim/bundle/lightline
+[submodule "vim/bundle/lightline.vim"]
+	path = vim/bundle/lightline.vim
 	url = https://github.com/itchyny/lightline.vim.git
+[submodule "vim/bundle/delimiMate"]
+	path = vim/bundle/delimiMate
+	url = https://github.com/Raimondi/delimitMate.git
+[submodule "vim/bundle/nerdcommenter"]
+	path = vim/bundle/nerdcommenter
+	url = https://github.com/scrooloose/nerdcommenter.git

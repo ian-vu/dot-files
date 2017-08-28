@@ -1,0 +1,56 @@
+'.tree-view':
+    'q': 'nerd-treeview:toggle'
+
+    'o': 'nerd-treeview:open'
+    'enter': 'nerd-treeview:open'
+    'g o': 'nerd-treeview:open-stay'
+
+    't': 'nerd-treeview:open-tab'
+    'g t': 'nerd-treeview:open-tab-stay'
+    'T': 'nerd-treeview:add-tab'
+    'g T': 'nerd-treeview:add-tab-stay'
+
+    'i': 'nerd-treeview:open-split-vertical'
+    'g i': 'nerd-treeview:open-split-vertical-stay'
+    's': 'nerd-treeview:open-split-horizontal'
+    'g s': 'nerd-treeview:open-split-horizontal-stay'
+
+    'O': 'nerd-treeview:expand'
+    'x': 'nerd-treeview:close-parent'
+    'X': 'nerd-treeview:close-children'
+    'e': 'nerd-treeview:open-tree'
+    'E': 'nerd-treeview:open-tree-stay'
+
+    'P': 'nerd-treeview:jump-root'
+    'p': 'nerd-treeview:jump-parent'
+    'K': 'nerd-treeview:jump-first'
+    'J': 'nerd-treeview:jump-last'
+    'ctrl-J': 'nerd-treeview:jump-next'
+    'ctrl-K': 'nerd-treeview:jump-prev'
+
+    'c': 'nerd-treeview:change-root'
+    'C': 'nerd-treeview:change-root-save-state'
+    'u': 'nerd-treeview:up'
+    'U': 'nerd-treeview:up-save-state'
+
+    'I': 'nerd-treeview:toggle-ignored-names'
+    'h': 'nerd-treeview:toggle-vcs-ignored-files'
+    'F': 'nerd-treeview:toggle-files'
+
+    'a': 'nerd-treeview:add-file'
+    'A': 'nerd-treeview:add-folder'
+    'D': 'nerd-treeview:remove'
+    'Y': 'nerd-treeview:copy-full-path'
+    'y n': 'nerd-treeview:copy-name'
+    'y N': 'nerd-treeview:copy-name-ext'
+    'm m': 'nerd-treeview:move'
+    'm p': 'nerd-treeview:paste'
+    'y p': 'nerd-treeview:duplicate'
+    'y y': 'nerd-treeview:copy'
+    'd d': 'nerd-treeview:cut'
+
+    '/': 'nerd-treeview:search'
+    '?': 'nerd-treeview:reverse-search'
+    'n': 'nerd-treeview:repeat-search'
+    'N': 'nerd-treeview:repeat-search-backwards'
+    ':': 'nerd-treeview:search-clear-highlight'

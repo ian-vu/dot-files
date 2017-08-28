@@ -1,0 +1,331 @@
+{
+  "_args": [
+    [
+      {
+        "raw": "/private/var/folders/wf/rbxq3g197r7brf398w6yv7bc0000gn/T/d-117719-53883-da3j2o.el3hy6i529/package.tgz",
+        "scope": null,
+        "escapedName": null,
+        "name": null,
+        "rawSpec": "/private/var/folders/wf/rbxq3g197r7brf398w6yv7bc0000gn/T/d-117719-53883-da3j2o.el3hy6i529/package.tgz",
+        "spec": "/private/var/folders/wf/rbxq3g197r7brf398w6yv7bc0000gn/T/d-117719-53883-da3j2o.el3hy6i529/package.tgz",
+        "type": "local"
+      },
+      "/private/var/folders/wf/rbxq3g197r7brf398w6yv7bc0000gn/T/apm-install-dir-117719-53883-l6xjty.ktzx3cjtt9"
+    ]
+  ],
+  "_from": "../d-117719-53883-da3j2o.el3hy6i529/package.tgz",
+  "_id": "vim-mode-clipboard-plus@0.2.0",
+  "_inCache": true,
+  "_location": "/vim-mode-clipboard-plus",
+  "_phantomChildren": {},
+  "_requested": {
+    "raw": "/private/var/folders/wf/rbxq3g197r7brf398w6yv7bc0000gn/T/d-117719-53883-da3j2o.el3hy6i529/package.tgz",
+    "scope": null,
+    "escapedName": null,
+    "name": null,
+    "rawSpec": "/private/var/folders/wf/rbxq3g197r7brf398w6yv7bc0000gn/T/d-117719-53883-da3j2o.el3hy6i529/package.tgz",
+    "spec": "/private/var/folders/wf/rbxq3g197r7brf398w6yv7bc0000gn/T/d-117719-53883-da3j2o.el3hy6i529/package.tgz",
+    "type": "local"
+  },
+  "_requiredBy": [
+    "#USER"
+  ],
+  "_resolved": "file:../d-117719-53883-da3j2o.el3hy6i529/package.tgz",
+  "_shasum": "c826f7ae09471285f8d18dd3a67d0aaf63621775",
+  "_shrinkwrap": null,
+  "_spec": "/private/var/folders/wf/rbxq3g197r7brf398w6yv7bc0000gn/T/d-117719-53883-da3j2o.el3hy6i529/package.tgz",
+  "_where": "/private/var/folders/wf/rbxq3g197r7brf398w6yv7bc0000gn/T/apm-install-dir-117719-53883-l6xjty.ktzx3cjtt9",
+  "bugs": {
+    "url": "https://github.com/aki77/atom-vim-mode-clipboard-plus/issues"
+  },
+  "consumedServices": {
+    "clipboard-plus": {
+      "versions": {
+        "^0.1.0": "consumeClipboardPlus"
+      }
+    }
+  },
+  "dependencies": {
+    "atom-package-dependencies": "~1.0.3"
+  },
+  "description": "Add clipboard-plus feature to vim-mode",
+  "devDependencies": {},
+  "engines": {
+    "atom": ">=0.174.0 <2.0.0"
+  },
+  "homepage": "https://github.com/aki77/atom-vim-mode-clipboard-plus#readme",
+  "keywords": [
+    "vim",
+    "clipboard"
+  ],
+  "license": "MIT",
+  "main": "./lib/main",
+  "name": "vim-mode-clipboard-plus",
+  "optionalDependencies": {},
+  "package-dependencies": {
+    "clipboard-plus": ">=0.3.0"
+  },
+  "readme": "# vim-mode-clipboard-plus package\n\nAdd clipboard-plus feature to vim-mode.\n\nSee [clipboard-plus](https://atom.io/packages/clipboard-plus) for details.\n\n## Requirement\n\n* [vim-mode](https://atom.io/packages/vim-mode) or [vim-mode-plus](https://atom.io/packages/vim-mode-plus)\n* [clipboard-plus](https://atom.io/packages/clipboard-plus)\n\n## Keymap\n\nNo keymap by default.\n\nedit `~/.atom/keymap.cson`\n\n```coffeescript\n'.platform-darwin atom-text-editor.vim-mode:not(.insert-mode)':\n  'ctrl-p': 'clipboard-plus:toggle'\n\n'.platform-linux atom-text-editor.vim-mode:not(.insert-mode)':\n  'alt-p': 'clipboard-plus:toggle'\n```\n\n## Settings\n\n* `useVimModePlus` (default: false)\n",
+  "readmeFilename": "README.md",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aki77/atom-vim-mode-clipboard-plus.git"
+  },
+  "version": "0.2.0",
+  "_atomModuleCache": {
+    "version": 1,
+    "dependencies": [
+      {
+        "name": "ansi",
+        "version": "0.3.1",
+        "path": "node_modules/ansi/lib/ansi.js"
+      },
+      {
+        "name": "atom-package-dependencies",
+        "version": "1.0.3",
+        "path": "node_modules/atom-package-dependencies/index.js"
+      },
+      {
+        "name": "debug",
+        "version": "0.7.4",
+        "path": "node_modules/debug/lib/debug.js"
+      },
+      {
+        "name": "glob",
+        "version": "3.1.21",
+        "path": "node_modules/glob/glob.js"
+      },
+      {
+        "name": "graceful-fs",
+        "version": "1.2.3",
+        "path": "node_modules/graceful-fs/graceful-fs.js"
+      },
+      {
+        "name": "inherits",
+        "version": "1.0.2",
+        "path": "node_modules/inherits/inherits.js"
+      },
+      {
+        "name": "lru-cache",
+        "version": "2.0.4",
+        "path": "node_modules/lru-cache/lib/lru-cache.js"
+      },
+      {
+        "name": "minimatch",
+        "version": "0.2.14",
+        "path": "node_modules/minimatch/minimatch.js"
+      },
+      {
+        "name": "npmlog",
+        "version": "0.1.1",
+        "path": "node_modules/npmlog/log.js"
+      },
+      {
+        "name": "read-package-json",
+        "version": "0.1.13",
+        "path": "node_modules/read-package-json/read-json.js"
+      },
+      {
+        "name": "semver",
+        "version": "1.1.4",
+        "path": "node_modules/semver/semver.js"
+      },
+      {
+        "name": "shelljs",
+        "version": "0.3.0",
+        "path": "node_modules/shelljs/shell.js"
+      },
+      {
+        "name": "sigmund",
+        "version": "1.0.1",
+        "path": "node_modules/sigmund/sigmund.js"
+      },
+      {
+        "name": "slide",
+        "version": "1.1.6",
+        "path": "node_modules/slide/lib/slide.js"
+      },
+      {
+        "name": "tmp",
+        "version": "0.0.24",
+        "path": "node_modules/tmp/lib/tmp.js"
+      },
+      {
+        "name": "witwip",
+        "version": "1.0.4",
+        "path": "node_modules/witwip/witwip.js"
+      }
+    ],
+    "extensions": {
+      ".json": [
+        "coffeelint.json",
+        "node_modules/ansi/package.json",
+        "node_modules/atom-package-dependencies/package.json",
+        "node_modules/debug/package.json",
+        "node_modules/glob/package.json",
+        "node_modules/graceful-fs/package.json",
+        "node_modules/inherits/package.json",
+        "node_modules/lru-cache/package.json",
+        "node_modules/minimatch/package.json",
+        "node_modules/npmlog/package.json",
+        "node_modules/read-package-json/package.json",
+        "node_modules/semver/package.json",
+        "node_modules/shelljs/.documentup.json",
+        "node_modules/shelljs/package.json",
+        "node_modules/sigmund/package.json",
+        "node_modules/slide/package.json",
+        "node_modules/tmp/package.json",
+        "node_modules/witwip/package.json",
+        "package.json"
+      ],
+      ".coffee": [
+        "lib/main.coffee"
+      ],
+      ".js": [
+        "node_modules/ansi/examples/beep/index.js",
+        "node_modules/ansi/examples/clear/index.js",
+        "node_modules/ansi/examples/cursorPosition.js",
+        "node_modules/ansi/examples/progress/index.js",
+        "node_modules/ansi/lib/ansi.js",
+        "node_modules/ansi/lib/newlines.js",
+        "node_modules/atom-package-dependencies/index.js",
+        "node_modules/debug/debug.js",
+        "node_modules/debug/index.js",
+        "node_modules/debug/lib/debug.js",
+        "node_modules/glob/examples/g.js",
+        "node_modules/glob/examples/usr-local.js",
+        "node_modules/glob/glob.js",
+        "node_modules/graceful-fs/graceful-fs.js",
+        "node_modules/inherits/inherits.js",
+        "node_modules/lru-cache/lib/lru-cache.js",
+        "node_modules/minimatch/minimatch.js",
+        "node_modules/npmlog/example.js",
+        "node_modules/npmlog/log.js",
+        "node_modules/read-package-json/read-json.js",
+        "node_modules/semver/semver.js",
+        "node_modules/semver/test.js",
+        "node_modules/shelljs/global.js",
+        "node_modules/shelljs/make.js",
+        "node_modules/shelljs/scripts/generate-docs.js",
+        "node_modules/shelljs/scripts/run-tests.js",
+        "node_modules/shelljs/shell.js",
+        "node_modules/shelljs/src/cat.js",
+        "node_modules/shelljs/src/cd.js",
+        "node_modules/shelljs/src/chmod.js",
+        "node_modules/shelljs/src/common.js",
+        "node_modules/shelljs/src/cp.js",
+        "node_modules/shelljs/src/dirs.js",
+        "node_modules/shelljs/src/echo.js",
+        "node_modules/shelljs/src/error.js",
+        "node_modules/shelljs/src/exec.js",
+        "node_modules/shelljs/src/find.js",
+        "node_modules/shelljs/src/grep.js",
+        "node_modules/shelljs/src/ln.js",
+        "node_modules/shelljs/src/ls.js",
+        "node_modules/shelljs/src/mkdir.js",
+        "node_modules/shelljs/src/mv.js",
+        "node_modules/shelljs/src/popd.js",
+        "node_modules/shelljs/src/pushd.js",
+        "node_modules/shelljs/src/pwd.js",
+        "node_modules/shelljs/src/rm.js",
+        "node_modules/shelljs/src/sed.js",
+        "node_modules/shelljs/src/tempdir.js",
+        "node_modules/shelljs/src/test.js",
+        "node_modules/shelljs/src/to.js",
+        "node_modules/shelljs/src/toEnd.js",
+        "node_modules/shelljs/src/which.js",
+        "node_modules/sigmund/bench.js",
+        "node_modules/sigmund/sigmund.js",
+        "node_modules/slide/index.js",
+        "node_modules/slide/lib/async-map-ordered.js",
+        "node_modules/slide/lib/async-map.js",
+        "node_modules/slide/lib/bind-actor.js",
+        "node_modules/slide/lib/chain.js",
+        "node_modules/slide/lib/slide.js",
+        "node_modules/tmp/domain-test.js",
+        "node_modules/tmp/lib/tmp.js",
+        "node_modules/tmp/test.js",
+        "node_modules/witwip/witwip.js"
+      ]
+    },
+    "folders": [
+      {
+        "paths": [
+          "",
+          "lib"
+        ],
+        "dependencies": {
+          "atom-package-dependencies": "~1.0.3"
+        }
+      },
+      {
+        "paths": [
+          "node_modules/atom-package-dependencies"
+        ],
+        "dependencies": {
+          "shelljs": "0.3.x",
+          "tmp": "0.0.24",
+          "witwip": "1.0.x"
+        }
+      },
+      {
+        "paths": [
+          "node_modules/glob/examples",
+          "node_modules/glob",
+          "node_modules/glob/test"
+        ],
+        "dependencies": {
+          "graceful-fs": "~1.2.0",
+          "inherits": "1",
+          "minimatch": "~0.2.11"
+        }
+      },
+      {
+        "paths": [
+          "node_modules/minimatch",
+          "node_modules/minimatch/test"
+        ],
+        "dependencies": {
+          "lru-cache": "2",
+          "sigmund": "~1.0.0"
+        }
+      },
+      {
+        "paths": [
+          "node_modules/npmlog",
+          "node_modules/npmlog/test"
+        ],
+        "dependencies": {
+          "ansi": "~0.3.0"
+        }
+      },
+      {
+        "paths": [
+          "node_modules/read-package-json",
+          "node_modules/read-package-json/test",
+          "node_modules/read-package-json/test/fixtures"
+        ],
+        "dependencies": {
+          "glob": "~3.1.9",
+          "graceful-fs": "~1.2",
+          "lru-cache": "~2.0.0",
+          "npmlog": "0",
+          "semver": "1.x",
+          "slide": "~1.1.3"
+        }
+      },
+      {
+        "paths": [
+          "node_modules/witwip",
+          "node_modules/witwip/test",
+          "node_modules/witwip/test/local/carmen",
+          "node_modules/witwip/test/local/chief"
+        ],
+        "dependencies": {
+          "debug": "~0.7.0",
+          "read-package-json": "~0.1.5"
+        }
+      }
+    ]
+  }
+}

@@ -1,4 +1,6 @@
 execute pathogen#infect()
+call pathogen#helptags()
+
 
 syntax on
 filetype on
@@ -30,5 +32,9 @@ nnoremap <Leader><Leader> :e#<CR>
 
 " Show matching parenthesis
 set showmatch
+" For powerline
+set laststatus=2
+set noshowmode
+
 
 
