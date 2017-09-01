@@ -128,18 +128,12 @@ bindkey '^[ ' autosuggest-accept
 function proxyOn() {
   export http_proxy=http://localhost:3128
   export https_proxy=http://localhost:3128
-  export no_proxy="*.corp.telstra.com,localhost,127.0.0.1,*in.telstra.com.au"
-  cntlm
 }
 alias on='proxyOn'
 
 function proxyOff() {
   unset http_proxy
   unset https_proxy
-  unset no_proxy
-  killall cntlm
-  killall cntlm
-  killall cntlm
 }
 alias off='proxyOff'
 
@@ -158,6 +152,7 @@ pman () {
 # Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
 export PATH="$PATH:$HOME/.rvm/bin"
 export PATH="$PATH:/usr/local/Cellar/python/2.7.13_1/bin"
+export PATH="$PATH:/usr/local/Cellar/openvpn/2.4.3/sbin"
 
 export NVM_DIR="$HOME/.nvm"
 . "/usr/local/opt/nvm/nvm.sh"
