@@ -116,8 +116,8 @@ alias gitc='git commit'
 
 alias tf='terraform'
 
-alias vzshrc='vim ~/.zshrc'
-alias azshrc='atom ~/.zshrc'
+alias zshrcv='vim ~/.zshrc'
+alias zshrca='atom ~/.zshrc'
 
 alias showFiles='defaults write com.apple.finder AppleShowAllFiles YES; killall Finder /System/Library/CoreServices/Finder.app'
 alias hideFiles='defaults write com.apple.finder AppleShowAllFiles NO; killall Finder /System/Library/CoreServices/Finder.app'
@@ -128,12 +128,20 @@ bindkey '^[ ' autosuggest-accept
 function proxyOn() {
   export http_proxy=http://localhost:3128
   export https_proxy=http://localhost:3128
+  export HTTP_PROXY=http://localhost:3128
+  export HTTPS_PROXY=http://localhost:3128
+  ln -sf ~/.ssh/config-proxy-on ~/.ssh/config
+  echo "Telstra Proxy on"
 }
 alias on='proxyOn'
 
 function proxyOff() {
   unset http_proxy
   unset https_proxy
+  unset HTTP_PROXY
+  unset HTTPS_PROXY
+  ln -sf ~/.ssh/config-proxy-off ~/.ssh/config
+  echo "Telstra Proxy off"
 }
 alias off='proxyOff'
 
