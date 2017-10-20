@@ -122,6 +122,8 @@ alias zshrca='atom ~/.zshrc'
 alias showFiles='defaults write com.apple.finder AppleShowAllFiles YES; killall Finder /System/Library/CoreServices/Finder.app'
 alias hideFiles='defaults write com.apple.finder AppleShowAllFiles NO; killall Finder /System/Library/CoreServices/Finder.app'
 
+alias npr='npm run --silent $*'
+
 bindkey '^ ' autosuggest-execute
 bindkey '^[ ' autosuggest-accept
 
@@ -158,12 +160,19 @@ pman () {
 
 
 # Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
+export PATH=/usr/local/bin:$HOME/bin:$PATH
 export PATH="$PATH:$HOME/.rvm/bin"
 export PATH="$PATH:/usr/local/Cellar/python/2.7.13_1/bin"
 export PATH="$PATH:/usr/local/Cellar/openvpn/2.4.3/sbin"
+export PATH="$PATH:/Users/ivu/.bin"
 
 export NVM_DIR="$HOME/.nvm"
 . "/usr/local/opt/nvm/nvm.sh"
+
+# Start up
+proxyOn
+
+
 
 # tabtab source for serverless package
 # uninstall by removing these lines or running `tabtab uninstall serverless`

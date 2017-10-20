@@ -13,3 +13,20 @@ region = ap-southeast-2
 region = ap-southeast-2
 [profile bappy-utils]
 region = ap-southeast-2
+[profile targaryen-utils]
+region = ap-southeast-2
+[profile baratheon-utils]
+region = ap-southeast-2
+[profile baratheon-dev]
+region = ap-southeast-2
+[profile baratheon-dev-okapi-robot]
+region = ap-southeast-2
+[profile migration]
+region = ap-southeast-2
+[profile dev-access]
+role_arn = arn:aws:iam::355454009282:role/deployment_role
+source_profile = default
+
+[profile dev-access]
+role_arn = arn:aws:iam::355454009282:role/deployment_role
+source_profile = default

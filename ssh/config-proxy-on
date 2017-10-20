@@ -1,5 +1,12 @@
 Host git-codecommit.*.amazonaws.com
-  User APKAICRT5KWUU7LU37FA
+# Bappy
+#  User APKAICRT5KWUU7LU37FA
+# Targaryen
+#  User APKAI3WABZLBN3ATC6NA
+# Baratheon dev
+#  User APKAJY4N6GEDT3NLTMYQ
+# Baratheon utils
+  User APKAJNYBAWBGKYY6FUXA
   IdentityFile ~/.ssh/id_rsa
   ProxyCommand=nc -X connect -x localhost:3128 %h %p
 
@@ -12,3 +19,12 @@ Host *.amazonaws.com Host *.bappy.inside.telstra.com
     IdentityFile ~/.ssh/id_rsa
     User ec2-user
     ProxyCommand=nc -X connect -x localhost:3128 %h %p
+
+
+host *
+  ProxyCommand /usr/bin/corkscrew localhost 3128 %h %p
+
+Match Host host1 exec "saml2aws exec --provider=KeyCloak -- blessclient --account_id 355454009282"
+    Hostname 10.61.69.205
+    User ec2-user
+    ProxyCommand ssh bastion nc %h %p
