@@ -111,7 +111,7 @@ alias getsize='du -sh'
 
 alias gits='git status'
 alias gita='git add'
-alias gitl='git log'
+alias gitl="git log --pretty=format:'%C(yellow)%h %Cred%ad %Cblue%an%Cgreen%d %Creset%s' --date=short"
 alias gitc='git commit'
 
 alias tf='terraform'
@@ -119,10 +119,11 @@ alias tf='terraform'
 alias zshrcv='vim ~/.zshrc'
 alias zshrca='atom ~/.zshrc'
 
-alias showFiles='defaults write com.apple.finder AppleShowAllFiles YES; killall Finder /System/Library/CoreServices/Finder.app'
-alias hideFiles='defaults write com.apple.finder AppleShowAllFiles NO; killall Finder /System/Library/CoreServices/Finder.app'
+alias hiddenOn='defaults write com.apple.finder AppleShowAllFiles YES; killall Finder /System/Library/CoreServices/Finder.app'
+alias hiddenOff='defaults write com.apple.finder AppleShowAllFiles NO; killall Finder /System/Library/CoreServices/Finder.app'
 
 alias npr='npm run --silent $*'
+alias chrome="open -a 'Google Chrome'"
 
 bindkey '^ ' autosuggest-execute
 bindkey '^[ ' autosuggest-accept

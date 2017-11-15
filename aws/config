@@ -30,3 +30,4 @@ source_profile = default
 [profile dev-access]
 role_arn = arn:aws:iam::355454009282:role/deployment_role
 source_profile = default
+[profile default]
