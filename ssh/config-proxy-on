@@ -24,6 +24,13 @@ Host *.amazonaws.com Host *.bappy.inside.telstra.com
 host *
   ProxyCommand /usr/bin/corkscrew localhost 3128 %h %p
 
+Match Host bastion exec "saml2aws exec --provider=KeyCloak -- blessclient --account_id 956653056730; ssh-add -D; ssh-add"
+    Hostname bastion-elb-430271468.ap-southeast-2.elb.amazonaws.com
+    User ec2-user
+    ServerAliveInterval 55
+    ForwardAgent yes
+    ProxyCommand /usr/bin/corkscrew localhost 3128 %h %p
+
 Match Host host1 exec "saml2aws exec --provider=KeyCloak -- blessclient --account_id 355454009282"
     Hostname 10.61.69.205
     User ec2-user

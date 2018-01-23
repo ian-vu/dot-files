@@ -15,7 +15,7 @@ ZSH_THEME="spaceship"
 
 # Uncomment the following line to use hyphen-insensitive completion. Case
 # sensitive completion must be off. _ and - will be interchangeable.
-# HYPHEN_INSENSITIVE="true"
+HYPHEN_INSENSITIVE="true"
 
 # Uncomment the following line to disable bi-weekly auto-update checks.
 # DISABLE_AUTO_UPDATE="true"
@@ -43,7 +43,7 @@ COMPLETION_WAITING_DOTS="true"
 # Uncomment the following line if you want to change the command execution time
 # stamp shown in the history command output.
 # The optional three formats: "mm/dd/yyyy"|"dd.mm.yyyy"|"yyyy-mm-dd"
-# HIST_STAMPS="mm/dd/yyyy"
+HIST_STAMPS="dd.mm.yyyy"
 
 # Would you like to use another custom folder than $ZSH/custom?
 # ZSH_CUSTOM=/path/to/new-custom-folder
@@ -166,14 +166,20 @@ export PATH="$PATH:$HOME/.rvm/bin"
 export PATH="$PATH:/usr/local/Cellar/python/2.7.13_1/bin"
 export PATH="$PATH:/usr/local/Cellar/openvpn/2.4.3/sbin"
 export PATH="$PATH:/Users/ivu/.bin"
+export PATH="$PATH:/usr/local/sbin"
+export PATH="$PATH:/Applications/Couchbase\ Server.app/Contents/Resources/couchbase-core/bin/cbq"
 
 export NVM_DIR="$HOME/.nvm"
 . "/usr/local/opt/nvm/nvm.sh"
 
 # Start up
 proxyOn
+export AWS_DEFAULT_PROFILE=baratheon-utils
 
-
+# hackathon start up
+# export DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:/Users/ivu/Telstra/Hackathon/pynaoqi-python2.7-2.1.4.13-mac64
+# export PYTHONPATH=${PYTHONPATH}:/Users/ivu/Telstra/Hackathon/pynaoqi-python2.7-2.1.4.13-mac64
+# export PYTHONPATH=${PYTHONPATH}:/usr/local/lib/python2.7/site-packages
 
 # tabtab source for serverless package
 # uninstall by removing these lines or running `tabtab uninstall serverless`

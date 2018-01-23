@@ -1,6 +1,6 @@
 #! /usr/bin/expect
 
-spawn saml2aws --provider KeyCloak --profile="amp" login
+spawn saml2aws --provider KeyCloak --profile=amp login
 expect "Hostname"
 send "id.sdpamp.com/auth/realms/amp/protocol/saml/clients/amazon-aws\n"
 
