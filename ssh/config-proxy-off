@@ -6,12 +6,16 @@ Host git-codecommit.*.amazonaws.com
 # Baratheon dev
 #  User APKAJY4N6GEDT3NLTMYQ
 # Baratheon utils
-  User APKAJNYBAWBGKYY6FUXA
+#  User APKAJNYBAWBGKYY6FUXA
+# Datascience
+  User APKAI3J3YE5R6AW5VETQ
+  
   IdentityFile ~/.ssh/id_rsa
 #  ProxyCommand=nc -X connect -x localhost:3128 %h %p
 
 Host github.com
-  ProxyCommand=nc -X connect -x localhost:3128 %h %p
+#  ProxyCommand=nc -X connect -x localhost:3128 %h %p
+
 Host bitbucket.org
 #  ProxyCommand=nc -X connect -x localhost:3128 %h %p
 

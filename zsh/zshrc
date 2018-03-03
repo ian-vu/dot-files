@@ -9,6 +9,10 @@ export ZSH=/Users/ivu/.oh-my-zsh
 # See https://github.com/robbyrussell/oh-my-zsh/wiki/Themes
 # ZSH_THEME="powerlevel9k/powerlevel9k"
 ZSH_THEME="spaceship"
+echo -e "\033]6;1;bg;*;default\a"
+# echo -e "\033]6;1;bg;red;brightness;30\a"
+# echo -e "\033]6;1;bg;green;brightness;38\a"
+# echo -e "\033]6;1;bg;blue;brightness;49\a"
 
 # Uncomment the following line to use case-sensitive completion.
 # CASE_SENSITIVE="true"
@@ -128,7 +132,7 @@ alias chrome="open -a 'Google Chrome'"
 bindkey '^ ' autosuggest-execute
 bindkey '^[ ' autosuggest-accept
 
-function proxyOn() {
+proxyOn() {
   export http_proxy=http://localhost:3128
   export https_proxy=http://localhost:3128
   export HTTP_PROXY=http://localhost:3128
@@ -138,7 +142,7 @@ function proxyOn() {
 }
 alias on='proxyOn'
 
-function proxyOff() {
+proxyOff() {
   unset http_proxy
   unset https_proxy
   unset HTTP_PROXY
@@ -148,6 +152,17 @@ function proxyOff() {
 }
 alias off='proxyOff'
 
+switchAuto() {
+  networksetup -switchtolocation Automatic
+}
+
+switchWork() {
+  networksetup -switchtolocation Work
+}
+
+switch () {
+  networksetup -switchtolocation $1
+}
 
 # Open man page in preview
 pman () {
@@ -169,21 +184,21 @@ export PATH="$PATH:/Users/ivu/.bin"
 export PATH="$PATH:/usr/local/sbin"
 export PATH="$PATH:/Applications/Couchbase\ Server.app/Contents/Resources/couchbase-core/bin/cbq"
 
+# Python environment manager
+if command -v pyenv 1>/dev/null 2>&1; then
+  eval "$(pyenv init -)"
+fi
+
+# Node version manager
 export NVM_DIR="$HOME/.nvm"
 . "/usr/local/opt/nvm/nvm.sh"
 
+
 # Start up
 proxyOn
-export AWS_DEFAULT_PROFILE=baratheon-utils
+# export AWS_DEFAULT_PROFILE=baratheon-utils
 
 # hackathon start up
 # export DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:/Users/ivu/Telstra/Hackathon/pynaoqi-python2.7-2.1.4.13-mac64
 # export PYTHONPATH=${PYTHONPATH}:/Users/ivu/Telstra/Hackathon/pynaoqi-python2.7-2.1.4.13-mac64
 # export PYTHONPATH=${PYTHONPATH}:/usr/local/lib/python2.7/site-packages
-
-# tabtab source for serverless package
-# uninstall by removing these lines or running `tabtab uninstall serverless`
-[[ -f /Users/ivu/Telstra/Engineering/bappy/git/diagnostics-gateway/node_modules/tabtab/.completions/serverless.zsh ]] && . /Users/ivu/Telstra/Engineering/bappy/git/diagnostics-gateway/node_modules/tabtab/.completions/serverless.zsh
-# tabtab source for sls package
-# uninstall by removing these lines or running `tabtab uninstall sls`
-[[ -f /Users/ivu/Telstra/Engineering/bappy/git/diagnostics-gateway/node_modules/tabtab/.completions/sls.zsh ]] && . /Users/ivu/Telstra/Engineering/bappy/git/diagnostics-gateway/node_modules/tabtab/.completions/sls.zsh

@@ -6,12 +6,16 @@ Host git-codecommit.*.amazonaws.com
 # Baratheon dev
 #  User APKAJY4N6GEDT3NLTMYQ
 # Baratheon utils
-  User APKAJNYBAWBGKYY6FUXA
+#  User APKAJNYBAWBGKYY6FUXA
+# Datascience
+  User APKAI3J3YE5R6AW5VETQ
+
   IdentityFile ~/.ssh/id_rsa
   ProxyCommand=nc -X connect -x localhost:3128 %h %p
 
 Host github.com
   ProxyCommand=nc -X connect -x localhost:3128 %h %p
+
 Host bitbucket.org
   ProxyCommand=nc -X connect -x localhost:3128 %h %p
 
@@ -20,16 +24,22 @@ Host *.amazonaws.com Host *.bappy.inside.telstra.com
     User ec2-user
     ProxyCommand=nc -X connect -x localhost:3128 %h %p
 
-
 host *
-  ProxyCommand /usr/bin/corkscrew localhost 3128 %h %p
+  ProxyCommand /usr/local/bin/corkscrew localhost 3128 %h %p
+
+Match Host bastion-data-science exec "saml2aws exec -- blessclient --account_id 548260582722; ssh-add -D; ssh-add"
+    Hostname bastion-elb-970875077.ap-southeast-2.elb.amazonaws.com
+    User ec2-user
+    ServerAliveInterval 55
+    ForwardAgent yes
+    ProxyCommand /usr/local/bin/corkscrew localhost 3128 %h %p
 
 Match Host bastion exec "saml2aws exec --provider=KeyCloak -- blessclient --account_id 956653056730; ssh-add -D; ssh-add"
     Hostname bastion-elb-430271468.ap-southeast-2.elb.amazonaws.com
     User ec2-user
     ServerAliveInterval 55
     ForwardAgent yes
-    ProxyCommand /usr/bin/corkscrew localhost 3128 %h %p
+    ProxyCommand /usr/local/bin/corkscrew localhost 3128 %h %p
 
 Match Host host1 exec "saml2aws exec --provider=KeyCloak -- blessclient --account_id 355454009282"
     Hostname 10.61.69.205
