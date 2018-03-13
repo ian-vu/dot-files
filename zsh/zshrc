@@ -100,15 +100,17 @@ HIST_STAMPS="dd.mm.yyyy"
 # plugins=(git zsh-syntax-highlighting zsh-autosuggestions cp wd z extract osx history web-search) #vi-mode)
 plugins=(
   git
+  # history-substring-search
   zsh-syntax-highlighting
   zsh-autosuggestions
-  cp
   wd
   z
   extract
   osx
   history
   web-search
+  colored-man-pages
+  colorize
 ) #vi-mode)
 
 
@@ -175,14 +177,14 @@ alias tf='terraform'
 alias zshrcv='vim ~/.zshrc'
 alias zshrca='atom ~/.zshrc'
 
-alias hiddenOn='defaults write com.apple.finder AppleShowAllFiles YES; killall Finder /System/Library/CoreServices/Finder.app'
-alias hiddenOff='defaults write com.apple.finder AppleShowAllFiles NO; killall Finder /System/Library/CoreServices/Finder.app'
-
 alias npr='npm run --silent $*'
 alias chrome="open -a 'Google Chrome'"
 
 bindkey '^ ' autosuggest-execute
 bindkey '^[ ' autosuggest-accept
+
+# bindkey '^[[A' history-substring-search-up
+# bindkey '^[[B' history-substring-search-down
 
 proxyOn() {
   export http_proxy=http://localhost:3128
