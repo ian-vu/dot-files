@@ -1,3 +1,5 @@
 /ssh/id_rsa
 aws/credentials
+/aws/credentials
 aws/config
+/aws/config
