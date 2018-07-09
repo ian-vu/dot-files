@@ -116,6 +116,10 @@ plugins=(
 
 source $ZSH/oh-my-zsh.sh
 
+# Custom
+source ~/.oh-my-zsh/custom/plugins/aws_zsh_completer.sh
+
+
 # User configuration
 
 # export MANPATH="/usr/local/man:$MANPATH"
@@ -180,6 +184,8 @@ alias zshrca='atom ~/.zshrc'
 alias npr='npm run --silent $*'
 alias chrome="open -a 'Google Chrome'"
 
+alias setaws="source ~/.bin/setawsprofile $1"
+
 bindkey '^ ' autosuggest-execute
 bindkey '^[ ' autosuggest-accept
 
@@ -242,12 +248,104 @@ fi
 export NVM_DIR="$HOME/.nvm"
 . "/usr/local/opt/nvm/nvm.sh"
 
+# Go
+export GOPATH=~/.go-workspace
+export GOROOT=/usr/local/opt/go/libexec
+export PATH=$PATH:$GOPATH/bin
+export PATH=$PATH:$GOROOT/bin
+
+# Fuzzy finder
+# https://github.com/junegunn/fzf#fuzzy-completion-for-bash-and-zsh
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+alias f="fzf --preview 'cat {}'"
+
+# cd to selected parent directory
+fpd() {
+  local declare dirs=()
+  get_parent_dirs() {
+    if [[ -d "${1}" ]]; then dirs+=("$1"); else return; fi
+    if [[ "${1}" == '/' ]]; then
+      for _dir in "${dirs[@]}"; do echo $_dir; done
+    else
+      get_parent_dirs $(dirname "$1")
+    fi
+  }
+  local DIR=$(get_parent_dirs $(realpath "${1:-$PWD}") | fzf-tmux --tac)
+  cd "$DIR"
+}
+
+# checkout into a branch
+fbr() {
+  local tags branches target
+  tags=$(
+git tag | awk '{print "\x1b[31;1mtag\x1b[m\t" $1}') || return
+  branches=$(
+git branch --all | grep -v HEAD |
+sed "s/.* //" | sed "s#remotes/[^/]*/##" |
+sort -u | awk '{print "\x1b[34;1mbranch\x1b[m\t" $1}') || return
+  target=$(
+(echo "$tags"; echo "$branches") |
+    fzf --no-hscroll --no-multi --delimiter="\t" -n 2 \
+        --ansi --preview="git log -200 --pretty=format:%s $(echo {+2..} |  sed 's/$/../' )" ) || return
+  git checkout $(echo "$target" | awk '{print $2}')
+}
+
+# fshow - git commit browser with previews
+alias glNoGraph='git log --color=always --format="%C(auto)%h%d %s %C(black)%C(bold)%cr% C(auto)%an" "$@"'
+local _gitLogLineToHash="echo {} | grep -o '[a-f0-9]\{7\}' | head -1"
+local _viewGitLogLine="$_gitLogLineToHash | xargs -I % sh -c 'git show --color=always % | diff-so-fancy'"
+
+# fcoc_preview - checkout git commit with previews
+fcoc() {
+  local commit
+  commit=$( glNoGraph |
+    fzf --no-sort --reverse --tiebreak=index --no-multi \
+        --ansi --preview $_viewGitLogLine ) &&
+  git checkout $(echo "$commit" | sed "s/ .*//")
+}
+
+# fshow - git commit browser with previews
+fshow() {
+    glNoGraph |
+        fzf --no-sort --reverse --tiebreak=index --no-multi \
+            --ansi --preview $_viewGitLogLine \
+                --header "enter to view, alt-y to copy hash" \
+                --bind "enter:execute:$_viewGitLogLine   | less -R" \
+                --bind "alt-y:execute:$_gitLogLineToHash | xclip"
+}
+
+unalias z
+z() {
+  if [[ -z "$*" ]]; then
+    cd "$(_z -l 2>&1 | fzf +s --tac | sed 's/^[0-9,.]* *//')"
+  else
+    _last_z_args="$@"
+    _z "$@"
+  fi
+}
+
+zz() {
+  cd "$(_z -l 2>&1 | sed 's/^[0-9,.]* *//' | fzf -q "$_last_z_args")"
+}
+
+
+# Setting fd as the default source for fzf
+export FZF_DEFAULT_COMMAND="fd -I -E '*/node_modules/*' -E '*/coverage/*'"
+
+# To apply the command to CTRL-T as well
+export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND --type f"
+
+# To apply the command to ALT-C as well
+export FZF_ALT_C_COMMAND="$FZF_DEFAULT_COMMAND --type d"
 
 # Start up
 proxyOn
-# export AWS_DEFAULT_PROFILE=baratheon-utils
+export AWS_DEFAULT_PROFILE=default
+export AWS_DEFAULT_REGION=ap-southeast-2
 
 # hackathon start up
 # export DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:/Users/ivu/Telstra/Hackathon/pynaoqi-python2.7-2.1.4.13-mac64
 # export PYTHONPATH=${PYTHONPATH}:/Users/ivu/Telstra/Hackathon/pynaoqi-python2.7-2.1.4.13-mac64
 # export PYTHONPATH=${PYTHONPATH}:/usr/local/lib/python2.7/site-packages
+

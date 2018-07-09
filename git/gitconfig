@@ -15,7 +15,7 @@
 	cmd = /Applications/SourceTree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
 	trustExitCode = true
 [credential]
-	helper = !aws codecommit credential-helper $@
+	helper = !aws codecommit credential-helper --profile $AWS_DEFAULT_PROFILE $@
 	UseHttpPath = true
 [commit]
 	template = /Users/ivu/.stCommitMsg

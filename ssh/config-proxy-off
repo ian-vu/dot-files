@@ -1,15 +1,9 @@
 Host git-codecommit.*.amazonaws.com
-# Bappy
-#  User APKAICRT5KWUU7LU37FA
 # Targaryen
 #  User APKAI3WABZLBN3ATC6NA
-# Baratheon dev
-#  User APKAJY4N6GEDT3NLTMYQ
-# Baratheon utils
-#  User APKAJNYBAWBGKYY6FUXA
 # Datascience
   User APKAI3J3YE5R6AW5VETQ
-  
+
   IdentityFile ~/.ssh/id_rsa
 #  ProxyCommand=nc -X connect -x localhost:3128 %h %p
 
