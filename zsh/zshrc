@@ -4,55 +4,10 @@
 # Path to your oh-my-zsh installation.
 export ZSH=/Users/ivu/.oh-my-zsh
 
-# Set name of the theme to load. Optionally, if you set this to "random"
-# it'll load a random theme each time that oh-my-zsh is loaded.
 # See https://github.com/robbyrussell/oh-my-zsh/wiki/Themes
 # ZSH_THEME="powerlevel9k/powerlevel9k"
-ZSH_THEME="spaceship"
+# ZSH_THEME="spaceship"
 # ZSH_THEME="sobole"
-
-# echo -e "\033]6;1;bg;red;brightness;40\a"
-# echo -e "\033]6;1;bg;green;brightness;44\a"
-# echo -e "\033]6;1;bg;blue;brightness;52\a"
-
-SPACESHIP_PROMPT_ORDER=(
-  time          # Time stampts section
-  user          # Username section
-  dir           # Current directory section
-  host          # Hostname section
-  git           # Git section (git_branch + git_status)
-  #hg            # Mercurial section (hg_branch  + hg_status)
-  #package       # Package version
-  #node          # Node.js section
-  #ruby          # Ruby section
-  #elixir        # Elixir section
-  #xcode         # Xcode section
-  #swift         # Swift section
-  #golang        # Go section
-  #php           # PHP section
-  #rust          # Rust section
-  #haskell       # Haskell Stack section
-  #julia         # Julia section
-  #docker        # Docker section
-  aws           # Amazon Web Services section
-  #venv          # virtualenv section
-  #conda         # conda virtualenv section
-  pyenv         # Pyenv section
-  #dotnet        # .NET section
-  #ember         # Ember.js section
-  #kubecontext   # Kubectl context section
-  exec_time     # Execution time
-  line_sep      # Line break
-  #battery       # Battery level and status
-  #vi_mode       # Vi-mode indicator
-  jobs          # Background jobs indicator
-  exit_code     # Exit code section
-  char          # Prompt character
-)
-SPACESHIP_USER_SHOW=false
-SPACESHIP_HOST_SHOW=false
-SPACESHIP_DIR_TRUNC=4
-SPACESHIP_DIR_TRUNC_REPO=false
 
 # Uncomment the following line to use case-sensitive completion.
 # CASE_SENSITIVE="true"
@@ -99,16 +54,11 @@ HIST_STAMPS="dd.mm.yyyy"
 # plugins=(git, zsh-autosuggestions, zsh-syntax-highlighting, wd)
 # plugins=(git zsh-syntax-highlighting zsh-autosuggestions cp wd z extract osx history web-search) #vi-mode)
 plugins=(
-  git
-  # history-substring-search
-  zsh-syntax-highlighting
-  zsh-autosuggestions
-  wd
-  z
+  # z
+  # fasd
   extract
-  osx
+  macos
   history
-  web-search
   colored-man-pages
   colorize
 ) #vi-mode)
@@ -117,7 +67,7 @@ plugins=(
 source $ZSH/oh-my-zsh.sh
 
 # Custom
-source ~/.oh-my-zsh/custom/plugins/aws_zsh_completer.sh
+# source ~/.oh-my-zsh/custom/plugins/aws_zsh_completer.sh
 
 
 # User configuration
@@ -150,6 +100,10 @@ source ~/.oh-my-zsh/custom/plugins/aws_zsh_completer.sh
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
 alias cd!='cd $OLDPWD'
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
+
 # Spoitify
 alias pause='spotify pause'
 alias play='spotify play'
@@ -189,8 +143,24 @@ alias setaws="source ~/.bin/setawsprofile $1"
 bindkey '^ ' autosuggest-execute
 bindkey '^[ ' autosuggest-accept
 
+alias de='pyenv deactivate'
+alias activate='pyenv virtualenv ${PWD##*/}'
+
 # bindkey '^[[A' history-substring-search-up
 # bindkey '^[[B' history-substring-search-down
+
+qwe() {
+  cat ~/dev/git/dot-files/vim/vimrc.base > ~/.vim/vimrc
+  echo "Set qwerty settings"
+}
+
+col() {
+  cat ~/dev/git/dot-files/vim/vimrc.base > ~/.vim/vimrc
+  cat ~/dev/git/dot-files/vim/vimrc.colemak >> ~/.vim/vimrc
+  echo "Set colemak settings"
+}
+
+alias qwf=col
 
 proxyOn() {
   export http_proxy=http://localhost:3128
@@ -224,11 +194,6 @@ pman () {
     man -t "${1}" | open -f -a /Applications/Preview.app
 }
 
-# title bar color
-# echo -e "\033]6;1;bg;red;brightness;153\a"
-# echo -e "\033]6;1;bg;green;brightness;191\a"
-# echo -e "\033]6;1;bg;blue;brightness;96\a"
-
 
 # Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
 export PATH=/usr/local/bin:$HOME/bin:$PATH
@@ -239,14 +204,9 @@ export PATH="$PATH:/Users/ivu/.bin"
 export PATH="$PATH:/usr/local/sbin"
 export PATH="$PATH:/Applications/Couchbase\ Server.app/Contents/Resources/couchbase-core/bin/cbq"
 
-# Python environment manager
-if command -v pyenv 1>/dev/null 2>&1; then
-  eval "$(pyenv init -)"
-fi
-
 # Node version manager
-export NVM_DIR="$HOME/.nvm"
-. "/usr/local/opt/nvm/nvm.sh"
+# export NVM_DIR="$HOME/.nvm"
+# . "/usr/local/opt/nvm/nvm.sh"
 
 # Go
 export GOPATH=~/.go-workspace
@@ -315,19 +275,19 @@ fshow() {
                 --bind "alt-y:execute:$_gitLogLineToHash | xclip"
 }
 
-unalias z
-z() {
-  if [[ -z "$*" ]]; then
-    cd "$(_z -l 2>&1 | fzf +s --tac | sed 's/^[0-9,.]* *//')"
-  else
-    _last_z_args="$@"
-    _z "$@"
-  fi
-}
+# unalias z
+# z() {
+#   if [[ -z "$*" ]]; then
+#     cd "$(_z -l 2>&1 | fzf +s --tac | sed 's/^[0-9,.]* *//')"
+#   else
+#     _last_z_args="$@"
+#     _z "$@"
+#   fi
+# }
 
-zz() {
-  cd "$(_z -l 2>&1 | sed 's/^[0-9,.]* *//' | fzf -q "$_last_z_args")"
-}
+# zz() {
+#   cd "$(_z -l 2>&1 | sed 's/^[0-9,.]* *//' | fzf -q "$_last_z_args")"
+# }
 
 
 # Setting fd as the default source for fzf
@@ -339,13 +299,24 @@ export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND --type f"
 # To apply the command to ALT-C as well
 export FZF_ALT_C_COMMAND="$FZF_DEFAULT_COMMAND --type d"
 
+# Set up pyenv 
+export PYENV_ROOT="$HOME/.pyenv"
+command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init -)"
+eval "$(pyenv virtualenv-init -)"
+export PYENV_VIRTUALENV_DISABLE_PROMPT=1
+
+# Set autoenv to run .env.leave files
+export AUTOENV_ENABLE_LEAVE=1
+
+# Set up theme Starship
+eval "$(starship init zsh)"
+
+# Set up fasd
+eval "$(fasd --init posix-alias zsh-hook)"
+
 # Start up
-proxyOn
 export AWS_DEFAULT_PROFILE=default
 export AWS_DEFAULT_REGION=ap-southeast-2
 
-# hackathon start up
-# export DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:/Users/ivu/Telstra/Hackathon/pynaoqi-python2.7-2.1.4.13-mac64
-# export PYTHONPATH=${PYTHONPATH}:/Users/ivu/Telstra/Hackathon/pynaoqi-python2.7-2.1.4.13-mac64
-# export PYTHONPATH=${PYTHONPATH}:/usr/local/lib/python2.7/site-packages
-
+eval $(thefuck --alias)
