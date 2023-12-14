@@ -3,3 +3,5 @@ aws/credentials
 /aws/credentials
 aws/config
 /aws/config
+/raycast/extensions
+.DS_Store
