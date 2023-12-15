@@ -7,7 +7,7 @@
 #
 # @raycast.icon 📓
 # @raycast.iconDark 📓
-#
+# @raycast.mode silent
 
 # Documentation:
 # @raycast.description Create a new daily note for Today
@@ -18,7 +18,6 @@ DATE=$(date '+%y%m%d')
 
 
 create_bear_note() {
-  echo Here
   DATE=$1
 
   COMMON_QUERY_STRINGS="open_note=yes&new_window=yes&show_window=yes&edit=yes"
