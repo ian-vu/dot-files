@@ -125,6 +125,8 @@ alias c='cd'
 
 alias getsize='du -sh'
 
+alias gs='git status'
+
 alias gits='git status'
 alias gita='git add'
 alias gitl="git log --pretty=format:'%C(yellow)%h %Cred%ad %Cblue%an%Cgreen%d %Creset%s' --date=short"
@@ -144,7 +146,8 @@ bindkey '^ ' autosuggest-execute
 bindkey '^[ ' autosuggest-accept
 
 alias de='pyenv deactivate'
-alias activate='pyenv virtualenv ${PWD##*/}'
+alias activate='pyenv activate ${PWD##*/}'
+alias act='activate'
 
 # bindkey '^[[A' history-substring-search-up
 # bindkey '^[[B' history-substring-search-down
@@ -299,7 +302,7 @@ export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND --type f"
 # To apply the command to ALT-C as well
 export FZF_ALT_C_COMMAND="$FZF_DEFAULT_COMMAND --type d"
 
-# Set up pyenv 
+# Set up pyenv
 export PYENV_ROOT="$HOME/.pyenv"
 command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
 eval "$(pyenv init -)"
@@ -320,3 +323,8 @@ export AWS_DEFAULT_PROFILE=default
 export AWS_DEFAULT_REGION=ap-southeast-2
 
 eval $(thefuck --alias)
+
+# Start up NVM
+export NVM_DIR="$HOME/.nvm"
+[ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. "/opt/homebrew/opt/nvm/nvm.sh"  # This loads nvm
+[ -s "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm"  # This loads nvm bash_completion
