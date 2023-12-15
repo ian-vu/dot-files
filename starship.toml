@@ -15,3 +15,6 @@ disabled = true
 [character] # The name of the module we are configuring is 'character'
 success_symbol = '[➜](bold green)'
 disabled = true
+
+[aws]
+disabled = true
