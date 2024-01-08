@@ -1,0 +1,2 @@
+require("ivu")
+print("hello")

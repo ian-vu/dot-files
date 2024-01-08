@@ -5,6 +5,9 @@ add_newline = false
 format = '[$symbol$branch(:$remote_branch)]($style) '
 symbol = '🌱 '
 
+[git_status]
+stashed = ""
+
 [python]
 format = '[${symbol}${pyenv_prefix}(${version} )(\($virtualenv\) )]($style)'
 version_format = '${raw}'
