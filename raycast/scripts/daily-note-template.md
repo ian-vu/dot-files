@@ -1,13 +1,25 @@
 #personal/daily
 ---
-## Today
+## Morning
 - [ ] Check things
+- [ ] Meditate
 
-**Study/Reading**
+---
+## Work
+**Start of Workday**
+- [ ] Check emails
+- [ ] Check slack
 
-**Work**
+**During Workday**
 
-**Anytime** 
+
+**End of Workday** 
 - [ ] Create tomorrow daily
+- [ ] Check emails
+- [ ] Check slack
+
+---
+### Personal
+
 ---
 ### Tomorrow
