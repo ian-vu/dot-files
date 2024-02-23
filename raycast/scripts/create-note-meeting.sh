@@ -20,7 +20,7 @@ create_bear_note() {
   COMMON_QUERY_STRINGS="open_note=yes&new_window=yes&show_window=yes&edit=yes"
 
   # %20 is encoded space
-  TITLE="Meeting%20MeetingTitle"
+  TITLE="Meeting%20-%20MeetingTitle"
   while IFS= read -r line; do
       if [ -z "$line" ]; then
           # Preserve empty lines
