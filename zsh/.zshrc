@@ -54,8 +54,11 @@ HIST_STAMPS="dd.mm.yyyy"
 # plugins=(git, zsh-autosuggestions, zsh-syntax-highlighting, wd)
 # plugins=(git zsh-syntax-highlighting zsh-autosuggestions cp wd z extract osx history web-search) #vi-mode)
 plugins=(
-  # z
+  z
   # fasd
+  F-Sy-H
+  zsh-autosuggestions
+  zsh-autocomplete
   extract
   macos
   history
@@ -139,6 +142,7 @@ alias zshrca='atom ~/.zshrc'
 
 alias npr='npm run --silent $*'
 alias chrome="open -a 'Google Chrome'"
+alias arst='asdf'
 
 alias setaws="source ~/.bin/setawsprofile $1"
 
@@ -147,7 +151,8 @@ bindkey '^[ ' autosuggest-accept
 
 alias de='pyenv deactivate'
 alias activate='pyenv activate ${PWD##*/}'
-alias act='activate'
+alias act='source .venv/bin/activate'
+# alias act='activate'
 
 # bindkey '^[[A' history-substring-search-up
 # bindkey '^[[B' history-substring-search-down
@@ -207,10 +212,6 @@ export PATH="$PATH:/Users/ivu/.bin"
 export PATH="$PATH:/usr/local/sbin"
 export PATH="$PATH:/Applications/Couchbase\ Server.app/Contents/Resources/couchbase-core/bin/cbq"
 
-# Node version manager
-# export NVM_DIR="$HOME/.nvm"
-# . "/usr/local/opt/nvm/nvm.sh"
-
 # Go
 export GOPATH=~/.go-workspace
 export GOROOT=/usr/local/opt/go/libexec
@@ -219,7 +220,7 @@ export PATH=$PATH:$GOROOT/bin
 
 # Fuzzy finder
 # https://github.com/junegunn/fzf#fuzzy-completion-for-bash-and-zsh
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+# [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
 alias f="fzf --preview 'cat {}'"
 
@@ -302,12 +303,12 @@ export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND --type f"
 # To apply the command to ALT-C as well
 export FZF_ALT_C_COMMAND="$FZF_DEFAULT_COMMAND --type d"
 
-# Set up pyenv
-export PYENV_ROOT="$HOME/.pyenv"
-command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
-eval "$(pyenv init -)"
-eval "$(pyenv virtualenv-init -)"
-export PYENV_VIRTUALENV_DISABLE_PROMPT=1
+# # Set up pyenv
+# export PYENV_ROOT="$HOME/.pyenv"
+# command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
+# eval "$(pyenv init -)"
+# eval "$(pyenv virtualenv-init -)"
+# export PYENV_VIRTUALENV_DISABLE_PROMPT=1
 
 # Set autoenv to run .env.leave files
 export AUTOENV_ENABLE_LEAVE=1
@@ -316,15 +317,38 @@ export AUTOENV_ENABLE_LEAVE=1
 eval "$(starship init zsh)"
 
 # Set up fasd
-eval "$(fasd --init posix-alias zsh-hook)"
+# eval "$(fasd --init posix-alias zsh-hook)"
 
 # Start up
 export AWS_DEFAULT_PROFILE=default
 export AWS_DEFAULT_REGION=ap-southeast-2
 
-eval $(thefuck --alias)
+# eval $(thefuck --alias)
 
-# Start up NVM
+# # Start up NVM
 export NVM_DIR="$HOME/.nvm"
 [ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. "/opt/homebrew/opt/nvm/nvm.sh"  # This loads nvm
 [ -s "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm"  # This loads nvm bash_completion
+
+. /opt/homebrew/opt/asdf/libexec/asdf.sh
+autoload -U +X bashcompinit && bashcompinit
+complete -o nospace -C /opt/homebrew/bin/terraform terraform
+
+
+# Zsh autocompletions - https://github.com/marlonrichert/zsh-autocomplete?tab=readme-ov-file
+# bindkey '\t' menu-complete "$terminfo[kcbt]" reverse-menu-complete
+bindkey '\t' menu-select "$terminfo[kcbt]" menu-select
+bindkey -M menuselect '\t' menu-complete "$terminfo[kcbt]" reverse-menu-complete
+
+# Limit number of lines
+zstyle -e ':autocomplete:list-choices:*' list-lines 'reply=( $(( LINES / 10 )) )'
+# zstyle ':autocomplete:*' delay 0.2  # seconds (float)
+# zstyle ':autocomplete:*' default-context history-incremental-search-backward
+
+# Hide duplicates from search history
+setopt HIST_EXPIRE_DUPS_FIRST
+setopt HIST_IGNORE_DUPS
+setopt HIST_IGNORE_ALL_DUPS
+setopt HIST_IGNORE_SPACE
+setopt HIST_FIND_NO_DUPS
+setopt HIST_SAVE_NO_DUPS
