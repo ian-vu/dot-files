@@ -1,5 +1,5 @@
 
-add_newline = false
+add_newline = true
 
 [git_branch]
 format = '[$symbol$branch(:$remote_branch)]($style) '
@@ -12,12 +12,16 @@ stashed = ""
 format = '[${symbol}${pyenv_prefix}(${version} )(\($virtualenv\) )]($style)'
 version_format = '${raw}'
 
-[line_break]
-disabled = true
+# [line_break]
+# disabled = true
 
 [character] # The name of the module we are configuring is 'character'
 success_symbol = '[➜](bold green)'
-disabled = true
+error_symbol = '[➜](bold red)'
+disabled = false
 
 [aws]
+disabled = true
+
+[docker_context]
 disabled = true

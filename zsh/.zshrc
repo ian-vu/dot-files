@@ -1,4 +1,4 @@
-# If you come from bash you might have to change your $PATH.
+#i=0; while [ $? -eq 0 ]; do i=$((i+1)); echo -n "$i. "; git rev-parse --symbolic-full-name @{-$i} 2> /dev/null; done If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
 # Path to your oh-my-zsh installation.
@@ -58,7 +58,7 @@ plugins=(
   # fasd
   F-Sy-H
   zsh-autosuggestions
-  zsh-autocomplete
+  # zsh-autocomplete
   extract
   macos
   history
@@ -107,6 +107,9 @@ alias ..='cd ..'
 alias ...='cd ../..'
 alias ....='cd ../../..'
 
+alias vim='nvim'
+alias v='vim'
+
 # Spoitify
 alias pause='spotify pause'
 alias play='spotify play'
@@ -128,12 +131,15 @@ alias c='cd'
 
 alias getsize='du -sh'
 
+alias lg='lazygit'
+alias gg='lazygit'
 alias gs='git status'
-
 alias gits='git status'
 alias gita='git add'
 alias gitl="git log --pretty=format:'%C(yellow)%h %Cred%ad %Cblue%an%Cgreen%d %Creset%s' --date=short"
 alias gitc='git commit'
+alias git-branch-previous='i=0; while [ $? -eq 0 ]; do i=$((i+1)); echo -n "$i. "; git rev-parse --symbolic-full-name @{-$i} 2> /dev/null; done'
+alias gitb=git-branch-previous
 
 alias tf='terraform'
 
@@ -211,6 +217,7 @@ export PATH="$PATH:/usr/local/Cellar/openvpn/2.4.3/sbin"
 export PATH="$PATH:/Users/ivu/.bin"
 export PATH="$PATH:/usr/local/sbin"
 export PATH="$PATH:/Applications/Couchbase\ Server.app/Contents/Resources/couchbase-core/bin/cbq"
+export PATH="$PATH:/Users/ivu/dev/git/git-fzf"
 
 # Go
 export GOPATH=~/.go-workspace
@@ -218,9 +225,16 @@ export GOROOT=/usr/local/opt/go/libexec
 export PATH=$PATH:$GOPATH/bin
 export PATH=$PATH:$GOROOT/bin
 
+# Case insensitive tab completion for zsh
+autoload -Uz compinit && compinit
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
+
 # Fuzzy finder
 # https://github.com/junegunn/fzf#fuzzy-completion-for-bash-and-zsh
-# [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+# Remove fzf deplicates
+setopt HIST_IGNORE_ALL_DUPS
 
 alias f="fzf --preview 'cat {}'"
 
@@ -337,12 +351,11 @@ complete -o nospace -C /opt/homebrew/bin/terraform terraform
 
 # Zsh autocompletions - https://github.com/marlonrichert/zsh-autocomplete?tab=readme-ov-file
 # bindkey '\t' menu-complete "$terminfo[kcbt]" reverse-menu-complete
-bindkey '\t' menu-select "$terminfo[kcbt]" menu-select
-bindkey -M menuselect '\t' menu-complete "$terminfo[kcbt]" reverse-menu-complete
+# bindkey '\t' menu-select "$terminfo[kcbt]" menu-select
+# bindkey -M menuselect '\t' menu-complete "$terminfo[kcbt]" reverse-menu-complete
 
 # Limit number of lines
-zstyle -e ':autocomplete:list-choices:*' list-lines 'reply=( $(( LINES / 10 )) )'
-# zstyle ':autocomplete:*' delay 0.2  # seconds (float)
+# zstyle ':autocomplete:*' delay 100  # seconds (float)
 # zstyle ':autocomplete:*' default-context history-incremental-search-backward
 
 # Hide duplicates from search history
