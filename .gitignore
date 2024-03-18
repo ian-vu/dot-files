@@ -5,3 +5,4 @@ aws/config
 /aws/config
 /raycast/extensions
 .DS_Store
+/.config/raycast/extensions
