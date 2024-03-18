@@ -54,6 +54,8 @@ HIST_STAMPS="dd.mm.yyyy"
 # plugins=(git, zsh-autosuggestions, zsh-syntax-highlighting, wd)
 # plugins=(git zsh-syntax-highlighting zsh-autosuggestions cp wd z extract osx history web-search) #vi-mode)
 plugins=(
+  fzf-tab # This needs to be before zsh-autosuggestions and fast-syntax-highlighting
+  fast-syntax-highlighting
   z
   # fasd
   F-Sy-H
@@ -110,6 +112,8 @@ alias ....='cd ../../..'
 alias vim='nvim'
 alias v='vim'
 
+alias neo='neovide --no-tabs'
+
 # Spoitify
 alias pause='spotify pause'
 alias play='spotify play'
@@ -165,12 +169,18 @@ alias act='source .venv/bin/activate'
 
 qwe() {
   cat ~/dev/git/dot-files/vim/vimrc.base > ~/.vim/vimrc
+
+  cat ~/.config/nvim/lua/config/keymaps-base.lua > ~/.config/nvim/lua/config/keymaps.lua
+
   echo "Set qwerty settings"
 }
-
 col() {
   cat ~/dev/git/dot-files/vim/vimrc.base > ~/.vim/vimrc
   cat ~/dev/git/dot-files/vim/vimrc.colemak >> ~/.vim/vimrc
+
+  cat ~/.config/nvim/lua/config/keymaps-base.lua > ~/.config/nvim/lua/config/keymaps.lua
+  cat ~/.config/nvim/lua/config/keymaps-colemak.lua >> ~/.config/nvim/lua/config/keymaps.lua
+
   echo "Set colemak settings"
 }
 
@@ -225,6 +235,11 @@ export GOROOT=/usr/local/opt/go/libexec
 export PATH=$PATH:$GOPATH/bin
 export PATH=$PATH:$GOROOT/bin
 
+# Set up fzf-tab
+autoload -U compinit; compinit
+source $ZSH_CUSTOM/plugins/fzf-tab/fzf-tab.plugin.zsh
+
+
 # Case insensitive tab completion for zsh
 autoload -Uz compinit && compinit
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
@@ -252,6 +267,7 @@ fpd() {
   local DIR=$(get_parent_dirs $(realpath "${1:-$PWD}") | fzf-tmux --tac)
   cd "$DIR"
 }
+alias pd='fpd'
 
 # checkout into a branch
 fbr() {
@@ -344,8 +360,12 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. "/opt/homebrew/opt/nvm/nvm.sh"  # This loads nvm
 [ -s "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm"  # This loads nvm bash_completion
 
+# Set up asdf
 . /opt/homebrew/opt/asdf/libexec/asdf.sh
 autoload -U +X bashcompinit && bashcompinit
+
+
+# Set up terraform
 complete -o nospace -C /opt/homebrew/bin/terraform terraform
 
 
