@@ -8,7 +8,16 @@ aws/config
 /.config/raycast/extensions
 /.config/karabiner/automatic_backups
 
-.config/nvim/.github
+# Neovim ignores
+.config/nvim/tt.*
+.config/nvim/.tests
+.config/nvim/doc/tags
+.config/nvim/debug
+.config/nvim/.repro
+.config/nvim/foo.*
+.config/nvim/*.log
+.config/nvim/data
 .config/nvim/lazy-lock.json
+.config/nvim/lua/config/keymaps.lua
 
 **/.DS_Store
