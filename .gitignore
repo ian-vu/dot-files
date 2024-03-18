@@ -6,3 +6,4 @@ aws/config
 /raycast/extensions
 .DS_Store
 /.config/raycast/extensions
+/.config/karabiner/automatic_backups
