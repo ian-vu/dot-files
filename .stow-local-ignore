@@ -1,0 +1,28 @@
+# Comments and blank lines are allowed.
+# Below are defaults start
+RCS
+.+,v
+
+CVS
+\.\#.+       # CVS conflict files / emacs lock files
+\.cvsignore
+
+\.svn
+_darcs
+\.hg
+
+\.git
+\.gitignore
+
+.+~          # emacs backup files
+\#.*\#       # emacs autosave files
+
+^/README.*
+^/LICENSE.*
+^/COPYING
+# Defaults end
+
+
+# My own
+\.DS_Store
+
