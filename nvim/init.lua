@@ -1,2 +1,0 @@
-require("ivu")
-print("hello")
