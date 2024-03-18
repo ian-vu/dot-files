@@ -7,3 +7,8 @@ aws/config
 .DS_Store
 /.config/raycast/extensions
 /.config/karabiner/automatic_backups
+
+.config/nvim/.github
+.config/nvim/lazy-lock.json
+
+**/.DS_Store
