@@ -32,6 +32,7 @@ if vim.g.neovide then
   vim.g.neovide_theme = "auto" -- mirror the system theme
   vim.g.neovide_confirm_quit = true
   vim.g.neovide_remember_window_size = true
+  vim.g.neovide_window_blurred = true
 
   -- animation
   vim.g.neovide_cursor_animation_length = 0.02
