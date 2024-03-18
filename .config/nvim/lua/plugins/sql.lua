@@ -1,4 +1,6 @@
 return {
+  -- UI for managing databases
+  -- Connection data is stored in ~/.local/share/db_ui
   "kristijanhusak/vim-dadbod-ui",
   dependencies = {
     { "tpope/vim-dadbod", lazy = true },
