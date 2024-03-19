@@ -132,6 +132,12 @@ return {
       },
     },
   },
+  -- {
+  --   "rmagatti/auto-session",
+  --   config = function(_, opts)
+  --     require("auto-session").setup(opts)
+  --   end,
+  -- },
   {
     "jackMort/ChatGPT.nvim",
     enabled = false,
