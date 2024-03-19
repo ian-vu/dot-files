@@ -112,7 +112,7 @@ alias ....='cd ../../..'
 alias vim='nvim'
 alias v='vim'
 
-alias neo='neovide --no-tabs'
+alias neo='neovide --no-tabs --frame transparent'
 
 # Spoitify
 alias pause='spotify pause'
@@ -228,6 +228,7 @@ export PATH="$PATH:/Users/ivu/.bin"
 export PATH="$PATH:/usr/local/sbin"
 export PATH="$PATH:/Applications/Couchbase\ Server.app/Contents/Resources/couchbase-core/bin/cbq"
 export PATH="$PATH:/Users/ivu/dev/git/git-fzf"
+export PATH="/opt/homebrew/opt/ruby/bin:$PATH"
 
 # Go
 export GOPATH=~/.go-workspace
