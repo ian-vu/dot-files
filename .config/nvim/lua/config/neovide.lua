@@ -29,7 +29,7 @@ if vim.g.neovide then
   vim.g.neovide_transparency = 1
   vim.g.neovide_show_border = true
   vim.g.neovide_floating_shadow = true
-  vim.g.neovide_theme = "auto" -- mirror the system theme
+  vim.g.neovide_theme = "dark" -- "auto" will mirror the system theme
   vim.g.neovide_confirm_quit = true
   vim.g.neovide_remember_window_size = true
   vim.g.neovide_window_blurred = true
