@@ -35,3 +35,5 @@ set noshowmode
 " Copy to global clipboard
 set clipboard=unnamed
 
+noremap <C-c> <esc>
+
