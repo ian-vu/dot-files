@@ -77,22 +77,46 @@ return {
             { "n", "k", actions.select_prev_entry, { desc = "Open the diff for the next file" } },
             {
               "n",
+              "cc",
+              function()
+                vim.ui.input({ prompt = "Commit message: " }, function(msg)
+                  if not msg then
+                    return
+                  end
+                  local results = vim.cmd("Git commit -m " .. '"' .. msg .. '"')
+                end)
+              end,
+            },
+            {
+              "n",
               "cC",
-              ':Git commit -m "',
+              "<Cmd>Git commit <bar> wincmd J<CR>",
               { desc = "Commit staged changes" },
             },
             {
               "n",
               "ca",
-              "<cmd>Git commit --amend<CR>",
+              "<Cmd>Git commit --amend <bar> wincmd J<CR>",
               { desc = "Amend the last commit" },
             },
-            {
-              "n",
-              "cc",
-              "<cmd>Git commit<CR>",
-              { desc = "Commit staged changes in buffer" },
-            },
+            -- {
+            --   "n",
+            --   "cC",
+            --   ':Git commit -m "',
+            --   { desc = "Commit staged changes" },
+            -- },
+            -- {
+            --   "n",
+            --   "ca",
+            --   "<cmd>Git commit --amend<CR>",
+            --   { desc = "Amend the last commit" },
+            -- },
+            -- {
+            --   "n",
+            --   "cc",
+            --   "<cmd>Git commit<CR>",
+            --   { desc = "Commit staged changes in buffer" },
+            -- },
           },
         },
       }
