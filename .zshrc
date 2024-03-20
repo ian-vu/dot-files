@@ -175,8 +175,8 @@ qwe() {
   echo "Set qwerty settings"
 }
 col() {
-  cat ~/dev/git/dot-files/vim/vimrc.base > ~/.vim/vimrc
-  cat ~/dev/git/dot-files/vim/vimrc.colemak >> ~/.vim/vimrc
+  cat ~/dot-files/.vim/vimrc.base > ~/.vim/vimrc
+  cat ~/dot-files/.vim/vimrc.colemak >> ~/.vim/vimrc
 
   cat ~/.config/nvim/lua/config/keymaps-base.lua > ~/.config/nvim/lua/config/keymaps.lua
   cat ~/.config/nvim/lua/config/keymaps-colemak.lua >> ~/.config/nvim/lua/config/keymaps.lua
