@@ -26,16 +26,15 @@ if vim.g.neovide then
 
   vim.g.neovide_window_blurred = true
   -- vim.g.neovide_transparency = 0.99
-  vim.g.neovide_transparency = 1
+  vim.g.neovide_transparency = 0.9
   vim.g.neovide_show_border = true
   vim.g.neovide_floating_shadow = true
   vim.g.neovide_theme = "dark" -- "auto" will mirror the system theme
   vim.g.neovide_confirm_quit = true
   vim.g.neovide_remember_window_size = true
-  vim.g.neovide_window_blurred = true
 
   -- animation
-  vim.g.neovide_cursor_animation_length = 0.02
+  vim.g.neovide_cursor_animation_length = 0.05
   vim.g.neovide_cursor_animate_command_line = true
-  vim.g.neovide_scroll_animation_length = 0.1
+  vim.g.neovide_scroll_animation_length = 0.15
 end
