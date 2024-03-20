@@ -9,6 +9,9 @@ vim.keymap.del({ "n", "v", "i" }, "<A-j>")
 vim.keymap.del({ "n", "v", "i" }, "<A-k>")
 vim.keymap.del("n", "<leader>cd")
 
+-- misc
+vim.keymap.set({ "n", "v", "i", "x", "o" }, "<C-c>", "<esc>", { desc = "Esc" })
+
 -- format
 vim.keymap.set({ "n", "v" }, "<leader>fm", function()
   Util.format({ force = true })
@@ -54,15 +57,15 @@ vim.keymap.set("n", "<D-w>", "<cmd>tabclose<cr>", { desc = "Close Tab" })
 vim.keymap.set("n", "<D-n>", "<cmd>tabnew<cr>", { desc = "New Tab" })
 
 -- Pane navigation
-vim.keymap.set({ "n", "v" }, "<C-h>", "<C-w>h", { desc = "Move to pane left" })
-vim.keymap.set({ "n", "v" }, "<C-l>", "<C-w>l", { desc = "Move to pane right" })
-vim.keymap.set({ "n", "v" }, "<C-j>", "<C-w>j", { desc = "Move to pane up" })
-vim.keymap.set({ "n", "v" }, "<C-k>", "<C-w>k", { desc = "Move to pane down" })
+vim.keymap.set({ "n", "v", "i" }, "<C-h>", "<C-w>h", { desc = "Move to pane left" })
+vim.keymap.set({ "n", "v", "i" }, "<C-l>", "<C-w>l", { desc = "Move to pane right" })
+vim.keymap.set({ "n", "v", "i" }, "<C-j>", "<C-w>j", { desc = "Move to pane up" })
+vim.keymap.set({ "n", "v", "i" }, "<C-k>", "<C-w>k", { desc = "Move to pane down" })
 
-vim.keymap.set({ "n", "v" }, "<D-h>", "<C-w>h", { desc = "Move to pane left" })
-vim.keymap.set({ "n", "v" }, "<D-l>", "<C-w>l", { desc = "Move to pane right" })
-vim.keymap.set({ "n", "v" }, "<D-j>", "<C-w>j", { desc = "Move to pane up" })
-vim.keymap.set({ "n", "v" }, "<D-k>", "<C-w>k", { desc = "Move to pane down" })
+vim.keymap.set({ "n", "v", "i" }, "<D-h>", "<C-w>h", { desc = "Move to pane left" })
+vim.keymap.set({ "n", "v", "i" }, "<D-l>", "<C-w>l", { desc = "Move to pane right" })
+vim.keymap.set({ "n", "v", "i" }, "<D-j>", "<C-w>j", { desc = "Move to pane up" })
+vim.keymap.set({ "n", "v", "i" }, "<D-k>", "<C-w>k", { desc = "Move to pane down" })
 
 -- Telescope
 vim.keymap.set({ "n", "v" }, "<leader>fw", "<cmd>Telescope live_grep<CR>", { desc = "Find words" })
@@ -157,6 +160,8 @@ vim.keymap.set({ "i", "x", "n", "s" }, "<D-s>", "<cmd>w<cr><esc>", { desc = "Sav
 vim.keymap.set({ "i", "x", "n", "s" }, "<D-C-s>", "<cmd>wall<cr><esc>", { desc = "Save all files" })
 
 -- Navigation
+vim.keymap.set({ "i", "x", "n", "s", "v" }, "<C-d>", "<C-d>zz", { desc = "Move down half page", noremap = true })
+vim.keymap.set({ "i", "x", "n", "s", "v" }, "<C-u>", "<C-u>zz", { desc = "Move up half page" })
 vim.keymap.set({ "i", "x", "n", "s", "v" }, "<D-d>", "<C-d>", { desc = "Move down half page" })
 vim.keymap.set({ "i", "x", "n", "s", "v" }, "<D-u>", "<C-u>", { desc = "Move up half page" })
 

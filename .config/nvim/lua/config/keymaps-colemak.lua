@@ -16,10 +16,10 @@ vim.keymap.set({ "n", "v", "x", "o" }, "l", "i", { noremap = true, silent = true
 vim.keymap.set({ "n", "v", "x", "o" }, "L", "I", { noremap = true, silent = true })
 
 -- Pane navigation
-vim.keymap.set("n", "<C-h>", "<C-w>h", { desc = "Go to left window", noremap = true })
-vim.keymap.set("n", "<C-n>", "<C-w>j", { desc = "Go to lower window", noremap = true })
-vim.keymap.set("n", "<C-e>", "<C-w>k", { desc = "Go to upper window", noremap = true })
-vim.keymap.set("n", "<C-i>", "<C-w>l", { desc = "Go to right window", noremap = true })
+vim.keymap.set({ "n", "v", "i" }, "<C-h>", "<C-w>h", { desc = "Go to left window", noremap = true })
+vim.keymap.set({ "n", "v", "i" }, "<C-n>", "<C-w>j", { desc = "Go to lower window", noremap = true })
+vim.keymap.set({ "n", "v", "i" }, "<C-e>", "<C-w>k", { desc = "Go to upper window", noremap = true })
+vim.keymap.set({ "n", "v", "i" }, "<C-i>", "<C-w>l", { desc = "Go to right window", noremap = true })
 
--- buffers
-vim.keymap.set("n", "<S-i>", "<cmd>bnext<cr>", { desc = "Next buffer", noremap = true })
+-- Buffer
+vim.keymap.set("n", "<S-l>", "<cmd>bnext<cr>", { desc = "Next buffer" })
