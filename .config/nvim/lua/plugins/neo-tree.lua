@@ -12,6 +12,7 @@ return {
   },
   opts = {
     enable_normal_mode_for_inputs = true,
+    popup_border_style = "rounded",
     filesystem = {
       filtered_items = {
         hide_gitignored = false,
@@ -53,6 +54,8 @@ return {
       -- min_width = 40,
       -- max_width = 60,
       mappings = {
+        ["s"] = "open_split",
+        ["v"] = "open_vsplit",
         ["o"] = { command = "open", nowait = true },
         [";"] = { command = "open", nowait = true },
         ["E"] = { command = "expand_all_nodes", nowait = true },
