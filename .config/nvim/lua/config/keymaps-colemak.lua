@@ -22,4 +22,4 @@ vim.keymap.set({ "n", "v", "i" }, "<C-e>", "<C-w>k", { desc = "Go to upper windo
 vim.keymap.set({ "n", "v", "i" }, "<C-i>", "<C-w>l", { desc = "Go to right window", noremap = true })
 
 -- Buffer
-vim.keymap.set("n", "<S-l>", "<cmd>bnext<cr>", { desc = "Next buffer" })
+vim.keymap.set("n", "I", "<cmd>bnext<cr>", { desc = "Next buffer", noremap = true })

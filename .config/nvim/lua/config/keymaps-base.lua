@@ -11,6 +11,7 @@ vim.keymap.del("n", "<leader>cd")
 
 -- misc
 vim.keymap.set({ "n", "v", "i", "x", "o" }, "<C-c>", "<esc>", { desc = "Esc" })
+vim.keymap.set("v", "p", '"_dP', { desc = "Paste without yank" })
 
 -- format
 vim.keymap.set({ "n", "v" }, "<leader>fm", function()
