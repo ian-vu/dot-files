@@ -35,6 +35,14 @@ return {
     },
   },
   {
+    -- Allow for telescope plugin that groups results by files
+    "fdschmidt93/telescope-egrepify.nvim",
+    dependencies = { "nvim-telescope/telescope.nvim", "nvim-lua/plenary.nvim" },
+    config = function()
+      require("telescope").load_extension("egrepify")
+    end,
+  },
+  {
     -- Show underline of current words under cursor
     "RRethy/vim-illuminate",
     event = "LazyFile",
@@ -153,4 +161,33 @@ return {
       })
     end,
   },
+  {
+    -- Small pop up window that replaces go to <definition/typing/etc>
+    "dnlhc/glance.nvim",
+  },
+  -- Currently getting errors
+  -- {
+  --   "SuperBo/fugit2.nvim",
+  --   dependencies = {
+  --     "MunifTanjim/nui.nvim",
+  --     "nvim-tree/nvim-web-devicons",
+  --     "nvim-lua/plenary.nvim",
+  --     {
+  --       "chrisgrieser/nvim-tinygit",
+  --       dependencies = { "stevearc/dressing.nvim" },
+  --     },
+  --   },
+  --   cmd = { "Fugit2", "Fugit2Graph" },
+  -- },
+  -- {
+  --   "NeogitOrg/neogit",
+  --   dependencies = {
+  --     "nvim-lua/plenary.nvim", -- required
+  --     "sindrets/diffview.nvim", -- optional - Diff integration
+  --
+  --     -- Only one of these is needed, not both.
+  --     "nvim-telescope/telescope.nvim", -- optional
+  --   },
+  --   config = true,
+  -- },
 }

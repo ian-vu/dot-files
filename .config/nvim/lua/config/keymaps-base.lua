@@ -69,13 +69,11 @@ vim.keymap.set({ "n", "v", "i" }, "<D-j>", "<C-w>j", { desc = "Move to pane up" 
 vim.keymap.set({ "n", "v", "i" }, "<D-k>", "<C-w>k", { desc = "Move to pane down" })
 
 -- Telescope
-vim.keymap.set({ "n", "v" }, "<leader>fw", "<cmd>Telescope live_grep<CR>", { desc = "Find words" })
-vim.keymap.set({ "n", "v" }, "<leader>fc", "<cmd>Telescope commands<CR>", { desc = "Find commands" })
+vim.keymap.set({ "n", "v" }, "<leader>fw", "<cmd>Telescope egrepify<cr>", { desc = "Find words" })
 vim.keymap.set({ "n", "v" }, "<leader>fk", "<cmd>Telescope keymaps<CR>", { desc = "Find keymaps" })
 vim.keymap.set({ "n", "v" }, "<leader>fh", "<cmd>Telescope help_tags<CR>", { desc = "Find help tags" })
-vim.keymap.set({ "n", "v" }, "<leader>fh", "<cmd>Telescope diagnostics<CR>", { desc = "Find diagnostics" })
 vim.keymap.set({ "n", "v" }, "<D-p>", "<cmd>Telescope find_files<CR>", { desc = "Find files" })
-vim.keymap.set({ "n", "v" }, "<D-f>", "<cmd>Telescope live_grep<CR>", { desc = "Find words" })
+vim.keymap.set({ "n", "v" }, "<D-f>", "<cmd>Telescope egrepify<cr>", { desc = "Find words" })
 
 -- Terminal
 local lazyterm = function()
@@ -250,3 +248,14 @@ vim.keymap.set("n", "<leader>tf", require("neotest").run.run, { desc = "Run whol
 -- vim.keymap.set("n", "<leader>td", function()
 --   require("neotest").run.run({ strategy = "dap" })
 -- end, { desc = "Debug nearest test" })
+
+-- Glance
+vim.keymap.set({ "n", "v" }, "gD", "<CMD>Glance definitions<CR>", { desc = "Glance definitions" })
+vim.keymap.set({ "n", "v" }, "gR", "<CMD>Glance references<CR>", { desc = "Glance references" })
+vim.keymap.set({ "n", "v" }, "gY", "<CMD>Glance type_definitions<CR>", { desc = "Glance type definitions" })
+vim.keymap.set({ "n", "v" }, "gM", "<CMD>Glance implementations<CR>", { desc = "Glance implementations" })
+
+vim.keymap.set({ "n", "v" }, "<leader>cgd", "<CMD>Glance definitions<CR>", { desc = "Glance definitions" })
+vim.keymap.set({ "n", "v" }, "<leader>cgr", "<CMD>Glance references<CR>", { desc = "Glance references" })
+vim.keymap.set({ "n", "v" }, "<leader>cgy", "<CMD>Glance type_definitions<CR>", { desc = "Glance type definitions" })
+vim.keymap.set({ "n", "v" }, "<leader>cgm", "<CMD>Glance implementations<CR>", { desc = "Glance implementations" })
