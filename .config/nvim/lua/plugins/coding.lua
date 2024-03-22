@@ -12,30 +12,6 @@ return {
       },
     },
   },
-  {
-    "hrsh7th/nvim-cmp",
-    event = { "InsertEnter", "CmdLineEnter" },
-    dependencies = {
-      "hrsh7th/cmp-cmdline",
-    },
-    opts = function(_, opts)
-      local cmp = require("cmp")
-      -- `:` cmdline setup.
-      cmp.setup.cmdline(":", {
-        mapping = cmp.mapping.preset.cmdline(),
-        sources = cmp.config.sources({
-          { name = "path" },
-        }, {
-          {
-            name = "cmdline",
-            option = {
-              ignore_cmds = { "Man", "!" },
-            },
-          },
-        }),
-      })
-    end,
-  },
   -- Use <tab> for completion and snippets (supertab)
   -- first: disable default <tab> and <s-tab> behavior in LuaSnip
   {
@@ -64,8 +40,10 @@ return {
       -- opts.completion.completeopt = "menu,noselect,preview"
       opts.completion.completeopt = "menu,menuone,select"
       opts.mapping = cmp.mapping.preset.insert({
-        ["<CR>"] = cmp.config.disable,
-        ["<tab>"] = cmp.mapping.confirm({ select = true }),
+        ["<Tab>"] = cmp.mapping.select_next_item(),
+        ["<S-Tab>"] = cmp.mapping.select_prev_item(),
+        ["<CR>"] = cmp.mapping.confirm({ select = true }),
+        ["<S-CR>"] = cmp.config.disable,
         -- opts.mapping["<S-CR>"] = cmp.config.disable
       })
       -- Set up command line autocomplete
