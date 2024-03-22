@@ -144,6 +144,12 @@ vim.keymap.set(
 
 -- diffview
 vim.keymap.set({ "n", "v" }, "<leader>gd", "<cmd>DiffviewOpen<CR>", { desc = "Git diff changes" })
+vim.keymap.set(
+  { "n", "v" },
+  "<leader>gd",
+  "<cmd>DiffviewOpen origin/HEAD...HEAD --imply-local<CR>",
+  { desc = "Git diff changes against base branch" }
+)
 vim.keymap.set({ "n", "v" }, "<leader>gf", "<cmd>DiffviewFileHistory %<CR>", { desc = "Git file history current" })
 vim.keymap.set({ "n", "v" }, "<leader>gF", "<cmd>DiffviewFileHistory<CR>", { desc = "Git file branch history" })
 vim.keymap.set({ "n", "v" }, "<leader>gx", "<cmd>DiffviewClose<CR>", { desc = "Git diff close" })
