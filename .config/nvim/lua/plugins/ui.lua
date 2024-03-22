@@ -1,11 +1,5 @@
 return {
-  {
-    "LazyVim/LazyVim",
-    opts = {
-      colorscheme = "rose-pine-moon",
-    },
-  },
-  -- {
+  -- { -- Audo dark mode
   --   "f-person/auto-dark-mode.nvim",
   --   config = {
   --     update_interval = 5000,
@@ -20,28 +14,6 @@ return {
   --       vim.cmd("colorscheme tokyonight-day")
   --     end,
   --   },
-  -- },
-  {
-    "rose-pine/neovim",
-    name = "rose-pine",
-    opts = {
-      enable = {
-        legacy_highlights = false,
-      },
-      styles = {
-        italic = false,
-      },
-      groups = {
-        git_untracked = "rose",
-      },
-    },
-  },
-  -- {
-  --   "rmehri01/onenord.nvim",
-  -- },
-  -- {
-  --   "olimorris/onedarkpro.nvim",
-  --   priority = 1000, -- Ensure it loads first
   -- },
   {
     "echasnovski/mini.indentscope",
