@@ -26,7 +26,7 @@ if vim.g.neovide then
 
   vim.g.neovide_window_blurred = true
   -- vim.g.neovide_transparency = 0.99
-  vim.g.neovide_transparency = 0.98
+  vim.g.neovide_transparency = 0.95
   vim.g.neovide_show_border = true
   vim.g.neovide_floating_shadow = true
   vim.g.neovide_theme = "dark" -- "auto" will mirror the system theme
