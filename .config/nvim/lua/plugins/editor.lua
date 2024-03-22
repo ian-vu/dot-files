@@ -123,12 +123,21 @@ return {
     end,
   },
   {
-    -- Jumping around buffers
     "folke/flash.nvim",
+    event = "VeryLazy",
+    ---@type Flash.Config
     opts = {
+      -- Show labels before the search word
       label = {
         before = true,
         after = false,
+      },
+      modes = {
+        -- Disable flash for `/`
+        search = { enabled = false },
+
+        -- Disable flash when using `f`, `F`, `t`, `T`, `;` and `,` motions
+        char = { enabled = false },
       },
     },
   },
@@ -189,7 +198,6 @@ return {
     -- Small pop up window that replaces go to <definition/typing/etc>
     "dnlhc/glance.nvim",
   },
-  -- Currently getting errors
   -- {
   --   "SuperBo/fugit2.nvim",
   --   dependencies = {
@@ -201,6 +209,7 @@ return {
   --       dependencies = { "stevearc/dressing.nvim" },
   --     },
   --   },
+  --   opts = {},
   --   cmd = { "Fugit2", "Fugit2Graph" },
   -- },
   -- {
