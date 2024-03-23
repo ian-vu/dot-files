@@ -168,7 +168,7 @@ alias act='source .venv/bin/activate'
 # bindkey '^[[B' history-substring-search-down
 
 qwe() {
-  cat ~/dev/git/dot-files/vim/vimrc.base > ~/.vim/vimrc
+  cat ~/dot-files/.vim/vimrc.base > ~/.vim/vimrc
 
   cat ~/.config/nvim/lua/config/keymaps-base.lua > ~/.config/nvim/lua/config/keymaps.lua
 
