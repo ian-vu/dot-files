@@ -216,4 +216,47 @@ return {
   --   },
   --   config = true,
   -- },
+  {
+    "akinsho/bufferline.nvim",
+    opts = function()
+      local bufferline = require("bufferline")
+      return {
+        options = {
+          hightlights = {
+            tab_separator = {
+              underline = "blue",
+            },
+          },
+          diagnostics = false,
+          indicator = {
+            style = "underline", -- default is icon on left
+          },
+          show_buffer_icons = false,
+          show_close_icon = false,
+          show_buffer_close_icon = false,
+          hover = {
+            enabled = true,
+            delay = 100,
+            reveal = { "close" },
+          },
+          sort_by = "insert_at_end",
+          style_preset = { bufferline.style_preset.no_italic },
+          offsets = {
+            {
+              filetype = "neo-tree",
+              text = "",
+              highlight = "Directory",
+              text_align = "left",
+            },
+            {
+              filetype = "Diffview",
+              text = "",
+              highlight = "Directory",
+              text_align = "left",
+            },
+          },
+        },
+      }
+    end,
+  },
 }
