@@ -13,6 +13,7 @@ vim.keymap.del("n", "<leader>cd")
 vim.keymap.set({ "n", "v", "i", "x", "o" }, "<C-c>", "<esc>", { desc = "Esc" })
 vim.keymap.set("v", "p", '"_dP', { desc = "Paste without yank" })
 vim.keymap.set({ "v" }, "<D-c>", "y", { desc = "Yank" })
+vim.keymap.set({ "n", "v" }, "<D-a>", ":%y", { desc = "Yank whole buffer" })
 
 -- format
 vim.keymap.set({ "n", "v" }, "<leader>fm", function()
@@ -94,7 +95,6 @@ vim.keymap.set({ "n", "v" }, "<leader>ee", function()
     position = "left",
     source = "filesystem",
     toggle = false,
-    dir = Util.root(),
   })
 end, { desc = "Explorer Files", remap = true })
 vim.keymap.set({ "n", "v" }, "<leader>eb", function()
@@ -103,7 +103,7 @@ vim.keymap.set({ "n", "v" }, "<leader>eb", function()
     position = "left",
     source = "buffers",
     toggle = false,
-    dir = Util.root(),
+    reveal = true,
   })
 end, { desc = "Explorer buffers", remap = true })
 vim.keymap.set({ "n", "v" }, "<leader>eg", function()
@@ -112,7 +112,6 @@ vim.keymap.set({ "n", "v" }, "<leader>eg", function()
     position = "left",
     source = "git_status",
     toggle = false,
-    dir = Util.root(),
   })
 end, { desc = "Explorer git changes", remap = true })
 vim.keymap.set({ "n", "v" }, "<leader>ef", function()
@@ -120,12 +119,12 @@ vim.keymap.set({ "n", "v" }, "<leader>ef", function()
     action = "focus",
     source = "filesystem",
     toggle = false,
-    dir = Util.root(),
     position = "float",
+    reveal = true,
   })
 end, { desc = "Explorer buffers", remap = true })
-vim.keymap.set({ "n", "v" }, "<leader>ec", "<cmd>Neotree toggle<CR>", { desc = "Close" })
-vim.keymap.set({ "n", "v" }, "<leader>ex", "<cmd>Neotree toggle<CR>", { desc = "Close" })
+vim.keymap.set({ "n", "v" }, "<leader>ec", "<cmd>Neotree close<CR>", { desc = "Close" })
+vim.keymap.set({ "n", "v" }, "<leader>ex", "<cmd>Neotree close<CR>", { desc = "Close" })
 
 -- Comment Plugin
 local Comment = require("Comment.api")
