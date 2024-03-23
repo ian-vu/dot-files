@@ -14,6 +14,15 @@ return {
     --   require("catppuccin").setup(opts)
     --   vim.cmd.colorscheme("catppuccino")
     -- end,
+    opts = {
+      integrations = {
+        telescope = { enabled = false },
+        neotree = true,
+        noice = true,
+        harpoon = true,
+        which_key = true,
+      },
+    },
   },
   -- {
   --   "rose-pine/neovim",
