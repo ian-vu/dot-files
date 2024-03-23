@@ -33,16 +33,16 @@ return {
     },
     opts = function(_, opts)
       local cmp = require("cmp")
-      opts.window = {
-        completion = cmp.config.window.bordered(),
-        documentation = cmp.config.window.bordered(),
-      }
+      -- opts.window = {
+      --   completion = cmp.config.window.bordered(),
+      --   documentation = cmp.config.window.bordered(),
+      -- }
       -- opts.completion.completeopt = "menu,noselect,preview"
       opts.completion.completeopt = "menu,menuone,select"
       opts.mapping = cmp.mapping.preset.insert({
         ["<Tab>"] = cmp.mapping.select_next_item(),
         ["<S-Tab>"] = cmp.mapping.select_prev_item(),
-        ["<CR>"] = cmp.mapping.confirm({ select = true }),
+        ["<CR>"] = cmp.mapping.confirm({ select = true, behaviour = cmp.ConfirmBehavior.Replace }),
         ["<S-CR>"] = cmp.config.disable,
         -- opts.mapping["<S-CR>"] = cmp.config.disable
       })
