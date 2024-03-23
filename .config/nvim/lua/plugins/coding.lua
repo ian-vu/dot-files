@@ -1,14 +1,19 @@
 return {
   {
     "zbirenbaum/copilot.lua",
+    event = "InsertEnter",
     cmd = "Copilot",
     build = ":Copilot auth",
     opts = {
-      suggestion = { enabled = true },
+      suggestion = {
+        enabled = true,
+        auto_trigger = false, -- Automatically trigger suggestions on insert without any keypress
+      },
       panel = { enabled = true },
       filetypes = {
         markdown = true,
         help = true,
+        ["*"] = true,
       },
     },
   },
@@ -144,7 +149,11 @@ return {
       },
     },
   },
-  { "tpope/vim-fugitive", opt = true, cmd = { "G", "Git" } },
+  {
+    "tpope/vim-fugitive",
+    opt = true,
+    cmd = { "G", "Git" },
+  },
   {
     -- Update Code when making directory changes in NeoTree, see another config for annother file manager
     "antosha417/nvim-lsp-file-operations",
