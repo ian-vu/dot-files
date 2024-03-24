@@ -90,12 +90,7 @@ vim.keymap.set({ "n", "v" }, "<C-_>", lazyterm, { desc = "Terminal (root dir)" }
 -- Neotree Plugin
 vim.keymap.set({ "n", "v" }, "<C-n>", "<cmd>Neotree toggle<CR>", { desc = "Toggle Neotree", remap = true })
 vim.keymap.set({ "n", "v" }, "<leader>ee", function()
-  require("neo-tree.command").execute({
-    action = "focus",
-    position = "left",
-    source = "filesystem",
-    toggle = false,
-  })
+  require("edgy").open("left")
 end, { desc = "Explorer Files", remap = true })
 vim.keymap.set({ "n", "v" }, "<leader>eb", function()
   require("neo-tree.command").execute({
@@ -123,8 +118,14 @@ vim.keymap.set({ "n", "v" }, "<leader>ef", function()
     reveal = true,
   })
 end, { desc = "Explorer buffers", remap = true })
-vim.keymap.set({ "n", "v" }, "<leader>ec", "<cmd>Neotree close<CR>", { desc = "Close" })
-vim.keymap.set({ "n", "v" }, "<leader>ex", "<cmd>Neotree close<CR>", { desc = "Close" })
+vim.keymap.set({ "n", "v" }, "<leader>ec", function()
+  require("edgy").close("left")
+  require("neo-tree.command").execute({ action = "close" })
+end, { desc = "Close", remap = true })
+vim.keymap.set({ "n", "v" }, "<leader>ex", function()
+  require("edgy").close("left")
+  require("neo-tree.command").execute({ action = "close" })
+end, { desc = "Close", remap = true })
 
 -- Comment Plugin
 local Comment = require("Comment.api")
