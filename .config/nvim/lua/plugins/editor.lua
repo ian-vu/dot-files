@@ -116,6 +116,11 @@ return {
     end,
   },
   {
+    -- Allow for opening files in github
+    "almo7aya/openingh.nvim",
+    opts = {},
+  },
+  {
     "folke/flash.nvim",
     event = "VeryLazy",
     ---@type Flash.Config

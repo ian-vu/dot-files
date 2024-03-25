@@ -172,6 +172,11 @@ vim.api.nvim_set_keymap("!", "<D-v>", "<C-R>+", { noremap = true, silent = true 
 vim.api.nvim_set_keymap("t", "<D-v>", "<C-R>+", { noremap = true, silent = true })
 vim.api.nvim_set_keymap("v", "<D-v>", "<C-R>+", { noremap = true, silent = true })
 
+-- opening files in github
+vim.keymap.set("n", "<leader>gor", "<cmd>OpenInGHRepo<CR>", { silent = true, desc = "Open Github Repository " })
+vim.keymap.set("n", "<leader>gof", "<cmd>OpenInGHFile<CR>", { silent = true, desc = "Open file in Github" })
+vim.keymap.set("n", "<leader>gol", "<cmd>OpenInGHFileLines<CR>", { silent = true, desc = "Open line in Github" })
+
 --Save file
 vim.keymap.set({ "i", "x", "n", "s" }, "<D-s>", "<cmd>w<cr><esc>", { desc = "Save file" })
 vim.keymap.set({ "i", "x", "n", "s" }, "<D-C-s>", "<cmd>wall<cr><esc>", { desc = "Save all files" })
