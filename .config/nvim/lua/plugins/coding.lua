@@ -150,11 +150,6 @@ return {
     },
   },
   {
-    "tpope/vim-fugitive",
-    opt = true,
-    cmd = { "G", "Git" },
-  },
-  {
     -- Update Code when making directory changes in NeoTree, see another config for annother file manager
     "antosha417/nvim-lsp-file-operations",
     dependencies = {

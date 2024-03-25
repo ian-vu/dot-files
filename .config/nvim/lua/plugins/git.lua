@@ -107,6 +107,11 @@ return {
       },
     },
   },
+  {
+    "tpope/vim-fugitive",
+    opt = true,
+    cmd = { "G", "Git" },
+  },
   -- {
   --   "SuperBo/fugit2.nvim",
   --   dependencies = {
