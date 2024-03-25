@@ -21,7 +21,7 @@ return {
                   if not msg then
                     return
                   end
-                  local results = vim.cmd("Git commit -m " .. '"' .. msg .. '"')
+                  vim.cmd("Git commit -m " .. '"' .. msg .. '"')
                 end)
               end,
             },
