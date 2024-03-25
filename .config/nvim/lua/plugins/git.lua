@@ -9,8 +9,8 @@ return {
           file_panel = {
             { "n", "<C-d>", actions.scroll_view(0.4), { desc = "Scroll down half page" } },
             { "n", "<C-u>", actions.scroll_view(-0.4), { desc = "Scroll up half page" } },
-            { "n", "<C-f>", actions.scroll_view(0.6), { desc = "Scroll down full page" } },
-            { "n", "<C-b>", actions.scroll_view(-0.6), { desc = "Scroll up full page" } },
+            { "n", "<C-f>", actions.scroll_view(0.8)({ desc = "Scroll down full page" }) },
+            { "n", "<C-b>", actions.scroll_view(-0.8), { desc = "Scroll up full page" } },
             { "n", "j", actions.select_next_entry, { desc = "Open the diff for the next file" } },
             { "n", "k", actions.select_prev_entry, { desc = "Open the diff for the next file" } },
             {
