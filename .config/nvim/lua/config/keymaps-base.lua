@@ -90,25 +90,35 @@ vim.keymap.set({ "n", "v" }, "<C-_>", lazyterm, { desc = "Terminal (root dir)" }
 -- Neotree Plugin
 vim.keymap.set({ "n", "v" }, "<C-n>", "<cmd>Neotree toggle<CR>", { desc = "Toggle Neotree", remap = true })
 vim.keymap.set({ "n", "v" }, "<leader>ee", function()
-  require("edgy").open("left")
+  local Config = require("edgy.config")
+  for p, edgebar in pairs(Config.layout) do
+    if p == "left" then
+      if #edgebar.wins == 0 then
+        require("edgy").open("left")
+      else
+        vim.api.nvim_command("Neotree action=focus filesystem")
+      end
+    end
+  end
 end, { desc = "Explorer Files", remap = true })
-vim.keymap.set({ "n", "v" }, "<leader>eb", function()
-  require("neo-tree.command").execute({
-    action = "focus",
-    position = "left",
-    source = "buffers",
-    toggle = false,
-    reveal = true,
-  })
-end, { desc = "Explorer buffers", remap = true })
-vim.keymap.set({ "n", "v" }, "<leader>eg", function()
-  require("neo-tree.command").execute({
-    action = "focus",
-    position = "left",
-    source = "git_status",
-    toggle = false,
-  })
-end, { desc = "Explorer git changes", remap = true })
+vim.keymap.set({ "n", "v" }, "<leader>eb", ":Neotree buffers<CR>", { desc = "Explorer buffers", remap = true })
+-- vim.keymap.set({ "n", "v" }, "<leader>eb", function()
+--   require("neo-tree.command").execute({
+--     action = "focus", position = "left",
+--     source = "buffers",
+--     toggle = false,
+--     reveal = true,
+--   })
+-- end,{ desc = "Explorer buffers", remap = true })
+vim.keymap.set({ "n", "v" }, "<leader>eg", ":Neotree git_status<CR>", { desc = "Explorer git", remap = true })
+-- vim.keymap.set({ "n", "v" }, "<leader>eg", function()
+--   require("neo-tree.command").execute({
+--     action = "focus",
+--     position = "left",
+--     source = "git_status",
+--     toggle = false,
+--   })
+-- end, { desc = "Explorer git changes", remap = true })
 vim.keymap.set({ "n", "v" }, "<leader>ef", function()
   require("neo-tree.command").execute({
     action = "focus",
