@@ -99,7 +99,7 @@ vim.keymap.set({ "n", "v" }, "<leader>ee", function()
   --     end
   --   end
   -- end
-  vim.api.nvim_command("Neotree action=focus filesystem")
+  vim.api.nvim_command("Neotree action=focus position=left filesystem")
 end, { desc = "Explorer Files", remap = true })
 vim.keymap.set({ "n", "v" }, "<leader>eb", ":Neotree buffers<CR>", { desc = "Explorer buffers", remap = true })
 -- vim.keymap.set({ "n", "v" }, "<leader>eb", function()
