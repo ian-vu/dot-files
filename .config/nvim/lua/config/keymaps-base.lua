@@ -90,16 +90,16 @@ vim.keymap.set({ "n", "v" }, "<C-_>", lazyterm, { desc = "Terminal (root dir)" }
 -- Neotree Plugin
 vim.keymap.set({ "n", "v" }, "<C-n>", "<cmd>Neotree toggle<CR>", { desc = "Toggle Neotree", remap = true })
 vim.keymap.set({ "n", "v" }, "<leader>ee", function()
-  local Config = require("edgy.config")
-  for p, edgebar in pairs(Config.layout) do
-    if p == "left" then
-      if #edgebar.wins == 0 then
-        require("edgy").open("left")
-      else
-        vim.api.nvim_command("Neotree action=focus filesystem")
-      end
-    end
-  end
+  -- local Config = require("edgy.config")
+  -- for p, edgebar in pairs(Config.layout) do
+  --   if p == "left" then
+  --     if #edgebar.wins == 0 then
+  --       require("edgy").open("left")
+  --     else
+  --     end
+  --   end
+  -- end
+  vim.api.nvim_command("Neotree action=focus filesystem")
 end, { desc = "Explorer Files", remap = true })
 vim.keymap.set({ "n", "v" }, "<leader>eb", ":Neotree buffers<CR>", { desc = "Explorer buffers", remap = true })
 -- vim.keymap.set({ "n", "v" }, "<leader>eb", function()
@@ -129,11 +129,7 @@ vim.keymap.set({ "n", "v" }, "<leader>ef", function()
   })
 end, { desc = "Explorer buffers", remap = true })
 vim.keymap.set({ "n", "v" }, "<leader>ec", function()
-  require("edgy").close("left")
-  require("neo-tree.command").execute({ action = "close" })
-end, { desc = "Close", remap = true })
-vim.keymap.set({ "n", "v" }, "<leader>ex", function()
-  require("edgy").close("left")
+  -- require("edgy").close("left")
   require("neo-tree.command").execute({ action = "close" })
 end, { desc = "Close", remap = true })
 
