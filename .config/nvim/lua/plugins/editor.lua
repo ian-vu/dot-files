@@ -140,4 +140,37 @@ return {
       }
     end,
   },
+  {
+    "diegoulloao/nvim-file-location",
+    opts = {
+      keymap = "<leader>cyf",
+      mode = "workdir",
+      add_line = false,
+      add_column = false,
+      default_register = "*",
+    },
+    keys = {
+      {
+        "<leader>cyf",
+        "<cmd>lua NvimFileLocation.copy_file_location('workdir', false, false)<cr>",
+        desc = "Yank file path from cwd",
+      },
+      {
+        "<leader>cyF",
+        "<cmd>lua NvimFileLocation.copy_file_location('absolute', false, false)<cr>",
+        desc = "Yank file path from cwd",
+      },
+    },
+  },
+  {
+    -- add signature for nvim-file-location
+    "folke/which-key.nvim",
+    event = "VeryLazy",
+    opts = {
+      defaults = {
+        mode = { "n", "v" },
+        ["<leader>cy"] = { name = "+yank" },
+      },
+    },
+  },
 }
