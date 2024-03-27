@@ -98,6 +98,15 @@ return {
     "dnlhc/glance.nvim",
   },
   {
+    "folke/which-key.nvim",
+    event = "VeryLazy",
+    opts = {
+      defaults = {
+        ["<leader>g"] = { name = "+glance" },
+      },
+    },
+  },
+  {
     "akinsho/bufferline.nvim",
     opts = function()
       local bufferline = require("bufferline")
