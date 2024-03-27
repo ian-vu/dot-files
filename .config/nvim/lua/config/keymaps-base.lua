@@ -281,12 +281,12 @@ vim.keymap.set("n", "<leader>tf", require("neotest").run.run, { desc = "Run whol
 -- end, { desc = "Debug nearest test" })
 
 -- Glance
-vim.keymap.set({ "n", "v" }, "gD", "<CMD>Glance definitions<CR>", { desc = "Glance definitions" })
-vim.keymap.set({ "n", "v" }, "gR", "<CMD>Glance references<CR>", { desc = "Glance references" })
-vim.keymap.set({ "n", "v" }, "gY", "<CMD>Glance type_definitions<CR>", { desc = "Glance type definitions" })
-vim.keymap.set({ "n", "v" }, "gM", "<CMD>Glance implementations<CR>", { desc = "Glance implementations" })
+vim.keymap.set({ "n", "v" }, "gD", "<cmd>Glance definitions<CR>", { desc = "Glance definitions" })
+vim.keymap.set({ "n", "v" }, "gR", "<cmd>Glance references<CR>", { desc = "Glance references" })
+vim.keymap.set({ "n", "v" }, "gY", "<cmd>Glance type_definitions<CR>", { desc = "Glance type definitions" })
+vim.keymap.set({ "n", "v" }, "gM", "<cmd>Glance implementations<CR>", { desc = "Glance implementations" })
 
-vim.keymap.set({ "n", "v" }, "<leader>cgd", "<CMD>Glance definitions<CR>", { desc = "Glance definitions" })
-vim.keymap.set({ "n", "v" }, "<leader>cgr", "<CMD>Glance references<CR>", { desc = "Glance references" })
-vim.keymap.set({ "n", "v" }, "<leader>cgy", "<CMD>Glance type_definitions<CR>", { desc = "Glance type definitions" })
-vim.keymap.set({ "n", "v" }, "<leader>cgm", "<CMD>Glance implementations<CR>", { desc = "Glance implementations" })
+vim.keymap.set({ "n", "v" }, "<leader>cgd", "<cmd>Glance definitions<CR>", { desc = "Glance definitions" })
+vim.keymap.set({ "n", "v" }, "<leader>cgr", "<cmd>Glance references<CR>", { desc = "Glance references" })
+vim.keymap.set({ "n", "v" }, "<leader>cgy", "<cmd>Glance type_definitions<CR>", { desc = "Glance type definitions" })
+vim.keymap.set({ "n", "v" }, "<leader>cgm", "<cmd>Glance implementations<CR>", { desc = "Glance implementations" })
