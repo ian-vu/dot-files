@@ -154,7 +154,7 @@ vim.keymap.set(
 vim.keymap.set({ "n", "v" }, "<leader>gd", "<cmd>DiffviewOpen<CR>", { desc = "Git diff changes" })
 vim.keymap.set(
   { "n", "v" },
-  "<leader>gd",
+  "<leader>gD",
   "<cmd>DiffviewOpen origin/HEAD...HEAD --imply-local<CR>",
   { desc = "Git diff changes against base branch" }
 )
@@ -205,14 +205,13 @@ vim.keymap.set({ "n", "v" }, "<leader>cd", function()
 end, { desc = "Line diagnostic" })
 
 -- harpoon
-
 vim.keymap.set({ "n", "v" }, "<leader>ha", function()
   require("harpoon"):list():append()
 end, { desc = "Add current file" })
 vim.keymap.set({ "n", "v" }, "<leader>hc", function()
   require("harpoon"):list():clear()
 end, { desc = "Clear list" })
-vim.keymap.set({ "n", "v" }, "<leader>hu", function()
+vim.keymap.set({ "n", "v" }, "<leader>hh", function()
   local harpoon = require("harpoon")
   harpoon.ui:toggle_quick_menu(harpoon:list())
 end, { desc = "Toggle UI" })
@@ -240,6 +239,19 @@ vim.keymap.set({ "n", "v", "i" }, "<D-3>", function()
   require("harpoon"):list():select(3)
 end, { desc = "Select 3" })
 vim.keymap.set({ "n", "v", "i" }, "<D-4>", function()
+  require("harpoon"):list():select(4)
+end, { desc = "Select 4" })
+
+vim.keymap.set({ "n", "v" }, "<leader>1>", function()
+  require("harpoon"):list():select(1)
+end, { desc = "Select 1" })
+vim.keymap.set({ "n", "v" }, "<leader>2>", function()
+  require("harpoon"):list():select(2)
+end, { desc = "Select 2" })
+vim.keymap.set({ "n", "v" }, "<leader>3>", function()
+  require("harpoon"):list():select(3)
+end, { desc = "Select 3" })
+vim.keymap.set({ "n", "v" }, "<leader>4>", function()
   require("harpoon"):list():select(4)
 end, { desc = "Select 4" })
 
