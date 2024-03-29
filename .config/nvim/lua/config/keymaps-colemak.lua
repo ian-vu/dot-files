@@ -16,10 +16,15 @@ vim.keymap.set({ "n", "v", "x", "o" }, "l", "i", { noremap = true, silent = true
 vim.keymap.set({ "n", "v", "x", "o" }, "L", "I", { noremap = true, silent = true })
 
 -- Pane navigation
-vim.keymap.set({ "n", "v", "i" }, "<C-h>", "<C-w>h", { desc = "Go to left window", noremap = true })
-vim.keymap.set({ "n", "v", "i" }, "<C-n>", "<C-w>j", { desc = "Go to lower window", noremap = true })
-vim.keymap.set({ "n", "v", "i" }, "<C-e>", "<C-w>k", { desc = "Go to upper window", noremap = true })
-vim.keymap.set({ "n", "v", "i" }, "<C-i>", "<C-w>l", { desc = "Go to right window", noremap = true })
+vim.keymap.set({ "n", "v", "i" }, "<C-h>", "<cmd>TmuxNavigateLeft<cr>", { desc = "Move to pane left" })
+vim.keymap.set({ "n", "v", "i" }, "<C-i>", "<cmd>TmuxNavigateRight<cr>", { desc = "Move to pane right" })
+vim.keymap.set({ "n", "v", "i" }, "<C-n>", "<cmd>TmuxNavigateDown<cr>", { desc = "Move to pane up" })
+vim.keymap.set({ "n", "v", "i" }, "<C-e>", "<cmd>TmuxNavigateUp<cr>", { desc = "Move to pane down" })
+
+-- vim.keymap.set({ "n", "v", "i" }, "<C-h>", "<C-w>h", { desc = "Go to left window", noremap = true })
+-- vim.keymap.set({ "n", "v", "i" }, "<C-n>", "<C-w>j", { desc = "Go to lower window", noremap = true })
+-- vim.keymap.set({ "n", "v", "i" }, "<C-e>", "<C-w>k", { desc = "Go to upper window", noremap = true })
+-- vim.keymap.set({ "n", "v", "i" }, "<C-i>", "<C-w>l", { desc = "Go to right window", noremap = true })
 
 -- Buffer
 vim.keymap.set("n", "I", "<cmd>bnext<cr>", { desc = "Next buffer", noremap = true })

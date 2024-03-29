@@ -59,16 +59,26 @@ vim.keymap.set("n", "<leader><tab>x", "<cmd>tabclose<cr>", { desc = "Close Tab" 
 vim.keymap.set("n", "<D-w>", "<cmd>tabclose<cr>", { desc = "Close Tab" })
 vim.keymap.set("n", "<D-n>", "<cmd>tabnew<cr>", { desc = "New Tab" })
 
--- Pane navigation
-vim.keymap.set({ "n", "v", "i" }, "<C-h>", "<C-w>h", { desc = "Move to pane left" })
-vim.keymap.set({ "n", "v", "i" }, "<C-l>", "<C-w>l", { desc = "Move to pane right" })
-vim.keymap.set({ "n", "v", "i" }, "<C-j>", "<C-w>j", { desc = "Move to pane up" })
-vim.keymap.set({ "n", "v", "i" }, "<C-k>", "<C-w>k", { desc = "Move to pane down" })
+-- Pane navigation (use integration with tmux with plug)
+vim.keymap.set({ "n", "v", "i" }, "<C-h>", "<cmd>TmuxNavigateLeft<cr>", { desc = "Move to pane left" })
+vim.keymap.set({ "n", "v", "i" }, "<C-l>", "<cmd>TmuxNavigateRight<cr>", { desc = "Move to pane right" })
+vim.keymap.set({ "n", "v", "i" }, "<C-j>", "<cmd>TmuxNavigateDown<cr>", { desc = "Move to pane up" })
+vim.keymap.set({ "n", "v", "i" }, "<C-k>", "<cmd>TmuxNavigateUp<cr>", { desc = "Move to pane down" })
 
-vim.keymap.set({ "n", "v", "i" }, "<D-h>", "<C-w>h", { desc = "Move to pane left" })
-vim.keymap.set({ "n", "v", "i" }, "<D-l>", "<C-w>l", { desc = "Move to pane right" })
-vim.keymap.set({ "n", "v", "i" }, "<D-j>", "<C-w>j", { desc = "Move to pane up" })
-vim.keymap.set({ "n", "v", "i" }, "<D-k>", "<C-w>k", { desc = "Move to pane down" })
+vim.keymap.set({ "n", "v", "i" }, "<D-h>", "<cmd>TmuxNavigateLeft<cr>", { desc = "Move to pane left" })
+vim.keymap.set({ "n", "v", "i" }, "<D-l>", "<cmd>TmuxNavigateRight<cr>", { desc = "Move to pane right" })
+vim.keymap.set({ "n", "v", "i" }, "<D-j>", "<cmd>TmuxNavigateDown<cr>", { desc = "Move to pane up" })
+vim.keymap.set({ "n", "v", "i" }, "<D-k>", "<cmd>TmuxNavigateUp<cr>", { desc = "Move to pane down" })
+
+-- vim.keymap.set({ "n", "v", "i" }, "<C-h>", "<C-w>h", { desc = "Move to pane left" })
+-- vim.keymap.set({ "n", "v", "i" }, "<C-l>", "<C-w>l", { desc = "Move to pane right" })
+-- vim.keymap.set({ "n", "v", "i" }, "<C-j>", "<C-w>j", { desc = "Move to pane up" })
+-- vim.keymap.set({ "n", "v", "i" }, "<C-k>", "<C-w>k", { desc = "Move to pane down" })
+--
+-- vim.keymap.set({ "n", "v", "i" }, "<D-h>", "<C-w>h", { desc = "Move to pane left" })
+-- vim.keymap.set({ "n", "v", "i" }, "<D-l>", "<C-w>l", { desc = "Move to pane right" })
+-- vim.keymap.set({ "n", "v", "i" }, "<D-j>", "<C-w>j", { desc = "Move to pane up" })
+-- vim.keymap.set({ "n", "v", "i" }, "<D-k>", "<C-w>k", { desc = "Move to pane down" })
 
 -- Telescope
 vim.keymap.set({ "n", "v" }, "<leader>fw", "<cmd>Telescope egrepify<cr>", { desc = "Find words egrepify" })
@@ -290,3 +300,6 @@ vim.keymap.set({ "n", "v" }, "<leader>cgd", "<cmd>Glance definitions<CR>", { des
 vim.keymap.set({ "n", "v" }, "<leader>cgr", "<cmd>Glance references<CR>", { desc = "Glance references" })
 vim.keymap.set({ "n", "v" }, "<leader>cgy", "<cmd>Glance type_definitions<CR>", { desc = "Glance type definitions" })
 vim.keymap.set({ "n", "v" }, "<leader>cgm", "<cmd>Glance implementations<CR>", { desc = "Glance implementations" })
+
+-- Trouble
+vim.keymap.set({ "n", "v" }, "<leader>cgR", "<cmd>TroubleToggle lsp_references<cr>", { desc = "References (Trouble)" })
