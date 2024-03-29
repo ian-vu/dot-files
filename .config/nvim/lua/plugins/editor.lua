@@ -97,12 +97,12 @@ return {
     -- Small pop up window that replaces go to <definition/typing/etc>
     "dnlhc/glance.nvim",
   },
-  {
+  { -- add whichkey for glance
     "folke/which-key.nvim",
     event = "VeryLazy",
     opts = {
       defaults = {
-        ["<leader>g"] = { name = "+glance" },
+        ["<leader>cg"] = { name = "+goto" },
       },
     },
   },
@@ -119,7 +119,7 @@ return {
           },
           diagnostics = false,
           indicator = {
-            style = "underline", -- default is icon on left
+            style = "none", -- default is icon on left using `icon` | `underline`
           },
           show_buffer_icons = false,
           show_close_icon = false,
@@ -180,6 +180,24 @@ return {
         mode = { "n", "v" },
         ["<leader>cy"] = { name = "+yank" },
       },
+    },
+  },
+  {
+    "iamcco/markdown-preview.nvim",
+    cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
+    ft = { "markdown" },
+    build = function()
+      vim.fn["mkdp#util#install"]()
+    end,
+  },
+  {
+    "christoomey/vim-tmux-navigator",
+    cmd = {
+      "TmuxNavigateLeft",
+      "TmuxNavigateDown",
+      "TmuxNavigateUp",
+      "TmuxNavigateRight",
+      "TmuxNavigatePrevious",
     },
   },
 }
