@@ -56,7 +56,7 @@ HIST_STAMPS="dd.mm.yyyy"
 plugins=(
   fzf-tab # This needs to be before zsh-autosuggestions and fast-syntax-highlighting
   fast-syntax-highlighting
-  z
+  # z
   # fasd
   F-Sy-H
   zsh-autosuggestions
@@ -113,7 +113,8 @@ alias vim='nvim'
 alias v='vim'
 
 alias neo='neovide --no-tabs --frame transparent'
-alias t='tmux'
+alias t='sesh connect'
+alias tt='sesh connect $(sesh list | fzf)'
 alias ta='tmux attach'
 alias tx='tmuxinator'
 
@@ -376,6 +377,8 @@ autoload -U +X bashcompinit && bashcompinit
 # Set up terraform
 complete -o nospace -C /opt/homebrew/bin/terraform terraform
 
+# Set up z 
+eval "$(zoxide init zsh)"
 
 # Zsh autocompletions - https://github.com/marlonrichert/zsh-autocomplete?tab=readme-ov-file
 # bindkey '\t' menu-complete "$terminfo[kcbt]" reverse-menu-complete
