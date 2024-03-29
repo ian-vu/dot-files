@@ -5,7 +5,8 @@
 vim.opt.relativenumber = true -- relative lnie numbers
 vim.opt.wrap = true -- wrap lines
 
-vim.o.guifont = "JetBrainsMono Nerd Font:h14" -- Font
+-- vim.o.guifont = "JetBrainsMono Nerd Font:h14" -- Font
+vim.o.guifont = "UbuntuMono Nerd Font Mono:h16" -- Font
 
 -- Title of window/nvim
 vim.opt.title = true
