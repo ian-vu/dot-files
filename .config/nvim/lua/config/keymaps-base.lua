@@ -183,6 +183,15 @@ vim.keymap.set("n", "<leader>gor", "<cmd>OpenInGHRepo<CR>", { silent = true, des
 vim.keymap.set("n", "<leader>gof", "<cmd>OpenInGHFile<CR>", { silent = true, desc = "Open file in Github" })
 vim.keymap.set("n", "<leader>gol", "<cmd>OpenInGHFileLines<CR>", { silent = true, desc = "Open line in Github" })
 
+-- Git signs
+vim.keymap.set("n", "<leader>gb", "<cmd>Gitsigns blame_line<CR>", { silent = true, desc = "Git blame current line" })
+vim.keymap.set(
+  "n",
+  "<leader>gB",
+  "<cmd>Gitsigns toggle_current_line_blame<CR>",
+  { silent = true, desc = "Toggle current line blame" }
+)
+
 --Save file
 vim.keymap.set({ "i", "x", "n", "s" }, "<D-s>", "<cmd>w<cr><esc>", { desc = "Save file" })
 vim.keymap.set({ "i", "x", "n", "s" }, "<D-C-s>", "<cmd>wall<cr><esc>", { desc = "Save all files" })
