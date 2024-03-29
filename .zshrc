@@ -113,6 +113,9 @@ alias vim='nvim'
 alias v='vim'
 
 alias neo='neovide --no-tabs --frame transparent'
+alias t='tmux'
+alias ta='tmux attach'
+alias tx='tmuxinator'
 
 # Spoitify
 alias pause='spotify pause'
@@ -166,6 +169,9 @@ alias act='source .venv/bin/activate'
 
 # bindkey '^[[A' history-substring-search-up
 # bindkey '^[[B' history-substring-search-down
+
+# Unbind keys 
+bindkey -r "^J"
 
 qwe() {
   cat ~/dot-files/.vim/vimrc.base > ~/.vim/vimrc
@@ -353,6 +359,7 @@ eval "$(starship init zsh)"
 # Start up
 export AWS_DEFAULT_PROFILE=default
 export AWS_DEFAULT_REGION=ap-southeast-2
+export EDITOR='nvim'
 
 # eval $(thefuck --alias)
 
