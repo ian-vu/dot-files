@@ -57,7 +57,7 @@ return {
       name = { trailing_slash = false },
     },
     window = {
-      width = "40",
+      width = "35",
       -- min_width = 40,
       -- max_width = 60,
       mappings = {
