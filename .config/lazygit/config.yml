@@ -4,6 +4,7 @@ gui:
     activeBorderColor:
       - green
       - bold
+  nerdFontsVersion: "3"
 
 # git:
 #   paging:
@@ -14,7 +15,3 @@ keybinding:
   universal:
     nextItem: "n"
     prevItem: "e"
-# Open nvim when editing files
-#os:
-#  editCommand: 'nvim'
-#  editCommandTemplate: '{{editor}} --server /tmp/nvim-server.pipe --remote-tab "$(pwd)/{{filename}}"'
