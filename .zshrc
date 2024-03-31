@@ -64,7 +64,7 @@ plugins=(
   extract
   macos
   history
-  colored-man-pages
+  # colored-man-pages
   colorize
 ) #vi-mode)
 
@@ -256,6 +256,7 @@ zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
 # Fuzzy finder
 # https://github.com/junegunn/fzf#fuzzy-completion-for-bash-and-zsh
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+export FZF_DEFAULT_OPTS='--pointer "➜" --info right --border rounded --prompt "➜ " --color=gutter:-1'
 
 # Remove fzf deplicates
 setopt HIST_IGNORE_ALL_DUPS
