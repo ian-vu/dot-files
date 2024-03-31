@@ -1,0 +1,13 @@
+#!/usr/bin/env sh
+
+# Script takes in an optional argument for the session name and 
+# attempts to attach to an existing session with that name. If no
+# session name is provided, the script will use the name of the
+# current directory as the session name.
+
+if [ -z "$1" ]; then
+  session_name=$(basename "$PWD")
+	tmux attach -t ${session_name} || tmux new -s ${session_name}
+else
+  tmux attach -t $1 || tmux new -s $1
+fi
