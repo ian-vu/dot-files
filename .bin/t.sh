@@ -1,0 +1,11 @@
+# This script will use `sesh` to open or attach to tmux sessions.
+#
+# If no arguments are provided, it will list all tmux sessions and prompt
+#
+# If arguments are provided, it will attempt to attach to the session using zoxide
+
+if [ -z "$1" ]; then
+	sesh connect $(sesh list | fzf)
+else
+	sesh connect $1
+fi
