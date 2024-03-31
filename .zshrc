@@ -115,7 +115,6 @@ alias v='vim'
 alias neo='neovide --no-tabs --frame transparent'
 
 # Tmux things
-alias t='~/.bin/t.sh'
 alias ta='tmux attach'
 alias tx='tmuxinator'
 
@@ -237,6 +236,7 @@ export PATH="$PATH:/usr/local/sbin"
 export PATH="$PATH:/Applications/Couchbase\ Server.app/Contents/Resources/couchbase-core/bin/cbq"
 export PATH="$PATH:/Users/ivu/dev/git/git-fzf"
 export PATH="$PATH:$HOME/.bin"
+export PATH="$PATH:$HOME/.config/tmux/bin"
 
 
 # Go
