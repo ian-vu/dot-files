@@ -382,6 +382,9 @@ complete -o nospace -C /opt/homebrew/bin/terraform terraform
 # Set up z 
 eval "$(zoxide init zsh)"
 
+# Set config for lazygit
+export XDG_CONFIG_HOME="$HOME/.config"
+
 # Zsh autocompletions - https://github.com/marlonrichert/zsh-autocomplete?tab=readme-ov-file
 # bindkey '\t' menu-complete "$terminfo[kcbt]" reverse-menu-complete
 # bindkey '\t' menu-select "$terminfo[kcbt]" menu-select
