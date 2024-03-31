@@ -137,6 +137,7 @@ alias cp='cp -Riv'
 alias mv='mv -fv'
 alias h='history'
 alias c='cd'
+alias e='exit'
 
 alias getsize='du -sh'
 
