@@ -351,8 +351,13 @@ export FZF_ALT_C_COMMAND="$FZF_DEFAULT_COMMAND --type d"
 # eval "$(pyenv virtualenv-init -)"
 # export PYENV_VIRTUALENV_DISABLE_PROMPT=1
 
-# Set autoenv to run .env.leave files
+# autoenv - run .autoenv files on cd 
+export AUTOENV_ENV_FILENAME=".autoenv"
+export AUTOENV_ENV_LEAVE_FILENAME=".autoenv.leave"
+# Set autoenv to run .autoenv.leave files
 export AUTOENV_ENABLE_LEAVE=1
+# this line should be run last
+source /opt/homebrew/opt/autoenv/activate.sh
 
 # Set up theme Starship
 eval "$(starship init zsh)"
