@@ -1,17 +1,47 @@
 return {
-  -- Add `pyright` to mason
-  -- TODO: check following tools -> mypy types-requests types-docutils
   {
-    "williamboman/mason.nvim",
+    "nvim-treesitter/nvim-treesitter",
     opts = function(_, opts)
-      -- vim.list_extend(opts.ensure_installed, { "pyright", "black", "ruff-lsp", "ruff" })
-      vim.list_extend(opts.ensure_installed, {
-        "black",
-        "ruff",
-      })
+      if type(opts.ensure_installed) == "table" then
+        vim.list_extend(opts.ensure_installed, { "ninja", "python", "rst", "toml" })
+      end
     end,
   },
-
+  {
+    "neovim/nvim-lspconfig",
+    opts = {
+      servers = {
+        pyright = {},
+        ruff_lsp = {
+          keys = {
+            {
+              "<leader>co",
+              function()
+                vim.lsp.buf.code_action({
+                  apply = true,
+                  context = {
+                    only = { "source.organizeImports" },
+                    diagnostics = {},
+                  },
+                })
+              end,
+              desc = "Organize Imports",
+            },
+          },
+        },
+      },
+      setup = {
+        ruff_lsp = function()
+          require("lazyvim.util").lsp.on_attach(function(client, _)
+            if client.name == "ruff_lsp" then
+              -- Disable hover in favor of Pyright
+              client.server_capabilities.hoverProvider = false
+            end
+          end)
+        end,
+      },
+    },
+  },
   -- Setup adapters as nvim-dap dependencies
   {
     "mfussenegger/nvim-dap",
