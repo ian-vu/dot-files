@@ -54,7 +54,7 @@ HIST_STAMPS="dd.mm.yyyy"
 # plugins=(git, zsh-autosuggestions, zsh-syntax-highlighting, wd)
 # plugins=(git zsh-syntax-highlighting zsh-autosuggestions cp wd z extract osx history web-search) #vi-mode)
 plugins=(
-  fzf-tab # This needs to be before zsh-autosuggestions and fast-syntax-highlighting
+  # fzf-tab # This needs to be before zsh-autosuggestions and fast-syntax-highlighting
   fast-syntax-highlighting
   # z
   # fasd
