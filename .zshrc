@@ -246,8 +246,8 @@ export PATH=$PATH:$GOPATH/bin
 export PATH=$PATH:$GOROOT/bin
 
 # Set up fzf-tab
-autoload -U compinit; compinit
-source $ZSH_CUSTOM/plugins/fzf-tab/fzf-tab.plugin.zsh
+# autoload -U compinit; compinit
+# source $ZSH_CUSTOM/plugins/fzf-tab/fzf-tab.plugin.zsh
 
 
 # Case insensitive tab completion for zsh
