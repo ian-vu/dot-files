@@ -70,6 +70,9 @@ return {
   },
   {
     "nvim-neotest/neotest",
+    dependencies = {
+      "nvim-treesitter/nvim-treesitter",
+    },
     opts = {
       status = { enabled = true, virtual_text = true },
       summary = {
