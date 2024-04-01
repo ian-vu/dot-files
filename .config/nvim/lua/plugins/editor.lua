@@ -134,15 +134,9 @@ return {
           offsets = {
             {
               filetype = "neo-tree",
-              text = "",
+              text = "󰙅",
               highlight = "Directory",
-              text_align = "left",
-            },
-            {
-              filetype = "Diffview",
-              text = "",
-              highlight = "Directory",
-              text_align = "left",
+              text_align = "right",
             },
           },
         },
