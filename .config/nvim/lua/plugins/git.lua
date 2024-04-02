@@ -57,6 +57,11 @@ return {
             -- },
           },
         },
+        view = {
+          merge_tool = {
+            layout = "diff4_mixed",
+          },
+        },
       }
     end,
   },
