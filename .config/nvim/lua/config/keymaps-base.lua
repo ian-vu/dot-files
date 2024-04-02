@@ -52,6 +52,7 @@ vim.keymap.set("n", "<D-k>", "<cmd>bprevious<cr>", { desc = "Prev buffer" })
 
 -- Tabs
 vim.keymap.set("n", "<C-`>", "g<tab>", { desc = "Switch to previous tab" })
+vim.keymap.set("n", "<leader><tab><tab>", "g<tab>", { desc = "Switch to previous tab" })
 vim.keymap.set("n", "<leader><tab>n", "<cmd>tabnew<cr>", { desc = "New Tab" })
 vim.keymap.set("n", "<leader><tab>p", "<cmd>tabs<cr>", { desc = "Print tabs" })
 vim.keymap.set("n", "<leader><tab>x", "<cmd>tabclose<cr>", { desc = "Close Tab" })
