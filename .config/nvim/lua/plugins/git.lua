@@ -5,6 +5,7 @@ return {
     opts = function()
       local actions = require("diffview.actions")
       return {
+        enhanced_diff_hl = true,
         keymaps = {
           file_panel = {
             { "n", "<C-d>", actions.scroll_view(0.4), { desc = "Scroll down half page" } },
