@@ -105,7 +105,6 @@ return {
                 hint = icons.diagnostics.Hint,
               },
             },
-            "filetype",
             { -- Copilot status
               function()
                 local icon = require("lazyvim.config").icons.kinds.Copilot
@@ -130,10 +129,11 @@ return {
                 return colors[status.status] or colors[""]
               end,
             },
+            "filetype",
+            { "progress", padding = { left = 1, right = 1 } },
           },
           lualine_z = {
             -- { "progress", separator = " ", padding = { left = 1, right = 0 } },
-            { "progress", padding = { left = 1, right = 1 } },
             { "location", padding = { left = 1, right = 1 } },
           },
         },
