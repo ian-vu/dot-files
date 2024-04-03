@@ -114,6 +114,15 @@ return {
     "shellRaining/hlchunk.nvim",
     event = { "UIEnter" },
     opts = {
+      indent = {
+        --   enable = false,
+        chars = {
+          -- "│",
+          -- "¦",
+          -- "┆",
+          "┊",
+        },
+      },
       blank = {
         enable = false,
       },
