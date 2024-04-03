@@ -93,40 +93,24 @@ return {
         { "<leader>de", function() require("dapui").eval() end, desc = "Eval", mode = {"n", "v"} },
       },
         opts = {
-          mappings = { edit = "i" },
+          mappings = {
+            edit = "i", --replaces the default `e` which clashes with colemak
+          },
           layouts = {
             {
               elements = {
-                {
-                  id = "scopes",
-                  size = 0.31,
-                },
-                {
-                  id = "breakpoints",
-                  size = 0.23,
-                },
-                {
-                  id = "stacks",
-                  size = 0.23,
-                },
-                {
-                  id = "watches",
-                  size = 0.23,
-                },
+                { id = "stacks", size = 0.23 },
+                { id = "scopes", size = 0.31 },
+                { id = "watches", size = 0.23 },
+                { id = "breakpoints", size = 0.23 },
               },
               position = "left",
               size = 50,
             },
             {
               elements = {
-                {
-                  id = "repl",
-                  size = 0.5,
-                },
-                {
-                  id = "console",
-                  size = 0.5,
-                },
+                { id = "repl", size = 0.5 },
+                { id = "console", size = 0.5 },
               },
               position = "bottom",
               size = 20,
