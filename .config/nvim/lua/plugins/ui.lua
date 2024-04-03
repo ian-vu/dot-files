@@ -17,6 +17,7 @@ return {
   -- },
   {
     "echasnovski/mini.indentscope",
+    enabled = false,
     opts = {
       draw = {
         -- Disable as it conflicts with Colemak keymaps
@@ -35,6 +36,7 @@ return {
   },
   {
     "lukas-reineke/indent-blankline.nvim",
+    enabled = false,
     opts = {
       indent = {
         -- left aligned
@@ -112,24 +114,30 @@ return {
       },
     },
   },
-  -- {
-  --   -- Highlight indent lines
-  --   "shellRaining/hlchunk.nvim",
-  --   event = { "UIEnter" },
-  --   config = function()
-  --     local opts = {
-  --       chunk = {
-  --         chars = {
-  --           horizontal_line = "─",
-  --           vertical_line = "│",
-  --           left_top = "╭",
-  --           left_bottom = "╰",
-  --           right_arrow = ">",
-  --         },
-  --         style = "#806d9c",
-  --       },
-  --     }
-  --     require("hlchunk").setup(opts)
-  --   end,
-  -- },
+  {
+    -- Highlight indent lines
+    "shellRaining/hlchunk.nvim",
+    event = { "UIEnter" },
+    opts = {
+      blank = {
+        enable = false,
+      },
+      line_num = {
+        enable = false,
+      },
+      chunk = {
+        enable = true,
+        chars = {
+          horizontal_line = "─",
+          vertical_line = "│",
+          left_top = "╭",
+          left_bottom = "╰",
+          -- right_arrow = ">",
+          right_arrow = "",
+          -- right_arrow = "─",
+        },
+        style = "#806d9c",
+      },
+    },
+  },
 }
