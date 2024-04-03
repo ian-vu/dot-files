@@ -35,6 +35,8 @@ return {
     keys = {
       { "<Tab>", false },
       { "<S-Tab>", false },
+      { "<CR>", false },
+      { "<S-CR>", false },
     },
     opts = function(_, opts)
       local cmp = require("cmp")
@@ -45,10 +47,7 @@ return {
       -- opts.completion.completeopt = "menu,noselect,preview"
       opts.completion.completeopt = "menu,menuone,select"
       opts.mapping = cmp.mapping.preset.insert({
-        ["<Tab>"] = cmp.mapping.select_next_item(),
-        ["<S-Tab>"] = cmp.mapping.select_prev_item(),
-        ["<CR>"] = cmp.mapping.confirm({ select = true, behaviour = cmp.ConfirmBehavior.Replace }),
-        ["<S-CR>"] = cmp.config.disable,
+        ["<Tab>"] = cmp.mapping.confirm({ select = true, behaviour = cmp.ConfirmBehavior.Replace }),
         -- opts.mapping["<S-CR>"] = cmp.config.disable
       })
       -- Set up command line autocomplete
