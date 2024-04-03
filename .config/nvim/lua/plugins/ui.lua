@@ -61,11 +61,6 @@ return {
     },
   },
   {
-    -- Status bar
-    "nvim-lualine/lualine.nvim",
-    opts = { sections = { lualine_z = {} } },
-  },
-  {
     "folke/noice.nvim",
     depends = { "hrsh7th/nvim-cmp.nvim" },
     opts = {
