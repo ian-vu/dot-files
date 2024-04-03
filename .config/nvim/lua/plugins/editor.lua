@@ -194,4 +194,20 @@ return {
       "TmuxNavigatePrevious",
     },
   },
+  {
+    "folke/zen-mode.nvim",
+    opts = {
+      window = {
+        backdrop = 0.90,
+      },
+      plugins = {
+        options = {
+          -- Disable status line = 0
+          laststatus = 0,
+          showcmd = true, -- disables the command in the last line of the screen
+        },
+        tmux = { enabled = false }, -- set to true to disable tmux
+      },
+    },
+  },
 }
