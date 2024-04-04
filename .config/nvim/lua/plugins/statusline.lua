@@ -138,7 +138,9 @@ return {
           },
           lualine_z = {
             -- { "progress", separator = " ", padding = { left = 1, right = 0 } },
-            { "location", padding = { left = 1, right = 1 } },
+            -- { "location", icon = { "", align = "right" }, padding = { left = 1, right = 1 } },
+            { "location", icon = { "", align = "right" }, padding = { left = 1, right = 1 } },
+            -- { "location", padding = { left = 1, right = 1 } },
           },
         },
         extensions = { "neo-tree", "lazy" },
