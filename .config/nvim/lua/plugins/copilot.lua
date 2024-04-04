@@ -1,14 +1,23 @@
 return {
   { -- copilot
     "zbirenbaum/copilot.lua",
+    event = "InsertEnter",
     cmd = "Copilot",
     build = ":Copilot auth",
     opts = {
       suggestion = { enabled = false },
       panel = { enabled = false },
       filetypes = {
+        yaml = true,
         markdown = true,
         help = true,
+        gitcommit = true,
+
+        gitrebase = true,
+        hgcommit = true,
+        svn = true,
+        cvs = true,
+        ["."] = true,
       },
     },
   },
