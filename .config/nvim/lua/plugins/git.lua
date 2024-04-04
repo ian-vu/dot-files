@@ -115,7 +115,7 @@ return {
   },
   {
     "tpope/vim-fugitive",
-    opt = true,
+    opts = {},
     cmd = { "G", "Git" },
   },
   -- {
