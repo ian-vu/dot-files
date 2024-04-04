@@ -93,9 +93,6 @@ return {
               cond = require("lazy.status").has_updates,
               color = Util.ui.fg("Special"),
             },
-          },
-          lualine_y = {
-            -- stylua: ignore
             {
               "diagnostics",
               symbols = {
@@ -129,6 +126,9 @@ return {
                 return colors[status.status] or colors[""]
               end,
             },
+          },
+          lualine_y = {
+            -- stylua: ignore
             "filetype",
             { "progress", padding = { left = 1, right = 1 } },
           },
