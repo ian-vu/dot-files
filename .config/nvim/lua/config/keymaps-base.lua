@@ -102,7 +102,7 @@ vim.keymap.set({ "n", "v" }, "<C-_>", lazyterm, { desc = "Terminal (root dir)" }
 vim.keymap.set({ "n", "v" }, "<C-n>", "<cmd>Neotree toggle<CR>", { desc = "Toggle Neotree", remap = true })
 vim.keymap.set({ "n", "v" }, "<leader>es", function()
   vim.api.nvim_command("Neotree action=show position=left filesystem")
-end)
+end, { desc = "Show Neotree" })
 vim.keymap.set({ "n", "v" }, "<leader>ee", function()
   -- local Config = require("edgy.config")
   -- for p, edgebar in pairs(Config.layout) do
