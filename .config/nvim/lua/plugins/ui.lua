@@ -62,7 +62,7 @@ return {
   },
   {
     "folke/noice.nvim",
-    depends = { "hrsh7th/nvim-cmp.nvim" },
+    dependencies = { "hrsh7th/nvim-cmp" },
     opts = {
       -- cmdline = { view = "cmdline_popup" },
       -- messages = { enabled = true },
