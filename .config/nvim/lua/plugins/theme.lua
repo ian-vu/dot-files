@@ -16,7 +16,7 @@ return {
     -- end,
     opts = {
       default_intregrations = true,
-      transparent_background = true,
+      -- transparent_background = true,
       integrations = {
         telescope = { enabled = false },
         neotree = true,
