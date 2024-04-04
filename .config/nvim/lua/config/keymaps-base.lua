@@ -229,7 +229,7 @@ end, { desc = "Line diagnostic" })
 
 -- harpoon
 vim.keymap.set({ "n", "v" }, "<leader>ha", function()
-  require("harpoon"):list():append()
+  require("harpoon"):list():add()
 end, { desc = "Add current file" })
 vim.keymap.set({ "n", "v" }, "<leader>hc", function()
   require("harpoon"):list():clear()
