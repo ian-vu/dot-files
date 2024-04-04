@@ -37,7 +37,11 @@ return {
           disabled_filetypes = { statusline = { "dashboard", "alpha", "starter" } },
         },
         sections = {
-          lualine_a = { "mode" },
+          lualine_a = {
+            -- { "mode" },
+            -- { "mode", icon = "" },
+            { "mode", icon = "" },
+          },
           lualine_b = {
             { "branch", icon = "󰘬" },
           },
