@@ -16,8 +16,9 @@ return {
     filesystem = {
       filtered_items = {
         hide_gitignored = false,
+        hide_by_name = { "venv", ".venv", ".git", "node_modules" },
         always_show = { ".github", ".docker", ".config", ".zshrc" },
-        never_show = { "venv", ".venv", ".git", "node_modules", ".cache", ".DS_Store", "__pycache__" },
+        never_show = { ".cache", ".DS_Store", "__pycache__" },
         never_show_by_pattern = { ".*_cache" },
         follow_current_file = {
           enabled = true,
