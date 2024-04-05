@@ -67,18 +67,10 @@ cask <cask_name>
 Then run the following commands
 
 ```bash
-brew bundle cleanup
+brew bundle cleanup -v
 brew bundle install -v
 ```
 
 ## More information
 
 See this video on how `stow` works: https://www.youtube.com/watch?v=y6XCebnB9gs
-
-```
-
-```
-
-```
-
-```
