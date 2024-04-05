@@ -20,4 +20,8 @@ aws/config
 .config/nvim/lazy-lock.json
 .config/nvim/lua/config/keymaps.lua
 
+# Tmux ignores
+.config/tmux/plugins
+
+# Mac things
 **/.DS_Store
