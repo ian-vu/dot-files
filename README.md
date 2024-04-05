@@ -50,6 +50,35 @@ git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
 <Ctr+Space> + <S-i>
 ```
 
+## Useful information
+
+### Brewfile
+
+#### Adding new formula
+
+Add a new row with one of the following
+
+```bash
+brew <formula_name>
+tap <tap_name>
+cask <cask_name>
+```
+
+Then run the following commands
+
+```bash
+brew bundle cleanup
+brew bundle install -v
+```
+
 ## More information
 
 See this video on how `stow` works: https://www.youtube.com/watch?v=y6XCebnB9gs
+
+```
+
+```
+
+```
+
+```
