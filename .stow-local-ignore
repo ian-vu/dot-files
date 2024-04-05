@@ -25,4 +25,5 @@ _darcs
 
 # My own
 \.DS_Store
+\Brewfile
 
