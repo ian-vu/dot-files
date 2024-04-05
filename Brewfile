@@ -108,8 +108,6 @@ brew "joshmedeski/sesh/sesh"
 brew "noahgorstein/tap/jqp"
 # The tfswitch command lets you switch between terraform versions.
 brew "warrensbox/tap/tfswitch"
-# Used for Ruby Lsp for Neovim
-brew "solargraph"
 
 #########################################################################################
 # Casks

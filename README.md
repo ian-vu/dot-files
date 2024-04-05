@@ -15,6 +15,12 @@ all formulas and applications
 brew bundle install -v
 ```
 
+### Gems
+
+```bash
+gem install
+```
+
 ## Installation
 
 First, check out the dotfiles repo in your $HOME directory using git
