@@ -6,30 +6,27 @@ This directory contains the dotfiles for my system
 
 Ensure you have the following installed on your system
 
-### Git
+### Brew packages/applications
 
-```
-brew install git
-```
+This will install the required `gnu-stow` brew along with
+all formulas and applications
 
-### Stow
-
-```
-brew install stow
+```bash
+brew bundle install -v
 ```
 
 ## Installation
 
 First, check out the dotfiles repo in your $HOME directory using git
 
-```
+```bash
 git clone git@github.com:ian-vu/dot-files.git ~/dot-files
-cd dotfiles
+cd dot-files
 ```
 
 then use GNU stow to create symlinks
 
-```
+```bash
 stow .
 ```
 
@@ -39,7 +36,7 @@ stow .
 
 1. Clone TPM (Tmux Plugin Manager) into
 
-```
+```bash
 git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
 ```
 
