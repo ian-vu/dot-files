@@ -1,3 +1,6 @@
+#########################################################################################
+# Taps
+#########################################################################################
 tap "1password/tap"
 tap "homebrew/bundle"
 tap "homebrew/cask-fonts"
@@ -9,6 +12,10 @@ tap "koekeishiya/formulae"
 tap "mrkai77/cask"
 tap "noahgorstein/tap"
 tap "warrensbox/tap"
+
+#########################################################################################
+# Brews
+#########################################################################################
 # Run your GitHub Actions locally
 brew "act"
 # Extendable version manager with support for Ruby, Node.js, Erlang & more
@@ -101,6 +108,12 @@ brew "joshmedeski/sesh/sesh"
 brew "noahgorstein/tap/jqp"
 # The tfswitch command lets you switch between terraform versions.
 brew "warrensbox/tap/tfswitch"
+# Used for Ruby Lsp for Neovim
+brew "solargraph"
+
+#########################################################################################
+# Casks
+#########################################################################################
 # Command-line interface for 1Password
 cask "1password-cli"
 # Automatic tiling window manager similar to xmonad
@@ -123,6 +136,8 @@ cask "postman-cli"
 cask "spaceid"
 # App to build and share containerised applications and microservices
 cask "docker"
+# macOS Space/desktop indicator for the menu bar
+cask "spaceid"
 vscode "42crunch.vscode-openapi"
 vscode "aaron-bond.better-comments"
 vscode "abbycin.vscode-onelight2"
