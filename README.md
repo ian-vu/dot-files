@@ -15,12 +15,6 @@ all formulas and applications
 brew bundle install -v
 ```
 
-### Gems
-
-```bash
-gem install
-```
-
 ## Installation
 
 First, check out the dotfiles repo in your $HOME directory using git
@@ -54,6 +48,20 @@ git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
 
 ```
 <Ctr+Space> + <S-i>
+```
+
+#### Neovim
+
+**Ruby environment**
+For the ruby LSP to work, the `Mason` dependency of `solargraph` is required.
+For this to successfully be install a version of ruby > 2.7 is required.
+
+Using `asdf`:
+
+```bash
+asdf plugin add ruby
+asdf install ruby 3.3.0
+asdf global ruby 3.3.0
 ```
 
 ## Useful information
