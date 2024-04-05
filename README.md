@@ -33,5 +33,26 @@ then use GNU stow to create symlinks
 stow .
 ```
 
+### Manual commands needed to complete setup
+
+#### Tmux
+
+1. Clone TPM (Tmux Plugin Manager) into
+
+```
+git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+```
+
+2. Install plugins from tmux
+
+```
+<prefix> + I
+```
+
+```
+<Ctr+Space> + <S-i>
+```
+
 ## More information
+
 See this video on how `stow` works: https://www.youtube.com/watch?v=y6XCebnB9gs
