@@ -15,8 +15,6 @@ return {
     --   vim.cmd.colorscheme("catppuccino")
     -- end,
     opts = {
-      default_intregrations = true,
-      -- transparent_background = true,
       integrations = {
         telescope = { enabled = false },
         neotree = true,
