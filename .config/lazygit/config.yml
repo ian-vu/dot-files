@@ -6,11 +6,14 @@ gui:
       - bold
   nerdFontsVersion: "3"
 
-# git:
-#   paging:
-#     colorArg: never
-#     pager: ydiff -p cat -s --wrap --width={{columnWidth}}
-#
+git:
+  # Side by side diff
+  # paging:
+  #   colorArg: never
+  #   pager: ydiff -p cat -s --wrap --width={{columnWidth}}
+  paging:
+    pager: diff-so-fancy | less --tabs=2 -RFX
+
 keybinding:
   universal:
     nextItem: "n"
