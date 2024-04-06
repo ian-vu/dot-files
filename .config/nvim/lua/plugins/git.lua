@@ -11,6 +11,12 @@ return {
             { "n", "q", "<cmd>DiffviewClose<cr>", { desc = "Close diffview" } },
           },
           file_panel = {
+            {
+              "n",
+              " ",
+              actions.toggle_stage_entry,
+              { desc = "Stage / unstage the selected entry" },
+            },
             { "n", "<C-d>", actions.scroll_view(0.4), { desc = "Scroll down half page" } },
             { "n", "<C-u>", actions.scroll_view(-0.4), { desc = "Scroll up half page" } },
             { "n", "<C-f>", actions.scroll_view(0.8)({ desc = "Scroll down full page" }) },
