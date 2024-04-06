@@ -99,7 +99,6 @@ vim.keymap.set({ "n", "v" }, "<D-t>", lazyterm, { desc = "Terminal (root dir)" }
 vim.keymap.set({ "n", "v" }, "<C-_>", lazyterm, { desc = "Terminal (root dir)" })
 
 -- Neotree Plugin
-vim.keymap.set({ "n", "v" }, "<C-n>", "<cmd>Neotree toggle<CR>", { desc = "Toggle Neotree", remap = true })
 vim.keymap.set({ "n", "v" }, "<leader>es", function()
   vim.api.nvim_command("Neotree action=show position=left filesystem")
 end, { desc = "Show Neotree" })
