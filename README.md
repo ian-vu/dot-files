@@ -64,6 +64,21 @@ asdf install ruby 3.3.0
 asdf global ruby 3.3.0
 ```
 
+**[ChatGPT](https://github.com/jackMort/ChatGPT.nvim)**
+
+This plugin requires an API key to be read on setup.
+
+The cli tool `age` is used to descrypt a file containing the key.
+
+The encrpytion key is required to be found on path `~/.age/secret-key.txt`.
+
+Currently the key is stored in 1Password. To set up the age encryption key run
+the following command.
+
+```bash
+op read "op://kt76oi5s3tqjg54lvlolplvvaq/Age CLI Identity/password" > ~/.age/secret-key.txt
+```
+
 ## Useful information
 
 ### Brewfile
@@ -83,6 +98,28 @@ Then run the following commands
 ```bash
 brew bundle cleanup -v
 brew bundle install -v
+```
+
+### [age file encryption](https://github.com/FiloSottile/age)
+
+Age is used to encrypt and decrypt files. Encrypted files are suffixed with `.age`.
+
+#### To encrypt a file:
+
+```bash
+cat <PATH_TO_FILE> | age --encrypt --identity ~/.age/secret-key.txt > <ENCRYPTED_FILE_PATH>
+```
+
+or
+
+```bash
+age --encrypt --identity ~/.age/secret-key.txt <PATH_TO_FILE> <ENCRYPTED_FILE_PATH>
+```
+
+#### To decrypt a file:
+
+```bash
+age --decrypt --identity ~/.age/secret-key.txt <ENCRYPTED_FILE_PATH>
 ```
 
 ## More information

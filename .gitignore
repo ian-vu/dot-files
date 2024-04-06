@@ -29,6 +29,9 @@ aws/config
 Brewfile.lock.json
 Gemfile.lock
 
+# age secrey identity used for encryption
+.age/secret-key.txt
+
 
 # Mac things
 **/.DS_Store

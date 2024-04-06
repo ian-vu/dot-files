@@ -108,6 +108,8 @@ brew "joshmedeski/sesh/sesh"
 brew "noahgorstein/tap/jqp"
 # The tfswitch command lets you switch between terraform versions.
 brew "warrensbox/tap/tfswitch"
+# Age is a simple, modern and secure file encryption tool, format, and Go library.
+brew "age"
 
 #########################################################################################
 # Casks

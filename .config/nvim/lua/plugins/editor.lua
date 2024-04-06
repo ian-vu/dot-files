@@ -89,7 +89,8 @@ return {
     },
     config = function()
       require("chatgpt").setup({
-        api_key_cmd = "op read op://kt76oi5s3tqjg54lvlolplvvaq/ywcqft6be3aw45ic3wirvts5su/password",
+        -- api_key_cmd = "op read op://kt76oi5s3tqjg54lvlolplvvaq/ywcqft6be3aw45ic3wirvts5su/password",
+        api_key_cmd = 'age --decrypt --identity ~/.age/secret-key.txt ~/.age/encrypted/open-api-key.txt.age"',
       })
     end,
   },
