@@ -44,10 +44,19 @@ return {
               { desc = "Amend the last commit" },
             },
           },
+          file_history_panel = {
+            { "n", "q", "<cmd>DiffviewClose<cr>", { desc = "Close diffview" } },
+          },
         },
         view = {
           merge_tool = {
             layout = "diff4_mixed",
+          },
+        },
+        file_panel = {
+          win_config = {
+            position = "bottom",
+            height = 16,
           },
         },
       }
