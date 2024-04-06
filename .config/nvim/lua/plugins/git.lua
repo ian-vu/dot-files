@@ -7,6 +7,9 @@ return {
       return {
         enhanced_diff_hl = true,
         keymaps = {
+          view = {
+            { "n", "q", "<cmd>DiffviewClose<cr>", { desc = "Close diffview" } },
+          },
           file_panel = {
             { "n", "<C-d>", actions.scroll_view(0.4), { desc = "Scroll down half page" } },
             { "n", "<C-u>", actions.scroll_view(-0.4), { desc = "Scroll up half page" } },
@@ -14,6 +17,8 @@ return {
             { "n", "<C-b>", actions.scroll_view(-0.8), { desc = "Scroll up full page" } },
             { "n", "j", actions.select_next_entry, { desc = "Open the diff for the next file" } },
             { "n", "k", actions.select_prev_entry, { desc = "Open the diff for the next file" } },
+            { "n", "<cr>", actions.focus_entry, { desc = "Focus entry" } },
+            { "n", "q", "<cmd>DiffviewClose<cr>", { desc = "Close diffview" } },
             {
               "n",
               "cc",
@@ -38,24 +43,6 @@ return {
               "<Cmd>Git commit --amend <bar> wincmd J<CR>",
               { desc = "Amend the last commit" },
             },
-            -- {
-            --   "n",
-            --   "cC",
-            --   ':Git commit -m "',
-            --   { desc = "Commit staged changes" },
-            -- },
-            -- {
-            --   "n",
-            --   "ca",
-            --   "<cmd>Git commit --amend<CR>",
-            --   { desc = "Amend the last commit" },
-            -- },
-            -- {
-            --   "n",
-            --   "cc",
-            --   "<cmd>Git commit<CR>",
-            --   { desc = "Commit staged changes in buffer" },
-            -- },
           },
         },
         view = {
