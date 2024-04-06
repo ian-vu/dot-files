@@ -148,9 +148,21 @@ vim.keymap.set({ "n", "v" }, "<leader>ec", function()
 end, { desc = "Close", remap = true })
 
 -- Comment Plugin
-local Comment = require("Comment.api")
-vim.keymap.set({ "n" }, "<leader>/", Comment.toggle.linewise.current, { desc = "Comment line", noremap = true })
-vim.keymap.set({ "n" }, "<D-/>", Comment.toggle.linewise.current, { desc = "Comment line", noremap = true })
+-- Normal mode mappings
+vim.keymap.set(
+  "n",
+  "<D-/>",
+  "<cmd>lua require('Comment.api').toggle.linewise.current()<CR>",
+  { desc = "Comment line", noremap = true }
+)
+vim.keymap.set(
+  "n",
+  "<leader>/",
+  "<cmd>lua require('Comment.api').toggle.linewise.current()<CR>",
+  { desc = "Comment line", noremap = true }
+)
+
+-- Normal mode mappings
 vim.keymap.set(
   { "v" },
   "<leader>/",
