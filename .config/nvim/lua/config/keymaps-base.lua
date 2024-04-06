@@ -176,17 +176,17 @@ vim.keymap.set(
 )
 
 -- diffview
-vim.keymap.set({ "n", "v" }, "<leader>gd", "<cmd>DiffviewOpen<CR>", { desc = "Git diff changes" })
+vim.keymap.set({ "n" }, "<leader>gd", "<cmd>DiffviewOpen<CR>", { desc = "Diff view local changes" })
 vim.keymap.set(
-  { "n", "v" },
+  { "n" },
   "<leader>gD",
   "<cmd>DiffviewOpen origin/HEAD...HEAD --imply-local<CR>",
-  { desc = "Git diff changes against base branch" }
+  { desc = "Diff view changes against origin/HEAD" }
 )
-vim.keymap.set({ "n", "v" }, "<leader>gf", "<cmd>DiffviewFileHistory %<CR>", { desc = "Git file history current" })
-vim.keymap.set({ "n", "v" }, "<leader>gF", "<cmd>DiffviewFileHistory<CR>", { desc = "Git file branch history" })
-vim.keymap.set({ "n", "v" }, "<leader>gx", "<cmd>DiffviewClose<CR>", { desc = "Git diff close" })
-vim.keymap.set({ "n", "v" }, "<D-g>", "<cmd>DiffviewOpen<CR>", { desc = "Git diff changes" })
+vim.keymap.set({ "n" }, "<leader>gs", "<cmd>DiffviewFileHistory -g --range=stash<CR>", { desc = "Stash" })
+vim.keymap.set({ "n" }, "<leader>gf", "<cmd>DiffviewFileHistory %<CR>", { desc = "File history current file only" })
+vim.keymap.set({ "n" }, "<leader>gF", "<cmd>DiffviewFileHistory<CR>", { desc = "File history with other files" })
+vim.keymap.set({ "n" }, "<leader>gx", "<cmd>DiffviewClose<CR>", { desc = "Git diff close" })
 
 vim.api.nvim_set_keymap("", "<D-v>", "+p<CR>", { noremap = true, silent = true })
 vim.api.nvim_set_keymap("!", "<D-v>", "<C-R>+", { noremap = true, silent = true })
