@@ -74,9 +74,23 @@ return {
         },
       },
       presets = {
+        command_palette = false,
         bottom_search = false, -- when using / or ?
         inc_rename = false, -- enables an input dialog for inc-rename.nvim
         lsp_doc_border = true, -- add a border to hover docs and signature help
+      },
+      cmdline = {
+        opts = {
+          position = { row = "15%", column = "50%" },
+        },
+        format = {
+          cmdline = { pattern = "^:", icon = "", lang = "vim" },
+          search_down = { kind = "search", pattern = "^/", icon = " ", lang = "regex" },
+          search_up = { kind = "search", pattern = "^%?", icon = " ", lang = "regex" },
+          filter = { pattern = "^:%s*!", icon = "$", lang = "bash", title = " Bash " },
+          lua = { pattern = { "^:%s*lua%s+", "^:%s*lua%s*=%s*", "^:%s*=%s*" }, icon = " ", lang = "lua" },
+          input = {}, -- Used by input()
+        },
       },
     },
   },
