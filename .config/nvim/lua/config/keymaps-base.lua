@@ -326,3 +326,6 @@ vim.keymap.set({ "n", "v" }, "<leader>cgR", "<cmd>TroubleToggle lsp_references<c
 
 -- Zenmode
 vim.keymap.set({ "n", "v" }, "<leader>uz", "<cmd>ZenMode<cr>", { desc = "Toggle Zenmode" })
+
+-- Copilot
+-- vim.keymap.set({ "i" }, "<C-l>", "<Plug>(copilot-accept-word)", { desc = "Accept next copilot word" })
