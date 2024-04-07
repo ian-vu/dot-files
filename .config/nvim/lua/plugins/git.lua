@@ -122,6 +122,7 @@ return {
     "tpope/vim-fugitive",
     opts = {},
     cmd = { "G", "Git" },
+    config = function() end, -- do nothing as this is a vim plugin
   },
   -- {
   --   "SuperBo/fugit2.nvim",
