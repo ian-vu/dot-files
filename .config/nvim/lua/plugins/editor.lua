@@ -204,8 +204,9 @@ return {
       plugins = {
         options = {
           -- Disable status line = 0
-          laststatus = 0,
-          showcmd = true, -- disables the command in the last line of the screen
+          -- Enable status line = 3
+          laststatus = 3,
+          showcmd = false, -- disables the command in the last line of the screen
         },
         tmux = { enabled = false }, -- set to true to disable tmux
       },
