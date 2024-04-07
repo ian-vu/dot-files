@@ -1,22 +1,4 @@
 return {
-  {
-    "zbirenbaum/copilot.lua",
-    event = "InsertEnter",
-    cmd = "Copilot",
-    build = ":Copilot auth",
-    opts = {
-      suggestion = {
-        enabled = true,
-        auto_trigger = false, -- Automatically trigger suggestions on insert without any keypress
-      },
-      panel = { enabled = true },
-      filetypes = {
-        markdown = true,
-        help = true,
-        ["*"] = true,
-      },
-    },
-  },
   -- Use <tab> for completion and snippets (supertab)
   -- first: disable default <tab> and <s-tab> behavior in LuaSnip
   {
@@ -40,6 +22,7 @@ return {
     },
     opts = function(_, opts)
       local cmp = require("cmp")
+      opts.experimental.ghost_text = false
       opts.window = {
         completion = cmp.config.window.bordered(),
         documentation = cmp.config.window.bordered(),
