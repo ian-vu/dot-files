@@ -28,9 +28,11 @@ return {
         documentation = cmp.config.window.bordered(),
       }
       -- opts.completion.completeopt = "menu,noselect,preview"
-      opts.completion.completeopt = "menu,menuone,select"
+      opts.completion.completeopt = "menu,menuone,noselect"
       opts.mapping = cmp.mapping.preset.insert({
-        ["<Tab>"] = cmp.mapping.confirm({ select = true, behaviour = cmp.ConfirmBehavior.Replace }),
+        -- ["<CR>"] = cmp.mapping.confirm({ select = true, behaviour = cmp.ConfirmBehavior.Replace }),
+        ["<CR>"] = cmp.mapping.confirm({ behaviour = cmp.ConfirmBehavior.Replace }),
+        -- ["<Tab>"] = cmp.mapping.confirm({ select = true, behaviour = cmp.ConfirmBehavior.Replace }),
         -- opts.mapping["<S-CR>"] = cmp.config.disable
       })
       -- Set up command line autocomplete
