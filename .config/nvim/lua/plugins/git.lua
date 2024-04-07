@@ -27,7 +27,7 @@ return {
             { "n", "q", "<cmd>DiffviewClose<cr>", { desc = "Close diffview" } },
             {
               "n",
-              "cc",
+              "c",
               function()
                 vim.ui.input({ prompt = "Commit message: " }, function(msg)
                   if not msg then
@@ -39,13 +39,13 @@ return {
             },
             {
               "n",
-              "cC",
+              "<S-c",
               "<Cmd>Git commit <bar> wincmd J<CR>",
               { desc = "Commit staged changes" },
             },
             {
               "n",
-              "ca",
+              "<S-a>",
               "<Cmd>Git commit --amend <bar> wincmd J<CR>",
               { desc = "Amend the last commit" },
             },
