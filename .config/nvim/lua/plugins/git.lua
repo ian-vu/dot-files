@@ -62,7 +62,7 @@ return {
         file_panel = {
           win_config = {
             position = "bottom",
-            height = 16,
+            height = 12,
           },
         },
       }
