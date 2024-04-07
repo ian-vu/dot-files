@@ -31,7 +31,7 @@ return {
       opts.completion.completeopt = "menu,menuone,noselect"
       opts.mapping = cmp.mapping.preset.insert({
         -- ["<CR>"] = cmp.mapping.confirm({ select = true, behaviour = cmp.ConfirmBehavior.Replace }),
-        ["<CR>"] = cmp.mapping.confirm({ behaviour = cmp.ConfirmBehavior.Replace }),
+        ["<CR>"] = cmp.mapping.confirm({ select = false, behaviour = cmp.ConfirmBehavior.Replace }),
         -- ["<Tab>"] = cmp.mapping.confirm({ select = true, behaviour = cmp.ConfirmBehavior.Replace }),
         -- opts.mapping["<S-CR>"] = cmp.config.disable
       })
