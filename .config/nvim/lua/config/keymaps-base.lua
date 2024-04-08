@@ -225,6 +225,10 @@ vim.keymap.set("n", "<leader>dd", function()
   require("dap").continue()
 end, { desc = "Continue/Start debugger" })
 
+vim.keymap.set("n", "<leader>dr", function()
+  require("dap").restart()
+end, { desc = "Restart debugger" })
+
 -- Autocomplete CMP
 vim.keymap.set({ "n", "v" }, "<leader>cd", function()
   local opts = {
