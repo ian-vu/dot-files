@@ -325,7 +325,8 @@ vim.keymap.set({ "n", "v" }, "<leader>cgy", "<cmd>Glance type_definitions<CR>", 
 vim.keymap.set({ "n", "v" }, "<leader>cgm", "<cmd>Glance implementations<CR>", { desc = "Glance implementations" })
 
 -- Trouble
-vim.keymap.set({ "n", "v" }, "<leader>cgR", "<cmd>TroubleToggle lsp_references<cr>", { desc = "References (Trouble)" })
+vim.keymap.set({ "n", "v" }, "<leader>cgR", "<cmd>Trouble lsp_references<cr>", { desc = "References (Trouble)" })
+vim.keymap.set({ "n", "v" }, "<leader>cR", "<cmd>Trouble lsp_references<cr>", { desc = "References (Trouble)" })
 
 -- Zenmode
 vim.keymap.set({ "n", "v" }, "<leader>uz", "<cmd>ZenMode<cr>", { desc = "Toggle Zenmode" })
