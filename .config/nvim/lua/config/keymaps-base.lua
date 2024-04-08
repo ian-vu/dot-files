@@ -9,6 +9,9 @@ vim.keymap.del({ "n", "v", "i" }, "<A-j>")
 vim.keymap.del({ "n", "v", "i" }, "<A-k>")
 vim.keymap.del("n", "<leader>cd")
 
+-- These are used by tmux floating session
+vim.keymap.del("n", "<C-/>")
+
 -- misc
 vim.keymap.set({ "n", "v", "i", "x", "o" }, "<C-c>", "<esc>", { desc = "Esc" })
 vim.keymap.set("v", "p", '"_dP', { desc = "Paste without yank" })
