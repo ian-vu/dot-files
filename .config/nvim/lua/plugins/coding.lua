@@ -24,8 +24,8 @@ return {
       local cmp = require("cmp")
       opts.experimental.ghost_text = false
       opts.window = {
-        completion = cmp.config.window.bordered(),
-        documentation = cmp.config.window.bordered(),
+        -- completion = cmp.config.window.bordered(),
+        -- documentation = cmp.config.window.bordered(),
       }
       -- opts.completion.completeopt = "menu,noselect,preview"
       opts.completion.completeopt = "menu,menuone,noselect"
