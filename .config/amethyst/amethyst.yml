@@ -170,31 +170,31 @@ cycle-layout:
 # Move the currently focused window to the n-th space; e.g., throw-space-3 will move the window to the 3rd space.
 throw-space-1:
   mod: mod2
-  key: 1
+  key: z
 
 throw-space-2:
   mod: mod2
-  key: 2
+  key: x
 
 throw-space-3:
   mod: mod2
-  key: 3
+  key: c
 
 throw-space-4:
   mod: mod2
-  key: 4
+  key: v
 
 throw-space-5:
   mod: mod2
-  key: 5
+  key: b
 
 throw-space-6:
   mod: mod2
-  key: 6
+  key: k
 
 throw-space-7:
   mod: mod2
-  key: 7
+  key: m
 
 # Select tall layout
 # select-tall-layout:
