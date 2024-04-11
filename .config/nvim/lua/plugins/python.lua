@@ -76,6 +76,19 @@ return {
                 return vim.fn.getcwd() .. "/.venv/bin/python"
               end,
             },
+            {
+              name = "Python: Pytest Unit",
+              type = "python",
+              request = "launch",
+              module = "pytest",
+              args = {
+                "tests/unit",
+              },
+              cwd = vim.fn.getcwd(),
+              pythonPath = function()
+                return vim.fn.getcwd() .. "/.venv/bin/python"
+              end,
+            },
           },
         }
       end,
