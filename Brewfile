@@ -110,6 +110,8 @@ brew "noahgorstein/tap/jqp"
 brew "warrensbox/tap/tfswitch"
 # Age is a simple, modern and secure file encryption tool, format, and Go library.
 brew "age"
+# A better git diff pager, for side by side diff
+brew "git-delta"
 
 #########################################################################################
 # Casks

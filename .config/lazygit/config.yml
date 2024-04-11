@@ -1,5 +1,5 @@
 gui:
-  sidePanelWidth: 0.5 # gives you more space to show things side-by-side
+  sidePanelWidth: 0.2 # gives you more space to show things side-by-side
   theme:
     activeBorderColor:
       - green
@@ -7,12 +7,14 @@ gui:
   nerdFontsVersion: "3"
 
 git:
-  # Side by side diff
-  # paging:
-  #   colorArg: never
-  #   pager: ydiff -p cat -s --wrap --width={{columnWidth}}
   paging:
-    pager: diff-so-fancy | less --tabs=2 -RFX
+    colorArg: always
+
+    # Side by side diff
+    pager: delta --dark --paging=never
+
+    # Use gitconfig
+    # useConfig: true
 
 keybinding:
   universal:
