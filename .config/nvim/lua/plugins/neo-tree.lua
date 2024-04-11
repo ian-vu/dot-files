@@ -9,7 +9,8 @@ return {
     { "<leader>E", false },
   },
   opts = {
-    enable_normal_mode_for_inputs = true,
+    -- This got deprecated
+    -- enable_normal_mode_for_inputs = true,
     enable_diagnostics = false,
     enable_git_status = true,
     popup_border_style = "rounded",
