@@ -14,7 +14,8 @@ return {
         results_title = false,
         path_display = { "truncate" }, -- Clip the path if too long, always showing the file name
         dynamic_preview_title = true, -- Show title of file in preview window at top
-        scroll_strategy = "limit", -- Don't cycle to top of list when reaching bottom
+        -- Uncommenting the below causes issues with egrepify
+        -- scroll_strategy = "limit", -- Don't cycle to top of list when reaching bottom
         sorting_strategy = "ascending",
         wrap_results = false,
         hl_result_eol = false,
