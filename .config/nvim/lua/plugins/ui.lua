@@ -81,7 +81,7 @@ return {
       },
       cmdline = {
         opts = {
-          position = { row = "15%", column = "50%" },
+          position = { row = "10%", column = "50%" },
         },
         format = {
           cmdline = { pattern = "^:", icon = "", lang = "vim" },
