@@ -337,3 +337,6 @@ vim.keymap.set({ "n", "v" }, "<leader>uz", "<cmd>ZenMode<cr>", { desc = "Toggle 
 
 -- Copilot
 -- vim.keymap.set({ "i" }, "<C-l>", "<Plug>(copilot-accept-word)", { desc = "Accept next copilot word" })
+
+-- Undo tree
+vim.keymap.set({ "n" }, "<leader>uu", "<cmd>UndotreeToggle<cr>", { desc = "Toggle Undotree" })
