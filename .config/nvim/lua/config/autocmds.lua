@@ -34,3 +34,9 @@ vim.cmd("autocmd User TelescopePreviewerLoaded setlocal wrap")
 
 -- Allow for alt backspace This currently causes esc to be buggy
 -- vim.cmd("imap <esc><bs> <c-w>")
+
+-- Update format options. Using the options.lua file does not work
+-- removing `o` will stop comment when using `o` in normal mode
+vim.api.nvim_create_autocmd("FileType", {
+  command = "set formatoptions-=o",
+})
