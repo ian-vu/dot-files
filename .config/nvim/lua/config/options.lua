@@ -21,7 +21,7 @@ vim.opt.titlestring = get_title()
 vim.opt.conceallevel = 0
 
 -- Minimal number of screen lines to keep above and below the cursor.
-vim.opt.scrolloff = 10
+vim.opt.scrolloff = 15
 
 -- Always show sign column since when going to and from insert mode shifts text
 vim.opt.signcolumn = "yes"
