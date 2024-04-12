@@ -57,7 +57,6 @@ plugins=(
   # fzf-tab # This needs to be before zsh-autosuggestions and fast-syntax-highlighting
   fast-syntax-highlighting
   # z
-  # fasd
   F-Sy-H
   zsh-autosuggestions
   # zsh-autocomplete
@@ -361,9 +360,6 @@ source /opt/homebrew/opt/autoenv/activate.sh
 
 # Set up theme Starship
 eval "$(starship init zsh)"
-
-# Set up fasd
-# eval "$(fasd --init posix-alias zsh-hook)"
 
 # Start up
 export AWS_DEFAULT_PROFILE=default

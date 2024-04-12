@@ -30,8 +30,6 @@ brew "bat"
 brew "curl"
 # Good-lookin' diffs with diff-highlight and more
 brew "diff-so-fancy"
-# CLI tool for quick access to files and directories
-brew "fasd"
 # Simple, fast and user-friendly alternative to find
 brew "fd"
 # Command-line fuzzy finder written in Go
