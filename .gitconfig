@@ -31,7 +31,7 @@
     colorMoved = default
 
 [delta]
-    side-by-side = true
+    side-by-side = false
     ; line-numbers-right-format = "{np:>4}│"
     ; line-numbers-left-format = "{np:>4}│"
     ; line-numbers-left-style = grey
