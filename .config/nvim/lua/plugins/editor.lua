@@ -190,4 +190,9 @@ return {
       vim.g.undotree_SplitWidth = 40
     end,
   },
+  -- {
+  --   "echasnovski/mini.animate",
+  --   version = "*",
+  --   opts = {},
+  -- },
 }
