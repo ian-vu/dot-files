@@ -137,6 +137,11 @@ cask "spaceid"
 cask "docker"
 # macOS Space/desktop indicator for the menu bar
 cask "spaceid"
+# gui to manage brew installations
+cask "cakebrew"
+# Note takingapp
+cask "obsidian"
+
 vscode "42crunch.vscode-openapi"
 vscode "aaron-bond.better-comments"
 vscode "abbycin.vscode-onelight2"

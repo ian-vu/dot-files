@@ -17,8 +17,8 @@ local get_title = function()
 end
 vim.opt.titlestring = get_title()
 
--- Dont hide anything in readme
-vim.opt.conceallevel = 0
+-- Affects how things are shown in Markdown: 0 will show all chars
+vim.opt.conceallevel = 1
 
 -- Minimal number of screen lines to keep above and below the cursor.
 vim.opt.scrolloff = 15
