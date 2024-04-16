@@ -4,13 +4,36 @@ return {
     opts = {
       -- colorscheme = "rose-pine-moon",
       -- colorscheme = "catppuccin-mocha",
-      colorscheme = "gruvbox",
+      -- colorscheme = "gruvbox",
+      -- colorscheme = "gruvbox-material",
     },
   },
   {
     "ellisonleao/gruvbox.nvim",
+    enable = false,
     priority = 1000,
-    config = true,
+    config = function() end,
+    opts = {
+      inverse = true,
+    },
+  },
+  {
+    "sainnhe/gruvbox-material",
+    priority = 1000,
+    config = function()
+      -- vim.cmd("set background=light")
+      vim.cmd("let g:gruvbox_material_background = 'hard'") -- soft | medium | hard
+      -- vim.cmd("let g:gruvbox_material_better_performance = 1")
+      vim.cmd("let g:gruvbox_material_enable_bold = 0")
+      vim.cmd("let g:gruvbox_material_enable_italic = 1")
+      vim.cmd("let g:gruvbox_material_dim_inactive_windows = 1")
+      -- vim.cmd("let g:gruvbox_material_visual = 'blue background'")
+      vim.cmd("let g:gruvbox_material_spell_foreground = 1")
+      -- vim.cmd("let g:gruvbox_material_diagnostic_text_highlight = 1")
+      vim.cmd("let g:gruvbox_material_diagnostic_virtual_text = 'colored'") -- 'highlighted' for extra
+      vim.cmd("let g:gruvbox_material_current_word = 'grey background'")
+      vim.cmd("colorscheme gruvbox-material")
+    end,
     opts = {
       inverse = true,
     },

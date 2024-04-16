@@ -25,3 +25,5 @@ vim.opt.scrolloff = 15
 
 -- Always show sign column since when going to and from insert mode shifts text
 vim.opt.signcolumn = "yes"
+
+vim.opt.termguicolors = true
