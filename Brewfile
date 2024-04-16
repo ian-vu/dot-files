@@ -109,6 +109,8 @@ brew "warrensbox/tap/tfswitch"
 brew "age"
 # A better git diff pager, for side by side diff
 brew "git-delta"
+# Javascript package manager
+brew "yarn"
 
 #########################################################################################
 # Casks
@@ -141,6 +143,8 @@ cask "spaceid"
 cask "cakebrew"
 # Note takingapp
 cask "obsidian"
+# Facebook messengen
+cask "caprine"
 
 vscode "42crunch.vscode-openapi"
 vscode "aaron-bond.better-comments"
