@@ -17,7 +17,7 @@ local get_title = function()
 end
 vim.opt.titlestring = get_title()
 
--- Affects how things are shown in Markdown: 0 will show all chars
+-- Affects how things are shown in Markdown: 0 will show all chars, 1 will show only the first char of concealable text
 vim.opt.conceallevel = 1
 
 -- Minimal number of screen lines to keep above and below the cursor.
