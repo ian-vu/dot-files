@@ -3,8 +3,15 @@ return {
     "LazyVim/LazyVim",
     opts = {
       -- colorscheme = "rose-pine-moon",
-      colorscheme = "catppuccin-mocha",
+      -- colorscheme = "catppuccin-mocha",
+      colorscheme = "gruvbox",
     },
+  },
+  {
+    "ellisonleao/gruvbox.nvim",
+    priority = 1000,
+    config = true,
+    opts = {},
   },
   {
     "catppuccin/nvim",

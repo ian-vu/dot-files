@@ -144,7 +144,7 @@ return {
         enable = false,
       },
       chunk = {
-        enable = true,
+        enable = false, -- Disable since it isn't working well with Gruvbox
         chars = {
           horizontal_line = "─",
           vertical_line = "│",
@@ -154,7 +154,9 @@ return {
           right_arrow = "",
           -- right_arrow = "─",
         },
-        style = "#806d9c",
+        style = {
+          fg = "#686d43",
+        },
       },
     },
   },
