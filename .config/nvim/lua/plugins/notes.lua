@@ -30,6 +30,13 @@ return {
           path = "/Users/ivu/Library/Mobile Documents/com~apple~CloudDocs/obsidian",
         },
       },
+      templates = {
+        subdir = "templates",
+      },
+      daily_notes = {
+        folder = "daily-notes",
+        template = "daily-note.md",
+      },
     },
   },
 }

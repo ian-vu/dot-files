@@ -340,3 +340,11 @@ vim.keymap.set({ "n", "v" }, "<leader>uz", "<cmd>ZenMode<cr>", { desc = "Toggle 
 
 -- Undo tree
 vim.keymap.set({ "n" }, "<leader>uu", "<cmd>UndotreeToggle<cr>", { desc = "Toggle Undotree" })
+
+-- Obsidian
+vim.keymap.set("n", "<leader>oo", "<cmd>ObsidianSearch<CR>", { desc = "Search notes" })
+vim.keymap.set("n", "<leader>on", "<cmd>ObsidianNew<CR>", { desc = "New note" })
+vim.keymap.set("n", "<leader>om", "<cmd>ObsidianTemplate<CR>", { desc = "Template Search" })
+vim.keymap.set("n", "<leader>oc", "<cmd>ObsidianToggleCheckbox<CR>", { desc = "Checkbox toggle" })
+vim.keymap.set("n", "<leader>ot", "<cmd>ObsidianToday<CR>", { desc = "Today's note" })
+vim.keymap.set("n", "<leader>oT", "<cmd>ObsidianTomorrow<CR>", { desc = "Tomorrow's note" })

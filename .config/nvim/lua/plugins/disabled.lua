@@ -39,4 +39,5 @@ return {
   -- { "folke/persistence.nvim", enabled = false },
   -- { "nvim-lua/plenary.nvim", enabled = false },
   { "lukas-reineke/headlines.nvim", enabled = false },
+  { "mfussenegger/nvim-lint", enabled = false },
 }
