@@ -66,6 +66,7 @@ return {
   },
   {
     "akinsho/bufferline.nvim",
+    enabled = false,
     opts = function()
       local bufferline = require("bufferline")
       return {
@@ -97,6 +98,15 @@ return {
               text_align = "right",
             },
           },
+          -- Below doesn't seem to work
+          -- custom_filter = function(buf_number, buf_numbers)
+          --   if vim.bo.filetype ~= "dashboard" then
+          --     return true
+          --   end
+          --   if vim.bo[buf_number].filetype ~= "dashboard" then
+          --     return true
+          --   end
+          -- end,
         },
       }
     end,
