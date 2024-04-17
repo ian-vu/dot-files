@@ -32,6 +32,14 @@ stow .
 
 ### Manual commands needed to complete setup
 
+#### Symbolic links
+
+Add icloud to a better location
+
+```bash
+ln -s ~/Library/Mobile\ Documents/com\~apple\~CloudDocs icloud
+```
+
 #### Tmux
 
 1. Clone TPM (Tmux Plugin Manager) into
