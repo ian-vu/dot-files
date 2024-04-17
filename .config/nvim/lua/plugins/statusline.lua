@@ -68,21 +68,19 @@ return {
             Util.lualine.root_dir(),
             -- { "filetype", icon_only = true, separator = "", padding = { left = 1, right = 0 } },
             { Util.lualine.pretty_path() },
-
             {
               -- Show when unsaved modified buffer
               function()
                 for _, buf in ipairs(vim.api.nvim_list_bufs()) do
                   if vim.api.nvim_buf_get_option(buf, "modified") then
-                    return "[+] Unsaved changes"
+                    return "[+] Unsaved changes [+]"
                   end
                 end
                 return ""
               end,
               color = Util.ui.fg("green"),
-
               separator = "",
-              -- padding = { right = 10 },
+              -- padding = { right = 20 },
             },
           },
           lualine_x = {
