@@ -27,3 +27,10 @@ vim.opt.scrolloff = 15
 vim.opt.signcolumn = "yes"
 
 vim.opt.termguicolors = true
+
+-- LazyVim automatically configures lazygit:
+--  * theme, based on the active colorscheme.
+--  * editorPreset to nvim-remote
+--  * enables nerd font icons
+-- Set to false to disable.
+vim.g.lazygit_config = false
