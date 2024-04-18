@@ -148,6 +148,10 @@ vim.keymap.set({ "n", "v" }, "<leader>ec", function()
   -- require("edgy").close("left")
   require("neo-tree.command").execute({ action = "close" })
 end, { desc = "Close", remap = true })
+vim.keymap.set({ "n", "v" }, "<leader>er", function()
+  -- require("edgy").close("left")
+  require("neo-tree.command").execute({ position = "right" })
+end, { desc = "Right position", remap = true })
 
 -- Comment Plugin
 -- Normal mode mappings
