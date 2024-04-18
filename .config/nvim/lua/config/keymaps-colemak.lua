@@ -1,11 +1,15 @@
 -- Navigation
 -- vim.keymap.del({ "n", "x", "o" }, "n")
-vim.keymap.set({ "n", "v", "x", "o" }, "n", "j", { noremap = true, silent = true })
+-- Allow for navigation with wrapped lines
+vim.keymap.set({ "n", "x" }, "n", "v:count == 0 ? 'gj' : 'j'", { expr = true, noremap = true, silent = true })
+vim.keymap.set({ "v", "o" }, "n", "j", { noremap = true, silent = true })
 vim.keymap.set({ "n", "v", "x", "o" }, "N", "J", { noremap = true, silent = true })
 vim.keymap.set({ "n", "v", "x", "o" }, "j", "n", { noremap = true, silent = true })
 vim.keymap.set({ "n", "v", "x", "o" }, "J", "N", { noremap = true, silent = true })
 
-vim.keymap.set({ "n", "v", "x", "o" }, "e", "k", { noremap = true, silent = true })
+-- Allow for navigation with wrapped lines
+vim.keymap.set({ "n", "x" }, "e", "v:count == 0 ? 'gk' : 'k'", { expr = true, noremap = true, silent = true })
+vim.keymap.set({ "v", "o" }, "e", "k", { noremap = true, silent = true })
 vim.keymap.set({ "n", "v", "x", "o" }, "E", "K", { noremap = true, silent = true })
 vim.keymap.set({ "n", "v", "x", "o" }, "k", "e", { noremap = true, silent = true })
 vim.keymap.set({ "n", "v", "x", "o" }, "K", "E", { noremap = true, silent = true })
