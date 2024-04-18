@@ -22,7 +22,7 @@ return {
     opts = {
       notes_subdir = "neovim",
       completion = {
-        min_chars = 2,
+        min_chars = 1,
       },
       workspaces = {
         {
@@ -31,12 +31,32 @@ return {
         },
       },
       templates = {
-        subdir = "templates",
+        subdir = "03 Resources/obsidian/templates",
       },
       daily_notes = {
-        folder = "daily-notes",
+        folder = "03 Resources/obsidian/templates",
         template = "daily-note.md",
       },
+
+      -- Sets the file name and id of new notes
+      -- Override defualt which includes a timestamp
+      note_id_function = function(title)
+        return title
+      end,
+
+      -- `true` indicates that you don't want obsidian.nvim to manage frontmatter.
+      -- ie. New notes won't have the top metadata section.
+      disable_frontmatter = true,
+
+      -- Optional, customize how wiki links are formatted. You can set this to one of:
+      --  * "use_alias_only", e.g. '[[Foo Bar]]'
+      --  * "prepend_note_id", e.g. '[[foo-bar|Foo Bar]]'
+      --  * "prepend_note_path", e.g. '[[foo-bar.md|Foo Bar]]'
+      --  * "use_path_only", e.g. '[[foo-bar.md]]'
+      -- Or you can set it to a function that takes a table of options and returns a string, like this:
+      wiki_link_func = function(opts)
+        return require("obsidian.util").wiki_link_alias_only(opts)
+      end,
     },
   },
 }
