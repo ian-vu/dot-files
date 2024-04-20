@@ -176,7 +176,7 @@ bindkey -r "^J"
 
 qwe() {
   cat ~/dot-files/.vim/vimrc.base > ~/.vim/vimrc
-  cat ~/dot-files/.vim/vimrc.base > ~/icloud/obsidian/.obsidian.vimrc
+  cat ~/dot-files/.vim/vimrc.base > ~/obsidian/.obsidian.vimrc
 
   cat ~/.config/nvim/lua/config/keymaps-base.lua > ~/.config/nvim/lua/config/keymaps.lua
 
@@ -186,8 +186,8 @@ col() {
   cat ~/dot-files/.vim/vimrc.base > ~/.vim/vimrc
   cat ~/dot-files/.vim/vimrc.colemak >> ~/.vim/vimrc
 
-  cat ~/dot-files/.vim/vimrc.base > ~/icloud/obsidian/.obsidian.vimrc
-  cat ~/dot-files/.vim/vimrc.colemak >> ~/icloud/obsidian/.obsidian.vimrc
+  cat ~/dot-files/.vim/vimrc.base > ~/obsidian/.obsidian.vimrc
+  cat ~/dot-files/.vim/vimrc.colemak >> ~/obsidian/.obsidian.vimrc
 
   cat ~/.config/nvim/lua/config/keymaps-base.lua > ~/.config/nvim/lua/config/keymaps.lua
   cat ~/.config/nvim/lua/config/keymaps-colemak.lua >> ~/.config/nvim/lua/config/keymaps.lua

@@ -37,7 +37,7 @@ stow .
 Add icloud to a better location
 
 ```bash
-ln -s ~/Library/Mobile\ Documents/com\~apple\~CloudDocs icloud
+ln -s ~/Library/Mobile\ Documents/iCloud\~md\~obsidian/Documents/obsidian ~/obsidian
 ```
 
 #### Tmux
