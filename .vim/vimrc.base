@@ -33,7 +33,7 @@ set laststatus=2
 set noshowmode
 
 " Copy to global clipboard
-set clipboard=unnamed
+set clipboard=unnamedplus
 
 noremap <C-c> <esc>
 
