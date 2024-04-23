@@ -3,7 +3,7 @@ return {
     "epwalsh/obsidian.nvim",
     event = "VeryLazy",
     version = "*", -- recommended, use latest release instead of latest commit
-    lazy = false,
+    lazy = true,
     ft = "markdown",
     -- Replace the above line with this if you only want to load obsidian.nvim for markdown files in your vault:
     -- event = {
@@ -20,22 +20,25 @@ return {
       -- "nvim-treesitter/nvim-treesitter",
     },
     opts = {
-      notes_subdir = "neovim",
       completion = {
         min_chars = 1,
       },
       workspaces = {
         {
           name = "obsidian",
-          path = "/Users/ivu/Library/Mobile Documents/com~apple~CloudDocs/obsidian",
+          path = "~/obsidian",
         },
       },
+      notes_subdir = "/",
       templates = {
         subdir = "03 Resources/obsidian/templates",
       },
       daily_notes = {
-        folder = "03 Resources/obsidian/templates",
+        folder = "04 Archive/daily-notes",
         template = "daily-note.md",
+      },
+      ui = {
+        enable = false,
       },
 
       -- Sets the file name and id of new notes
