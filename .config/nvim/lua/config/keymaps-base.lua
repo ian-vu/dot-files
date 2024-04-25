@@ -85,12 +85,16 @@ vim.keymap.set({ "n", "v", "i" }, "<D-k>", "<cmd>TmuxNavigateUp<cr>", { desc = "
 -- vim.keymap.set({ "n", "v", "i" }, "<D-k>", "<C-w>k", { desc = "Move to pane down" })
 
 -- Telescope
+-- Find keymaps
 vim.keymap.set({ "n", "v" }, "<leader>fw", "<cmd>Telescope egrepify<cr>", { desc = "Find words egrepify" })
 vim.keymap.set({ "n", "v" }, "<leader>fW", "<cmd>Telescope live_grep<cr>", { desc = "Find words telescope" })
 vim.keymap.set({ "n", "v" }, "<leader>fk", "<cmd>Telescope keymaps<CR>", { desc = "Find keymaps" })
 vim.keymap.set({ "n", "v" }, "<leader>fh", "<cmd>Telescope help_tags<CR>", { desc = "Find help tags" })
 vim.keymap.set({ "n", "v" }, "<D-p>", "<cmd>Telescope find_files<CR>", { desc = "Find files" })
 vim.keymap.set({ "n", "v" }, "<D-f>", "<cmd>Telescope egrepify<cr>", { desc = "Find words" })
+
+-- Search keympas
+vim.keymap.set({ "n", "v" }, "<leader>sj", "<cmd>Telescope jumplist<CR>", { desc = "Search jumplist" })
 
 -- Terminal
 local lazyterm = function()
