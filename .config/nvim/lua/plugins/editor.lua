@@ -66,7 +66,7 @@ return {
   },
   {
     "akinsho/bufferline.nvim",
-    enabled = false,
+    -- enabled = false,
     opts = function()
       local bufferline = require("bufferline")
       return {
@@ -113,6 +113,10 @@ return {
   },
   {
     "diegoulloao/nvim-file-location",
+    -- dir = "/Users/ivu/dev/git/nvim-file-location",
+    -- init = function()
+    --   require("nvim-file-location").setup()
+    -- end,
     opts = {
       keymap = "<leader>cyf",
       mode = "workdir",
