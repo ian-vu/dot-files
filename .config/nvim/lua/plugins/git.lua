@@ -83,25 +83,6 @@ return {
     },
   },
   {
-    "folke/flash.nvim",
-    event = "VeryLazy",
-    ---@type Flash.Config
-    opts = {
-      -- Show labels before the search word
-      label = {
-        before = true,
-        after = false,
-      },
-      modes = {
-        -- Disable flash for `/`
-        search = { enabled = false },
-
-        -- Disable flash when using `f`, `F`, `t`, `T`, `;` and `,` motions
-        char = { enabled = false },
-      },
-    },
-  },
-  {
     "lewis6991/gitsigns.nvim",
     opts = {
       signs = {
