@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
-width=${2:-80%}
-height=${2:-80%}
+width=${2:-70%}
+height=${2:-70%}
 
 current_session=$(tmux display-message -p -F "#{session_name}")
 
