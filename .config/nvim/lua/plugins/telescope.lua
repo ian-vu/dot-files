@@ -5,6 +5,17 @@ return {
       { "<leader>/", false },
     },
     opts = {
+      pickers = {
+        find_files = {
+          hidden = true,
+        },
+        live_grep = {
+          file_ignore_patterns = { ".git", "node_modules", "venv", ".venv" },
+          additional_args = function(_)
+            return { "--hidden" }
+          end,
+        },
+      },
       defaults = {
         layout_config = {
           prompt_position = "top",
