@@ -1,8 +1,8 @@
 " Colemak settings
-noremap n j
+noremap n gj
 noremap j n
 
-noremap e k
+noremap e gk
 noremap k e
 
 noremap i l
