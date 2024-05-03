@@ -18,6 +18,13 @@ vim.keymap.set("v", "p", '"_dP', { desc = "Paste without yank" })
 vim.keymap.set({ "v" }, "<D-c>", "y", { desc = "Yank" })
 vim.keymap.set({ "n", "v" }, "<D-a>", ":%y", { desc = "Yank whole buffer" })
 
+-- Centre cursor in buffer when motion
+vim.keymap.set({ "n", "v" }, "G", "Gzz", { noremap = true, desc = "Centre cursor in buffer" })
+vim.keymap.set({ "n", "v" }, "gd", "gdzz", { noremap = true, desc = "Centre cursor in buffer" })
+vim.keymap.set({ "n", "v" }, "*", "*zz", { noremap = true, desc = "Centre cursor in buffer" })
+vim.keymap.set({ "n", "v" }, "#", "#zz", { noremap = true, desc = "Centre cursor in buffer" })
+-- vim.keymap.set({ "n", "v" }, "<c-o>", "<c-o>zz", { noremap = true, desc = "Centre cursor in buffer" })
+
 -- format
 vim.keymap.set({ "n", "v" }, "<leader>fm", function()
   Util.format({ force = true })
