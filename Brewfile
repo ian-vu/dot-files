@@ -111,6 +111,8 @@ brew "age"
 brew "git-delta"
 # Javascript package manager
 brew "yarn"
+# A command-line tool for displaying information about your systems
+brew "neofetch"
 
 #########################################################################################
 # Casks
