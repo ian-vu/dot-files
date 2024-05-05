@@ -222,6 +222,7 @@ return {
         -- stylua: ignore
       { "<leader>p", function() require("telescope").extensions.yank_history.yank_history({ }) end, desc = "Open Yank History" },
       { "<c-p>", "<Plug>(YankyPreviousEntry)", mode = { "n", "x" }, desc = "Yanky previous entry" },
+      { "<c-s-p>", "<Plug>(YankyNextEntry)", mode = { "n", "x" }, desc = "Yanky previous entry" },
       -- Below is commented out because shift is not working
       -- { "<c-s-p>", "<Plug>(YankyPreviousEntry)", mode = { "n", "x" }, desc = "Yanky previous entry" },
       { "y", "<Plug>(YankyYank)", mode = { "n", "x" }, desc = "Yank Text" },
