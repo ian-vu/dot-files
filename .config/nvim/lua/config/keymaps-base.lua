@@ -332,20 +332,20 @@ vim.keymap.set("n", "<leader>tf", require("neotest").run.run, { desc = "Run whol
 --   require("neotest").run.run({ strategy = "dap" })
 -- end, { desc = "Debug nearest test" })
 
--- Glance
-vim.keymap.set({ "n", "v" }, "gD", "<cmd>Glance definitions<CR>", { desc = "Glance definitions" })
-vim.keymap.set({ "n", "v" }, "gR", "<cmd>Glance references<CR>", { desc = "Glance references" })
-vim.keymap.set({ "n", "v" }, "gY", "<cmd>Glance type_definitions<CR>", { desc = "Glance type definitions" })
-vim.keymap.set({ "n", "v" }, "gM", "<cmd>Glance implementations<CR>", { desc = "Glance implementations" })
-
-vim.keymap.set({ "n", "v" }, "<leader>cgd", "<cmd>Glance definitions<CR>", { desc = "Glance definitions" })
-vim.keymap.set({ "n", "v" }, "<leader>cgr", "<cmd>Glance references<CR>", { desc = "Glance references" })
-vim.keymap.set({ "n", "v" }, "<leader>cgy", "<cmd>Glance type_definitions<CR>", { desc = "Glance type definitions" })
-vim.keymap.set({ "n", "v" }, "<leader>cgm", "<cmd>Glance implementations<CR>", { desc = "Glance implementations" })
+-- -- Glance
+-- vim.keymap.set({ "n", "v" }, "gD", "<cmd>Glance definitions<CR>", { desc = "Glance definitions" })
+-- vim.keymap.set({ "n", "v" }, "gR", "<cmd>Glance references<CR>", { desc = "Glance references" })
+-- vim.keymap.set({ "n", "v" }, "gY", "<cmd>Glance type_definitions<CR>", { desc = "Glance type definitions" })
+-- vim.keymap.set({ "n", "v" }, "gM", "<cmd>Glance implementations<CR>", { desc = "Glance implementations" })
+--
+-- vim.keymap.set({ "n", "v" }, "<leader>cgd", "<cmd>Glance definitions<CR>", { desc = "Glance definitions" })
+-- vim.keymap.set({ "n", "v" }, "<leader>cgr", "<cmd>Glance references<CR>", { desc = "Glance references" })
+-- vim.keymap.set({ "n", "v" }, "<leader>cgy", "<cmd>Glance type_definitions<CR>", { desc = "Glance type definitions" })
+-- vim.keymap.set({ "n", "v" }, "<leader>cgm", "<cmd>Glance implementations<CR>", { desc = "Glance implementations" })
 
 -- Trouble
-vim.keymap.set({ "n", "v" }, "<leader>cgR", "<cmd>Trouble lsp_references<cr>", { desc = "References (Trouble)" })
-vim.keymap.set({ "n", "v" }, "<leader>cR", "<cmd>Trouble lsp_references<cr>", { desc = "References (Trouble)" })
+vim.keymap.set({ "n", "v" }, "<leader>gr", "<cmd>Trouble lsp_references<cr>", { desc = "References (Trouble)" })
+vim.keymap.set({ "n", "v" }, "<leader>gD", "<cmd>Trouble lsp_definitions:<cr>", { desc = "Definitions (Trouble)" })
 
 -- Zenmode
 vim.keymap.set({ "n", "v" }, "<leader>uz", "<cmd>ZenMode<cr>", { desc = "Toggle Zenmode" })

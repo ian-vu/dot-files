@@ -54,6 +54,7 @@ return {
   {
     -- Small pop up window that replaces go to <definition/typing/etc>
     "dnlhc/glance.nvim",
+    disable = true,
   },
   { -- add whichkey for glance
     "folke/which-key.nvim",
