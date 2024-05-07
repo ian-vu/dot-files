@@ -263,4 +263,14 @@ return {
       },
     },
   },
+  {
+    "folke/trouble.nvim",
+    dependencies = { "nvim-tree/nvim-web-devicons" },
+    opts = {
+      action_keys = {
+        -- remove `<tab>` from default list
+        jump = { "<cr>", "<2-leftmouse>" }, -- jump to the diagnostic or open / close folds
+      },
+    },
+  },
 }

@@ -344,8 +344,8 @@ vim.keymap.set("n", "<leader>tf", require("neotest").run.run, { desc = "Run whol
 -- vim.keymap.set({ "n", "v" }, "<leader>cgm", "<cmd>Glance implementations<CR>", { desc = "Glance implementations" })
 
 -- Trouble
-vim.keymap.set({ "n", "v" }, "<leader>gr", "<cmd>Trouble lsp_references<cr>", { desc = "References (Trouble)" })
-vim.keymap.set({ "n", "v" }, "<leader>gD", "<cmd>Trouble lsp_definitions:<cr>", { desc = "Definitions (Trouble)" })
+vim.keymap.set({ "n", "v" }, "<leader>xr", "<cmd>Trouble lsp_references<cr>", { desc = "References (Trouble)" })
+vim.keymap.set({ "n", "v" }, "<leader>xd", "<cmd>Trouble lsp_definitions:<cr>", { desc = "Definitions (Trouble)" })
 
 -- Zenmode
 vim.keymap.set({ "n", "v" }, "<leader>uz", "<cmd>ZenMode<cr>", { desc = "Toggle Zenmode" })

@@ -49,6 +49,8 @@ return {
         },
       })
 
+      local trouble = require("trouble.providers.telescope")
+
       opts.defaults = vim.tbl_deep_extend("force", opts.defaults or {}, {
         layout_config = {
           prompt_position = "top",
@@ -64,6 +66,7 @@ return {
         sorting_strategy = "ascending",
         wrap_results = false,
         hl_result_eol = false,
+
         mappings = {
           i = {
             ["<esc>"] = require("telescope.actions").close,
@@ -75,6 +78,7 @@ return {
             ["<D-n>"] = require("telescope.actions").cycle_history_next,
             ["<D-k>"] = require("telescope.actions").cycle_history_prev,
             ["<D-e>"] = require("telescope.actions").cycle_history_prev,
+            ["<C-t>"] = trouble.open_with_trouble,
           },
         },
       })
