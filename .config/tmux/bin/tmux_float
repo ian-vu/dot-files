@@ -2,7 +2,7 @@
 
 width=${2:-70%}
 height=${2:-70%}
-y_offset=50
+y_offset=40
 
 current_session=$(tmux display-message -p -F "#{session_name}")
 
