@@ -74,6 +74,7 @@ return {
         layout_config = {
           prompt_position = "top",
           mirror = true,
+          preview_cutoff = 10, -- ensure previewer is show unless less than this many lines
           -- vertical = { width = 0.1 },
           -- horizontal = { preview_width = 0.5 },
         },
