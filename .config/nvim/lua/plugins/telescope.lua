@@ -70,10 +70,12 @@ return {
       end
 
       opts.defaults = vim.tbl_deep_extend("force", opts.defaults or {}, {
+        layout_strategy = "vertical",
         layout_config = {
           prompt_position = "top",
-          vertical = { width = 0.1 },
-          horizontal = { preview_width = 0.5 },
+          mirror = true,
+          -- vertical = { width = 0.1 },
+          -- horizontal = { preview_width = 0.5 },
         },
         results_title = false,
         -- path_display = { "truncate" }, -- Clip the path if too long, always showing the file name
