@@ -50,6 +50,24 @@ return {
       })
 
       local trouble = require("trouble.providers.telescope")
+      local actions = require("telescope.actions")
+      local action_state = require("telescope.actions.state")
+
+      local custom_actions = {}
+
+      -- Open quickfix list if multiple files are selected, otherwise open quickfix list with all results
+      function custom_actions.maybe_multi_select_qlist_open(prompt_bufnr)
+        local picker = action_state.get_current_picker(prompt_bufnr)
+        local num_selections = table.getn(picker:get_multi_selection())
+
+        if num_selections > 1 then
+          actions.send_selected_to_qflist(prompt_bufnr)
+          actions.open_qflist()
+        else
+          actions.send_to_qflist()
+          actions.open_qflist()
+        end
+      end
 
       opts.defaults = vim.tbl_deep_extend("force", opts.defaults or {}, {
         layout_config = {
@@ -79,6 +97,9 @@ return {
             ["<D-k>"] = require("telescope.actions").cycle_history_prev,
             ["<D-e>"] = require("telescope.actions").cycle_history_prev,
             ["<C-t>"] = trouble.open_with_trouble,
+            ["<tab>"] = actions.toggle_selection + actions.move_selection_next,
+            ["<s-tab>"] = actions.toggle_selection + actions.move_selection_previous,
+            ["<C-q>"] = custom_actions.maybe_multi_select_qlist_open,
           },
         },
       })
