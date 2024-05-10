@@ -273,4 +273,20 @@ return {
       },
     },
   },
+  {
+    "hedyhli/outline.nvim",
+    opts = {
+      outline_window = {
+        width = 35,
+        relative_width = false, -- set to true for % based width. false for fixed integer width
+      },
+      preview_window = {
+        auto_preview = false,
+      },
+      keymaps = {
+        close = "q",
+        toggle_preview = "P",
+      },
+    },
+  },
 }
