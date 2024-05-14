@@ -260,7 +260,6 @@ zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
 # Fuzzy finder
 # https://github.com/junegunn/fzf#fuzzy-completion-for-bash-and-zsh
 eval "$(fzf --zsh)"
-export FZF_DEFAULT_OPTS='--pointer "➜" --info right --border rounded --prompt "➜ " --color=gutter:-1'
 
 # Remove fzf deplicates
 setopt HIST_IGNORE_ALL_DUPS
@@ -340,6 +339,9 @@ fshow() {
 
 # Setting fd as the default source for fzf
 export FZF_DEFAULT_COMMAND="fd -I -E '*/node_modules/*' -E '*/coverage/*'"
+
+# # default ops when calling fzf
+export FZF_DEFAULT_OPTS='--pointer "➜" --info right --border rounded --prompt "➜ " --color=gutter:-1 --height 20%'
 
 # To apply the command to CTRL-T as well
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND --type f"
