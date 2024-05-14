@@ -113,6 +113,10 @@ brew "git-delta"
 brew "yarn"
 # A command-line tool for displaying information about your systems
 brew "neofetch"
+# Run kubernetes locally
+brew "minikube"
+# Kubernetes CLI
+brew "kubernetes-cli"
 
 #########################################################################################
 # Casks
