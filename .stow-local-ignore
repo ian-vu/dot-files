@@ -25,7 +25,7 @@ _darcs
 
 # My own
 \.DS_Store
-\Brewfile
-\Gemfile
-\Gemfile
-\vimium.json
+Gemfile
+vimium.json
+Brewfile
+Brewfile.lock.json
