@@ -27,4 +27,5 @@ _darcs
 \.DS_Store
 \Brewfile
 \Gemfile
-
+\Gemfile
+\vimium.json
