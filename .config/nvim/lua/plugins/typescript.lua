@@ -1,5 +1,8 @@
 return {
-
+  { -- Javascript Prisma (ORM framework) syntax highlighting
+    "prisma/vim-prisma",
+    config = function() end,
+  },
   -- add typescript to treesitter
   {
     "nvim-treesitter/nvim-treesitter",
