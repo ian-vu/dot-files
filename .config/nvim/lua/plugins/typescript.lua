@@ -12,6 +12,16 @@ return {
       end
     end,
   },
+  -- configure prisma lsp
+  {
+    "neovim/nvim-lspconfig",
+    opts = {
+      -- make sure mason installs the server
+      servers = {
+        prismals = {},
+      },
+    },
+  },
   -- correctly setup lspconfig for tsserver
   {
     "neovim/nvim-lspconfig",
@@ -55,6 +65,7 @@ return {
             },
           },
         },
+        prismals = {},
       },
     },
   },
