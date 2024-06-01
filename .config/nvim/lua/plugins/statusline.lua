@@ -39,8 +39,8 @@ return {
         sections = {
           lualine_a = {
             -- { "mode" },
-            -- { "mode", icon = "" },
-            { "mode", icon = "" },
+            { "mode", icon = "" },
+            -- { "mode", icon = "" },
           },
           lualine_b = {
             { "branch", icon = "󰘬" },
@@ -65,23 +65,29 @@ return {
                 end
               end,
             },
-            Util.lualine.root_dir(),
+            -- Util.lualine.root_dir(),
             -- { "filetype", icon_only = true, separator = "", padding = { left = 1, right = 0 } },
-            { Util.lualine.pretty_path() },
+            -- { Util.lualine.pretty_path() },
             {
-              -- Show when unsaved modified buffer
-              function()
-                for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-                  if vim.api.nvim_buf_get_option(buf, "modified") then
-                    return "[+] Unsaved changes [+]"
-                  end
-                end
-                return ""
-              end,
-              color = Util.ui.fg("green"),
-              separator = "",
-              -- padding = { right = 20 },
+              "filename",
+              -- file_status = true,
+              path = 1,
             },
+
+            -- {
+            --   -- Show when unsaved modified buffer
+            --   function()
+            --     for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+            --       if vim.api.nvim_buf_get_option(buf, "modified") then
+            --         return "[+] Unsaved changes [+]"
+            --       end
+            --     end
+            --     return ""
+            --   end,
+            --   color = Util.ui.fg("green"),
+            --   separator = "",
+            --   -- padding = { right = 20 },
+            -- },
           },
           lualine_x = {
             -- Show the current command pressed
