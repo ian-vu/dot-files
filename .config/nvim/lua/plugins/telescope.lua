@@ -49,7 +49,7 @@ return {
         },
       })
 
-      local trouble = require("trouble.providers.telescope")
+      local trouble = require("trouble.sources.telescope")
       local actions = require("telescope.actions")
       local action_state = require("telescope.actions.state")
 
@@ -99,7 +99,7 @@ return {
             ["<D-n>"] = require("telescope.actions").cycle_history_next,
             ["<D-k>"] = require("telescope.actions").cycle_history_prev,
             ["<D-e>"] = require("telescope.actions").cycle_history_prev,
-            ["<C-t>"] = trouble.open_with_trouble,
+            ["<C-t>"] = trouble.open,
             ["<tab>"] = actions.toggle_selection + actions.move_selection_next,
             ["<s-tab>"] = actions.toggle_selection + actions.move_selection_previous,
             ["<C-q>"] = custom_actions.maybe_multi_select_qlist_open,
