@@ -34,3 +34,5 @@ vim.opt.termguicolors = true
 --  * enables nerd font icons
 -- Set to false to disable.
 vim.g.lazygit_config = false
+
+vim.api.nvim_set_option("background", "dark")

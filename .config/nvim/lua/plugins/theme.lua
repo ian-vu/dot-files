@@ -10,7 +10,8 @@ return {
   },
   {
     "f-person/auto-dark-mode.nvim",
-    config = {
+    enabled = false,
+    opts = {
       update_interval = 5000,
       set_dark_mode = function()
         vim.api.nvim_set_option("background", "dark")
@@ -22,7 +23,7 @@ return {
   },
   {
     "ellisonleao/gruvbox.nvim",
-    enable = false,
+    enabled = false,
     priority = 1000,
     config = function() end,
     opts = {
@@ -34,6 +35,7 @@ return {
     priority = 1000,
     config = function()
       -- vim.cmd("set background=light")
+      -- vim.cmd("set background=dark")
       vim.cmd("let g:gruvbox_material_background = 'hard'") -- soft | medium | hard
       vim.cmd("let g:gruvbox_material_foreground = 'mix'") -- material | mix | original
       -- vim.cmd("let g:gruvbox_material_better_performance = 1")
