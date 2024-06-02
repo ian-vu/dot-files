@@ -15,6 +15,7 @@ vim.keymap.del("n", "<C-/>")
 -- misc
 vim.keymap.set({ "n", "v", "i", "x", "o" }, "<C-c>", "<esc>", { desc = "Esc" })
 vim.keymap.set("v", "p", '"_dP', { desc = "Paste without yank" })
+vim.keymap.set("n", "<leader>p", "<cmd>pu<cr>", { desc = "Paste on new line" })
 vim.keymap.set({ "v" }, "<D-c>", "y", { desc = "Yank" })
 vim.keymap.set({ "n", "v" }, "<D-a>", ":%y", { desc = "Yank whole buffer" })
 
