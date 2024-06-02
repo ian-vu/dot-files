@@ -42,8 +42,10 @@ return {
         -- left aligned
         -- char = "▏",
         -- tab_char = "▏",
-        char = "│",
-        tab_char = "│",
+        -- char = "│",
+        -- tab_char = "│",
+        char = "┊",
+        tab_char = "┊",
       },
       whitespace = {
         highlight = { "Whitespace" },
