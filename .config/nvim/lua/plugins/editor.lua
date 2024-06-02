@@ -78,7 +78,7 @@ return {
   },
   {
     "akinsho/bufferline.nvim",
-    -- enabled = false,
+    enabled = false,
     opts = function()
       local bufferline = require("bufferline")
       return {
