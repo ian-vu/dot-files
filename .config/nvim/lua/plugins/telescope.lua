@@ -103,6 +103,7 @@ return {
             ["<tab>"] = actions.toggle_selection + actions.move_selection_next,
             ["<s-tab>"] = actions.toggle_selection + actions.move_selection_previous,
             ["<C-q>"] = custom_actions.maybe_multi_select_qlist_open,
+            ["<C-x>"] = require("telescope.actions").delete_buffer,
           },
         },
       })
