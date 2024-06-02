@@ -36,7 +36,7 @@ return {
   },
   {
     "lukas-reineke/indent-blankline.nvim",
-    enabled = false,
+    enabled = true,
     opts = {
       indent = {
         -- left aligned
@@ -129,7 +129,7 @@ return {
     event = { "UIEnter" },
     opts = {
       indent = {
-        --   enable = false,
+        enable = false, -- disable since doesn't seem to be working. enabled lukas-reineke/indent-blankline.nvim instead
         chars = {
           -- "│",
           -- "¦",
@@ -144,7 +144,7 @@ return {
         enable = false,
       },
       chunk = {
-        enable = false, -- Disable since it isn't working well with Gruvbox
+        enable = true, -- Disable since it isn't working well with Gruvbox
         chars = {
           horizontal_line = "─",
           vertical_line = "│",
@@ -154,9 +154,11 @@ return {
           right_arrow = "",
           -- right_arrow = "─",
         },
-        style = {
-          fg = "#686d43",
-        },
+        -- style = {
+        --   -- fg = "#686d43",
+        --   -- { fg = vim.fn.synIDattr(vim.fn.synIDtrans(vim.fn.hlID("Whitespace")), "fg", "gui") },
+        --   fg = "#d4be98",
+        -- },
       },
     },
   },
