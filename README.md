@@ -30,7 +30,7 @@ then use GNU stow to create symlinks
 stow .
 ```
 
-### Manual commands needed to complete setup
+### Manual steps needed to complete setup
 
 #### Symbolic links
 
@@ -86,6 +86,14 @@ the following command.
 ```bash
 op read "op://kt76oi5s3tqjg54lvlolplvvaq/Age CLI Identity/password" > ~/.age/secret-key.txt
 ```
+
+#### Font
+
+**Maple Mono Nerd Font**
+
+Download release and install by double clicking the font file.
+
+[link](https://github.com/subframe7537/maple-font/releases)
 
 ## Useful information
 

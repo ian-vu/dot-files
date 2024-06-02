@@ -127,8 +127,6 @@ cask "1password-cli"
 cask "amethyst"
 # Opensource IDE for exploring and testing api's
 cask "bruno"
-# Nerd Font font with round corners
-cask "font-maple"
 # Developer targeted fonts with a high number of glyphs
 cask "font-ubuntu-mono-nerd-font"
 # Utility for comparing and merging files and directories
