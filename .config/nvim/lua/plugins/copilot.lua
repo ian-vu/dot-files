@@ -1,6 +1,14 @@
 return {
+  {
+    "supermaven-inc/supermaven-nvim",
+    config = function()
+      require("supermaven-nvim").setup({})
+    end,
+  },
+
   { -- Copilot with only ghost
     "github/copilot.vim",
+    enabled = false,
   },
   -- { -- copilot
   --   "zbirenbaum/copilot.lua",
