@@ -1,11 +1,22 @@
 return {
   {
-    -- Show underline of current words under cursor
     "RRethy/vim-illuminate",
     event = "LazyFile",
     opts = {
       delay = 100,
+      large_file_cutoff = 2000,
+      large_file_overrides = {
+        providers = { "lsp" },
+      },
     },
+    config = function(_, opts)
+      require("illuminate").configure(opts)
+    end,
+  },
+  {
+    -- this is configured in lazyVim after vim-iluminate
+    "neovim/nvim-lspconfig",
+    opts = { document_highlight = { enabled = false } },
   },
   {
     -- Allow for commenting
