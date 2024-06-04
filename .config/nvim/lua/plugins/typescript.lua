@@ -30,6 +30,13 @@ return {
       servers = {
         ---@type lspconfig.options.tsserver
         tsserver = {
+          init_options = {
+            preferences = {
+              -- relative imports
+              importModuleSpecifierPreference = "relative",
+              importModuleSpecifierEnding = "minimal",
+            },
+          },
           keys = {
             {
               "<leader>co",
