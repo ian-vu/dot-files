@@ -35,19 +35,19 @@ return {
         ".idea",
       }
 
-      opts.pickers = vim.tbl_deep_extend("force", opts.pickers or {}, {
-        find_files = {
-          hidden = true,
-          no_ignore = true,
-          file_ignore_patterns = FILE_IGNORE_PATTERNS,
-        },
-        live_grep = {
-          file_ignore_patterns = FILE_IGNORE_PATTERNS,
-          additional_args = function(_)
-            return { "--hidden" }
-          end,
-        },
-      })
+      -- opts.pickers = vim.tbl_deep_extend("force", opts.pickers or {}, {
+      --   find_files = {
+      --     hidden = true,
+      --     no_ignore = true,
+      --     file_ignore_patterns = FILE_IGNORE_PATTERNS,
+      --   },
+      --   live_grep = {
+      --     file_ignore_patterns = FILE_IGNORE_PATTERNS,
+      --     additional_args = function(_)
+      --       return { "--hidden" }
+      --     end,
+      --   },
+      -- })
 
       local trouble = require("trouble.sources.telescope")
       local actions = require("telescope.actions")
