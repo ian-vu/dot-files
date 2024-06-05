@@ -18,6 +18,7 @@ vim.keymap.set("v", "p", '"_dP', { desc = "Paste without yank" })
 vim.keymap.set("n", "<leader>p", "<cmd>pu<cr>", { desc = "Paste on new line" })
 vim.keymap.set({ "v" }, "<D-c>", "y", { desc = "Yank" })
 vim.keymap.set({ "n", "v" }, "<D-a>", ":%y", { desc = "Yank whole buffer" })
+vim.keymap.set({ "n" }, "<c-l>", "<c-i>", { noremap = true, desc = "Scroll down" })
 
 -- Centre cursor in buffer when motion
 vim.keymap.set({ "n", "v" }, "G", "Gzz", { noremap = true, desc = "Centre cursor in buffer" })
@@ -73,12 +74,12 @@ vim.keymap.set("n", "<D-n>", "<cmd>tabnew<cr>", { desc = "New Tab" })
 
 -- Pane navigation (use integration with tmux with plug)
 vim.keymap.set({ "n", "v", "i" }, "<C-h>", "<cmd>TmuxNavigateLeft<cr>", { desc = "Move to pane left" })
-vim.keymap.set({ "n", "v", "i" }, "<C-l>", "<cmd>TmuxNavigateRight<cr>", { desc = "Move to pane right" })
+-- vim.keymap.set({ "n", "v", "i" }, "<C-l>", "<cmd>TmuxNavigateRight<cr>", { desc = "Move to pane right" })
 vim.keymap.set({ "n", "v", "i" }, "<C-j>", "<cmd>TmuxNavigateDown<cr>", { desc = "Move to pane up" })
 vim.keymap.set({ "n", "v", "i" }, "<C-k>", "<cmd>TmuxNavigateUp<cr>", { desc = "Move to pane down" })
 
 vim.keymap.set({ "n", "v", "i" }, "<D-h>", "<cmd>TmuxNavigateLeft<cr>", { desc = "Move to pane left" })
-vim.keymap.set({ "n", "v", "i" }, "<D-l>", "<cmd>TmuxNavigateRight<cr>", { desc = "Move to pane right" })
+-- vim.keymap.set({ "n", "v", "i" }, "<D-l>", "<cmd>TmuxNavigateRight<cr>", { desc = "Move to pane right" })
 vim.keymap.set({ "n", "v", "i" }, "<D-j>", "<cmd>TmuxNavigateDown<cr>", { desc = "Move to pane up" })
 vim.keymap.set({ "n", "v", "i" }, "<D-k>", "<cmd>TmuxNavigateUp<cr>", { desc = "Move to pane down" })
 
@@ -114,11 +115,14 @@ vim.keymap.set({ "n", "v" }, "<C-\\>", lazyterm, { desc = "Terminal (root dir)" 
 vim.keymap.set({ "n", "v" }, "<D-t>", lazyterm, { desc = "Terminal (root dir)" })
 vim.keymap.set({ "n", "v" }, "<C-_>", lazyterm, { desc = "Terminal (root dir)" })
 
+-- Oil Plugin
+vim.keymap.set({ "n", "v" }, "<leader>ee", "<cmd>Oil<cr>", { desc = "Open oil" })
+
 -- Neotree Plugin
 vim.keymap.set({ "n", "v" }, "<leader>es", function()
   vim.api.nvim_command("Neotree action=show position=left filesystem")
 end, { desc = "Show Neotree" })
-vim.keymap.set({ "n", "v" }, "<leader>ee", function()
+vim.keymap.set({ "n", "v" }, "<leader>eo", function()
   -- local Config = require("edgy.config")
   -- for p, edgebar in pairs(Config.layout) do
   --   if p == "left" then
