@@ -87,7 +87,7 @@ return {
         sorting_strategy = "ascending",
         wrap_results = false,
         hl_result_eol = false,
-
+        file_ignore_patterns = FILE_IGNORE_PATTERNS,
         mappings = {
           i = {
             ["<esc>"] = require("telescope.actions").close,
