@@ -54,7 +54,7 @@ HIST_STAMPS="dd.mm.yyyy"
 # plugins=(git, zsh-autosuggestions, zsh-syntax-highlighting, wd)
 # plugins=(git zsh-syntax-highlighting zsh-autosuggestions cp wd z extract osx history web-search) #vi-mode)
 plugins=(
-  # fzf-tab # This needs to be before zsh-autosuggestions and fast-syntax-highlighting
+  fzf-tab # This needs to be before zsh-autosuggestions and fast-syntax-highlighting
   fast-syntax-highlighting
   # z
   F-Sy-H
@@ -341,13 +341,15 @@ fshow() {
 export FZF_DEFAULT_COMMAND="fd -I -E '*/node_modules/*' -E '*/coverage/*'"
 
 # # default ops when calling fzf
-export FZF_DEFAULT_OPTS='--pointer "➜" --info right --border rounded --prompt "➜ " --color=gutter:-1 --height 20%'
+export FZF_DEFAULT_OPTS='--pointer "➜" --info right --prompt "➜ " --color=gutter:-1 --height 20%'
 
 # To apply the command to CTRL-T as well
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND --type f"
 
 # To apply the command to ALT-C as well
 export FZF_ALT_C_COMMAND="$FZF_DEFAULT_COMMAND --type d"
+
+export FZF_CTRL_R_OPTS="--with-nth 2.."
 
 # # Set up pyenv
 # export PYENV_ROOT="$HOME/.pyenv"
