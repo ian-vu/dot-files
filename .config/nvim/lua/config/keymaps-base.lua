@@ -18,13 +18,13 @@ vim.keymap.set("v", "p", '"_dP', { desc = "Paste without yank" })
 vim.keymap.set("n", "<leader>p", "<cmd>pu<cr>", { desc = "Paste on new line" })
 vim.keymap.set({ "v" }, "<D-c>", "y", { desc = "Yank" })
 vim.keymap.set({ "n", "v" }, "<D-a>", ":%y", { desc = "Yank whole buffer" })
-vim.keymap.set({ "n" }, "<c-l>", "<c-i>", { noremap = true, desc = "Scroll down" })
+vim.keymap.set({ "n" }, "<c-k>", "<c-i>", { noremap = true, desc = "Scroll down" })
 
 -- Centre cursor in buffer when motion
 vim.keymap.set({ "n", "v" }, "G", "Gzz", { noremap = true, desc = "Centre cursor in buffer" })
 vim.keymap.set({ "n", "v" }, "gd", "gdzz", { noremap = true, desc = "Centre cursor in buffer" })
-vim.keymap.set({ "n", "v" }, "*", "*zz", { noremap = true, desc = "Centre cursor in buffer" })
-vim.keymap.set({ "n", "v" }, "#", "#zz", { noremap = true, desc = "Centre cursor in buffer" })
+-- vim.keymap.set({ "n", "v" }, "*", "*zz", { noremap = true, desc = "Centre cursor in buffer" })
+-- vim.keymap.set({ "n", "v" }, "#", "#zz", { noremap = true, desc = "Centre cursor in buffer" })
 -- vim.keymap.set({ "n", "v" }, "<c-o>", "<c-o>zz", { noremap = true, desc = "Centre cursor in buffer" })
 
 -- format
@@ -97,6 +97,14 @@ vim.keymap.set({ "n", "v", "i" }, "<D-k>", "<cmd>TmuxNavigateUp<cr>", { desc = "
 -- Find keymaps
 vim.keymap.set({ "n", "v" }, "<leader>fw", "<cmd>Telescope egrepify<cr>", { desc = "Find words egrepify" })
 vim.keymap.set({ "n", "v" }, "<leader>fW", "<cmd>Telescope live_grep<cr>", { desc = "Find words telescope" })
+vim.keymap.set({ "n", "v" }, "<leader>fr", "<cmd>Telescope oldfiles<cr>", { desc = "Find recent (cwd)" })
+vim.keymap.set(
+  { "n", "v" },
+  "<leader>fr",
+  LazyVim.pick("oldfiles", { cwd = vim.uv.cwd() }),
+  { desc = "Find recent (cwd)" }
+)
+vim.keymap.set({ "n", "v" }, "<leader>fR", "<cmd>Telescope oldfiles<cr>", { desc = "Find recent" })
 vim.keymap.set({ "n", "v" }, "<leader>fk", "<cmd>Telescope keymaps<CR>", { desc = "Find keymaps" })
 vim.keymap.set({ "n", "v" }, "<leader>fh", "<cmd>Telescope help_tags<CR>", { desc = "Find help tags" })
 vim.keymap.set({ "n", "v" }, "<leader>sf", "<cmd>Telescope filetypes<CR>", { desc = "Search filetypes" })

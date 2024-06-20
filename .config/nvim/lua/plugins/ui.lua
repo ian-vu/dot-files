@@ -156,11 +156,13 @@ return {
           right_arrow = "",
           -- right_arrow = "─",
         },
-        -- style = {
-        --   -- fg = "#686d43",
-        --   -- { fg = vim.fn.synIDattr(vim.fn.synIDtrans(vim.fn.hlID("Whitespace")), "fg", "gui") },
-        --   fg = "#d4be98",
-        -- },
+        style = {
+          -- fg = "#686d43",
+          -- fg = "#d5d6d3",
+          -- { fg = vim.fn.synIDattr(vim.fn.synIDtrans(vim.fn.hlID("Whitespace")), "fg", "gui") },
+        },
+        duration = 150,
+        delay = 50,
       },
     },
   },
