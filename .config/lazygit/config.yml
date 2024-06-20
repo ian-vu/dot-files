@@ -4,7 +4,7 @@ gui:
     activeBorderColor:
       - green
       - bold
-  scrollHeight: 16
+  scrollHeight: 20
   nerdFontsVersion: "3"
 
 git:
