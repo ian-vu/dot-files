@@ -31,9 +31,9 @@ return {
         ---@type lspconfig.options.tsserver
         tsserver = {
           init_options = {
+            -- https://github.com/typescript-language-server/typescript-language-server/blob/master/docs/configuration.md
             preferences = {
-              -- relative imports
-              importModuleSpecifierPreference = "relative",
+              importModuleSpecifierPreference = "non-relative",
               importModuleSpecifierEnding = "minimal",
             },
           },
