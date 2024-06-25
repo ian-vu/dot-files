@@ -17,27 +17,36 @@ return {
   -- },
   {
     "echasnovski/mini.indentscope",
-    enabled = false,
-    opts = {
-      draw = {
-        -- Disable as it conflicts with Colemak keymaps
-        -- mode = "background",
-        delay = 0,
-      },
-      symbol = "│",
-      mappings = {
-        -- Disable as it conflicts with Colemak keymaps
-        object_scope = "",
-        object_scope_with_border = "",
-        goto_top = "",
-        goto_bottom = "",
-      },
-    },
+    enabled = true,
+    opts = function(_, opts)
+      return {
+        draw = {
+          -- Disable as it conflicts with Colemak keymaps
+          -- mode = "background",
+          delay = 100,
+          -- animation = require("mini.indentscope").gen_animation.none(),
+          animation = require("mini.indentscope").gen_animation.none(),
+        },
+        symbol = "│",
+        mappings = {
+          -- Disable as it conflicts with Colemak keymaps
+          object_scope = "",
+          object_scope_with_border = "",
+          goto_top = "",
+          goto_bottom = "",
+        },
+      }
+    end,
   },
   {
     "lukas-reineke/indent-blankline.nvim",
     enabled = true,
     opts = {
+      scope = {
+        enabled = false,
+        show_start = false,
+        show_end = false,
+      },
       indent = {
         -- left aligned
         -- char = "▏",
@@ -48,7 +57,7 @@ return {
         tab_char = "┊",
       },
       whitespace = {
-        highlight = { "Whitespace" },
+        -- highlight = { "Whitespace" },
         remove_blankline_trail = true,
       },
     },
@@ -128,6 +137,7 @@ return {
   {
     -- Highlight indent lines
     "shellRaining/hlchunk.nvim",
+    enabled = false,
     event = { "UIEnter" },
     opts = {
       indent = {
@@ -157,7 +167,7 @@ return {
           -- right_arrow = "─",
         },
         style = {
-          -- fg = "#686d43",
+          fg = "#686d43",
           -- fg = "#d5d6d3",
           -- { fg = vim.fn.synIDattr(vim.fn.synIDtrans(vim.fn.hlID("Whitespace")), "fg", "gui") },
         },
