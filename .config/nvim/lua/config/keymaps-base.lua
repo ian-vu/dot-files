@@ -5,7 +5,6 @@
 local Util = require("lazyvim.util")
 
 -- unmap
-vim.keymap.del({ "n", "v", "i" }, "<A-j>")
 vim.keymap.del({ "n", "v", "i" }, "<A-k>")
 vim.keymap.del("n", "<leader>cd")
 
@@ -22,7 +21,6 @@ vim.keymap.set({ "n" }, "<c-k>", "<c-i>", { noremap = true, desc = "Scroll down"
 
 -- Centre cursor in buffer when motion
 vim.keymap.set({ "n", "v" }, "G", "Gzz", { noremap = true, desc = "Centre cursor in buffer" })
-vim.keymap.set({ "n", "v" }, "gd", "gdzz", { noremap = true, desc = "Centre cursor in buffer" })
 -- vim.keymap.set({ "n", "v" }, "*", "*zz", { noremap = true, desc = "Centre cursor in buffer" })
 -- vim.keymap.set({ "n", "v" }, "#", "#zz", { noremap = true, desc = "Centre cursor in buffer" })
 -- vim.keymap.set({ "n", "v" }, "<c-o>", "<c-o>zz", { noremap = true, desc = "Centre cursor in buffer" })
@@ -359,7 +357,7 @@ vim.keymap.set("n", "<leader>tf", require("neotest").run.run, { desc = "Run whol
 
 -- Trouble
 vim.keymap.set({ "n", "v" }, "<leader>xr", "<cmd>Trouble lsp_references<cr>", { desc = "References (Trouble)" })
-vim.keymap.set({ "n", "v" }, "<leader>xd", "<cmd>Trouble lsp_definitions:<cr>", { desc = "Definitions (Trouble)" })
+vim.keymap.set({ "n", "v" }, "<leader>xd", "<cmd>Trouble lsp_definitions<cr>", { desc = "Definitions (Trouble)" })
 
 -- Zenmode
 vim.keymap.set({ "n", "v" }, "<leader>uz", "<cmd>ZenMode<cr>", { desc = "Toggle Zenmode" })

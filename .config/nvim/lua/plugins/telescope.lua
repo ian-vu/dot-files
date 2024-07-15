@@ -95,6 +95,8 @@ return {
             ["<C-n>"] = require("telescope.actions").cycle_history_next,
             ["<C-k>"] = require("telescope.actions").cycle_history_prev,
             ["<C-e>"] = require("telescope.actions").cycle_history_prev,
+            ["<C-d>"] = require("telescope.actions").results_scrolling_down,
+            ["<C-u>"] = require("telescope.actions").results_scrolling_up,
             ["<D-j>"] = require("telescope.actions").cycle_history_next,
             ["<D-n>"] = require("telescope.actions").cycle_history_next,
             ["<D-k>"] = require("telescope.actions").cycle_history_prev,
@@ -115,6 +117,22 @@ return {
     dependencies = { "nvim-telescope/telescope.nvim", "nvim-lua/plenary.nvim" },
     config = function()
       require("telescope").load_extension("egrepify")
+    end,
+  },
+  {
+    "neovim/nvim-lspconfig",
+    opts = function()
+      if LazyVim.pick.want() ~= "telescope" then
+        return
+      end
+      local Keys = require("lazyvim.plugins.lsp.keymaps").get()
+      -- stylua: ignore
+      vim.list_extend(Keys, {
+        { "gd", function() vim.lsp.buf.definition() end, desc = "Goto Definition", has = "definition" },
+        { "gr", "<cmd>Telescope lsp_references<cr>", desc = "References", nowait = true },
+        { "gI", function() require("telescope.builtin").lsp_implementations({ reuse_win = true }) end, desc = "Goto Implementation" },
+        { "gy", function() require("telescope.builtin").lsp_type_definitions({ reuse_win = true }) end, desc = "Goto T[y]pe Definition" },
+      })
     end,
   },
 }
