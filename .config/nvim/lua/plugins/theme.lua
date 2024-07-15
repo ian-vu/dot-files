@@ -38,6 +38,7 @@ return {
       -- vim.cmd("set background=dark")
       vim.cmd("let g:gruvbox_material_background = 'hard'") -- soft | medium | hard
       vim.cmd("let g:gruvbox_material_foreground = 'mix'") -- material | mix | original
+      vim.cmd("let g:gruvbox_material_transparent_background = 2")
       -- vim.cmd("let g:gruvbox_material_better_performance = 1")
       vim.cmd("let g:gruvbox_material_enable_bold = 0")
       vim.cmd("let g:gruvbox_material_enable_italic = 1")
