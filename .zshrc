@@ -349,6 +349,7 @@ export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND --type f"
 # To apply the command to ALT-C as well
 export FZF_ALT_C_COMMAND="$FZF_DEFAULT_COMMAND --type d"
 
+# Hide command number from results
 export FZF_CTRL_R_OPTS="--with-nth 2.."
 
 # # Set up pyenv
