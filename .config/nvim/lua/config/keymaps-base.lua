@@ -377,3 +377,6 @@ vim.keymap.set("n", "<leader>om", "<cmd>ObsidianTemplate<CR>", { desc = "Templat
 vim.keymap.set("n", "<leader>oc", "<cmd>ObsidianToggleCheckbox<CR>", { desc = "Checkbox toggle" })
 vim.keymap.set("n", "<leader>ot", "<cmd>ObsidianToday<CR>", { desc = "Today's note" })
 vim.keymap.set("n", "<leader>oT", "<cmd>ObsidianTomorrow<CR>", { desc = "Tomorrow's note" })
+
+-- breadcrumbs
+vim.keymap.set("n", "<leader>cb", "<cmd>lua require('dropbar.api').pick()<CR>", { desc = "Select breadcrumbs" })
