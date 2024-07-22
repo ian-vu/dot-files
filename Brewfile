@@ -117,6 +117,9 @@ brew "neofetch"
 brew "minikube"
 # Kubernetes CLI
 brew "kubernetes-cli"
+# Command history
+brew "atuin"
+
 
 #########################################################################################
 # Casks

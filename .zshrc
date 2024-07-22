@@ -417,6 +417,9 @@ complete -o nospace -C /opt/homebrew/bin/terraform terraform
 # Set up z 
 eval "$(zoxide init zsh)"
 
+# set up nice command history
+eval "$(atuin init zsh)"
+
 # Set config for lazygit
 export XDG_CONFIG_HOME="$HOME/.config"
 
