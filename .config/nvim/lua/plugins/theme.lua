@@ -47,7 +47,7 @@ return {
       vim.cmd("let g:gruvbox_material_spell_foreground = 1")
       -- vim.cmd("let g:gruvbox_material_diagnostic_text_highlight = 1")
       vim.cmd("let g:gruvbox_material_diagnostic_virtual_text = 'colored'") -- 'highlighted' for extra
-      vim.cmd("let g:gruvbox_material_current_word = 'grey background'")
+      vim.cmd("let g:gruvbox_material_current_word = 'underline'")
       vim.cmd("colorscheme gruvbox-material")
     end,
     opts = {
