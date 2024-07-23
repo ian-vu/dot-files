@@ -83,7 +83,7 @@ return {
         path_display = filenameFirst,
         dynamic_preview_title = true, -- Show title of file in preview window at top
         -- Uncommenting the below causes issues with egrepify
-        -- scroll_strategy = "limit", -- Don't cycle to top of list when reaching bottom
+        scroll_strategy = "limit", -- Don't cycle to top of list when reaching bottom
         sorting_strategy = "ascending",
         wrap_results = false,
         hl_result_eol = false,
