@@ -5,7 +5,7 @@ return {
     opts = function()
       local actions = require("diffview.actions")
       return {
-        enhanced_diff_hl = true,
+        enhanced_diff_hl = false,
         keymaps = {
           view = {
             { "n", "q", "<cmd>DiffviewClose<cr>", { desc = "Close diffview" } },
@@ -140,4 +140,11 @@ return {
   --   },
   --   opts = {},
   -- },
+  {
+    "julienvincent/hunk.nvim",
+    cmd = { "DiffEditor" },
+    config = function()
+      require("hunk").setup()
+    end,
+  },
 }
