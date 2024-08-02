@@ -32,6 +32,9 @@ Gemfile.lock
 # age secrey identity used for encryption
 .age/secret-key.txt
 
+# vim
+.vim/vimrc
+
 
 # Mac things
 **/.DS_Store
