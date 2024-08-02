@@ -32,6 +32,15 @@ stow .
 
 ### Manual steps needed to complete setup
 
+#### MacOS
+
+Install deps and set up MacOs
+
+```bash
+cd mac
+./setup.sh
+```
+
 #### Symbolic links
 
 Add icloud to a better location
