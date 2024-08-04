@@ -15,6 +15,57 @@ fi
 # Install Brew packages
 brew bundle install
 
+# Install and set up oh-my-zsh
+if [ -d "$HOME/.oh-my-zsh" ]; then
+  echo "Oh My Zsh is already installed."
+else
+  echo "Oh My Zsh is not installed. Installing now..."
+  sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+
+  # Check if the installation was successful
+  if [ $? -eq 0 ]; then
+    echo "Oh My Zsh has been successfully installed."
+  else
+    echo "There was an error installing Oh My Zsh. Please check your internet connection and try again."
+  fi
+fi
+
+# Install oh-my-zsh plugins
+CUSTOM_PLUGINS_DIR="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins"
+
+# Create the custom plugins directory if it doesn't exist
+mkdir -p "$CUSTOM_PLUGINS_DIR"
+
+# Function to install a plugin
+install_plugin() {
+  local plugin_name=$1
+  local repo_url=$2
+  local target_dir="$CUSTOM_PLUGINS_DIR/$plugin_name"
+
+  if [ -d "$target_dir" ]; then
+    echo "Plugin '$plugin_name' is already installed."
+  else
+    echo "Installing plugin '$plugin_name'..."
+    git clone "$repo_url" "$target_dir"
+    if [ $? -eq 0 ]; then
+      echo "Plugin '$plugin_name' has been successfully installed."
+    else
+      echo "Error installing plugin '$plugin_name'. Please check your internet connection and try again."
+    fi
+  fi
+}
+
+# Install fzf-tab
+install_plugin "fzf-tab" "https://github.com/Aloxaf/fzf-tab.git"
+
+# Install fast-syntax-highlighting (which includes F-Sy-H)
+install_plugin "fast-syntax-highlighting" "https://github.com/zdharma-continuum/fast-syntax-highlighting.git"
+
+# Install zsh-autosuggestions
+install_plugin "zsh-autosuggestions" "https://github.com/zsh-users/zsh-autosuggestions.git"
+
+install_plugin "F-Sy-H" "https://github.com/z-shell/F-Sy-H.git"
+
 # Configure auto hide/appear dock settings
 defaults write com.apple.dock autohide-time-modifier -float 0.7
 defaults write com.apple.dock autohide-delay -float 0
