@@ -229,6 +229,7 @@ return {
   -- better yank/paste
   {
     "gbprod/yanky.nvim",
+    enabled = false,
     dependencies = not LazyVim.is_win() and { "kkharji/sqlite.lua" } or {},
     opts = {
       highlight = { timer = 200 },
