@@ -253,12 +253,6 @@ export PATH="$PATH:$HOME/.bin"
 export PATH="$PATH:$HOME/.config/tmux/bin"
 
 
-# Go
-export GOPATH=~/.go-workspace
-export GOROOT=/usr/local/opt/go/libexec
-export PATH=$PATH:$GOPATH/bin
-export PATH=$PATH:$GOROOT/bin
-
 # Set up fzf-tab
 # autoload -U compinit; compinit
 # source $ZSH_CUSTOM/plugins/fzf-tab/fzf-tab.plugin.zsh
@@ -421,7 +415,6 @@ eval "$(zoxide init zsh)"
 
 # set up mise
 eval "$(~/.local/bin/mise activate zsh)"
-
 
 # set up nice command history
 # eval "$(atuin init zsh)"
