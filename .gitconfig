@@ -6,6 +6,9 @@
 #	name = Ian Vu
 #	email = ivu@Ians-MacBook-Pro.local
 
+[push]
+  # Automatically set up remote for pushing
+	autoSetupRemote = true
 
 ############################################
 # Git diff things
