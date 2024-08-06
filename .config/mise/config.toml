@@ -1,0 +1,5 @@
+[tools]
+python = "3.12" # [optional] will be used for the venv
+golang = "1.22"
+nodejs = "22"
+
