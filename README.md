@@ -41,13 +41,18 @@ cd mac
 ./setup.sh
 ```
 
+### Debian installation
+
+````bash
+cd debian
+./setup.sh
 #### Symbolic links
 
 Add icloud to a better location
 
 ```bash
 ln -s ~/Library/Mobile\ Documents/iCloud\~md\~obsidian/Documents/obsidian ~/obsidian
-```
+````
 
 #### Tmux
 
