@@ -2,7 +2,14 @@
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
 # Path to your oh-my-zsh installation.
-export ZSH=/Users/ivu/.oh-my-zsh
+export ZSH=~/.oh-my-zsh
+
+#### Functions ####
+
+# Function to check if the system is macOS
+is_mac() {
+    [[ "$(uname)" == "Darwin" ]]
+}
 
 # See https://github.com/robbyrussell/oh-my-zsh/wiki/Themes
 # ZSH_THEME="powerlevel9k/powerlevel9k"
@@ -124,10 +131,14 @@ alias next='spotify next'
 alias back='spotify back'
 
 alias hs='hsi'
-alias rm='trash'
-alias rmdir='trash'
-alias rm!='/bin/rm -rv'
-alias rmdir!='/bin/rmdir'
+
+if is_mac; then
+  alias rm='trash'
+  alias rmdir='trash'
+  alias rm!='/bin/rm -rv'
+  alias rmdir!='/bin/rmdir'
+fi
+
 alias zs='source ~/.zshrc'
 alias copy='pbcopy'
 alias paste='pbpaste'
@@ -322,6 +333,7 @@ fshow() {
                 --bind "alt-y:execute:$_gitLogLineToHash | xclip"
 }
 
+
 # unalias z
 # z() {
 #   if [[ -z "$*" ]]; then
@@ -358,14 +370,6 @@ export FZF_CTRL_R_OPTS="--with-nth 2.."
 # eval "$(pyenv init -)"
 # eval "$(pyenv virtualenv-init -)"
 # export PYENV_VIRTUALENV_DISABLE_PROMPT=1
-
-# autoenv - run .autoenv files on cd 
-export AUTOENV_ENV_FILENAME=".autoenv"
-export AUTOENV_ENV_LEAVE_FILENAME=".autoenv.leave"
-# Set autoenv to run .autoenv.leave files
-export AUTOENV_ENABLE_LEAVE=1
-# this line should be run last
-source /opt/homebrew/opt/autoenv/activate.sh
 
 # Set up theme Starship
 eval "$(starship init zsh)"
@@ -407,7 +411,12 @@ add-zsh-hook chpwd load-nvmrc
 load-nvmrc
 
 # Set up asdf
-. /opt/homebrew/opt/asdf/libexec/asdf.sh
+if is_mac; then
+  . /opt/homebrew/opt/asdf/libexec/asdf.sh
+else
+  . ~/.asdf/asdf.sh
+fi
+
 autoload -U +X bashcompinit && bashcompinit
 
 
