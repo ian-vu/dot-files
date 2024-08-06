@@ -10,6 +10,7 @@ tap "koekeishiya/formulae"
 tap "mrkai77/cask"
 tap "noahgorstein/tap"
 tap "warrensbox/tap"
+tap "hashicorp/tap"
 
 #########################################################################################
 # Brews
@@ -104,6 +105,9 @@ brew "neofetch"
 brew "minikube"
 # Kubernetes CLI
 brew "kubernetes-cli"
+# Create machine images from configuration files
+brew "hashicorp/tap/packer"
+brew "nvm"
 
 
 #########################################################################################
@@ -133,4 +137,6 @@ cask "caprine"
 cask "itsycal"
 cask "bettertouchtool"
 cask "karabiner-elements"
+cask "spotify"
+cask "obsidian"
 
