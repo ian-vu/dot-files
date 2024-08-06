@@ -410,13 +410,6 @@ load-nvmrc() {
 add-zsh-hook chpwd load-nvmrc
 load-nvmrc
 
-# Set up asdf
-if is_mac; then
-  . /opt/homebrew/opt/asdf/libexec/asdf.sh
-else
-  . ~/.asdf/asdf.sh
-fi
-
 autoload -U +X bashcompinit && bashcompinit
 
 
@@ -425,6 +418,10 @@ complete -o nospace -C /opt/homebrew/bin/terraform terraform
 
 # Set up z 
 eval "$(zoxide init zsh)"
+
+# set up mise
+eval "$(~/.local/bin/mise activate zsh)"
+
 
 # set up nice command history
 # eval "$(atuin init zsh)"
