@@ -38,3 +38,5 @@ vim.g.lazygit_config = false
 vim.api.nvim_set_option("background", "dark")
 
 vim.opt.colorcolumn = "120"
+
+vim.opt.clipboard = "unnamedplus"
