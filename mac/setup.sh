@@ -22,6 +22,8 @@ if ! command -v mise &>/dev/null; then
   eval "$(~/.local/bin/mise activate zsh)"
 fi
 
+mise install
+
 # Install and set up oh-my-zsh
 if [ -d "$HOME/.oh-my-zsh" ]; then
   echo "Oh My Zsh is already installed."
