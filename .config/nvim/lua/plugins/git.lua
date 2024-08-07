@@ -77,8 +77,11 @@ return {
     "folke/which-key.nvim",
     event = "VeryLazy",
     opts = {
-      defaults = {
-        ["<leader>go"] = { name = "+open" },
+      spec = {
+        {
+          mode = { "n", "v" },
+          { "<leader>go", group = "open" },
+        },
       },
     },
   },

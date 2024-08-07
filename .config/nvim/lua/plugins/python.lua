@@ -140,8 +140,11 @@ return {
     "folke/which-key.nvim",
     optional = true,
     opts = {
-      defaults = {
-        ["<leader>dP"] = { name = "+Python" },
+      spec = {
+        {
+          mode = { "n", "v" },
+          { "<leader>dP", group = "Python" },
+        },
       },
     },
   },

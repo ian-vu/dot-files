@@ -69,16 +69,7 @@ return {
   {
     -- Small pop up window that replaces go to <definition/typing/etc>
     "dnlhc/glance.nvim",
-    disable = true,
-  },
-  { -- add whichkey for glance
-    "folke/which-key.nvim",
-    event = "VeryLazy",
-    opts = {
-      defaults = {
-        ["<leader>cg"] = { name = "+goto" },
-      },
-    },
+    enabled = false,
   },
   {
     "akinsho/bufferline.nvim",
@@ -154,13 +145,15 @@ return {
     },
   },
   {
-    -- add signature for nvim-file-location
     "folke/which-key.nvim",
+    optional = true,
     event = "VeryLazy",
     opts = {
-      defaults = {
-        mode = { "n", "v" },
-        ["<leader>cy"] = { name = "+yank" },
+      spec = {
+        {
+          mode = { "n", "v" },
+          { "<leader>cy", group = "yank" },
+        },
       },
     },
   },
