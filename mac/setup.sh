@@ -15,6 +15,13 @@ fi
 # Install Brew packages
 brew bundle install
 
+# Install mise (language version manager)
+if ! command -v mise &>/dev/null; then
+  echo "Installing mise..."
+  curl https://mise.run | sh
+  eval "$(~/.local/bin/mise activate zsh)"
+fi
+
 # Install and set up oh-my-zsh
 if [ -d "$HOME/.oh-my-zsh" ]; then
   echo "Oh My Zsh is already installed."
