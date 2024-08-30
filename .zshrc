@@ -171,6 +171,59 @@ alias arst='asdf'
 
 alias setaws="source ~/.bin/setawsprofile $1"
 
+
+# Export AWS credentials to environment variables. Uses aws-sso-util to initiate login if necessary.
+
+setawsprofile() {
+    if [ $# -ne 1 ]; then
+        echo "Usage: setawsprofile <profile_name>"
+        echo "Please provide exactly one argument (the profile name)."
+        return 1
+    fi
+
+    export AWS_PROFILE="$1"
+
+    # # Check if aws-sso-util is installed
+    # if ! command -v aws-sso-util &> /dev/null; then
+    #     echo "Error: aws-sso-util is not installed. Please install it and try again."
+    #     return 1
+    # fi
+    #
+    # # Check if the token is valid
+    # if ! aws-sso-util check | grep -q "Token appears to be valid for use"; then
+    #     echo "AWS SSO token is not valid. Initiating login..."
+    #     aws-sso-util
+    # fi
+
+    # Export AWS credentials
+    eval $(aws configure export-credentials --profile $AWS_PROFILE --format env)
+    echo "AWS credentials exported to environment variables."
+
+    echo "AWS profile set to: $AWS_PROFILE"
+}
+
+alias awssetprofile='setawsprofile'
+
+
+# Function to process files recursively printing path and contents to be used with ai
+print-files() {
+    local dir="$1"
+
+    # Loop through all files and directories in the current directory
+    for item in "$dir"/*; do
+        if [[ -f "$item" ]]; then
+            # If it's a file, print its path and contents
+            echo "File: $item"
+            echo "Contents:"
+            cat "$item"
+            echo "----------------------------------------"
+        elif [[ -d "$item" ]]; then
+            # If it's a directory, recursively process its contents
+            print-files "$item"
+        fi
+    done
+}
+
 bindkey '^ ' autosuggest-execute
 bindkey '^[ ' autosuggest-accept
 
@@ -179,10 +232,12 @@ alias activate='pyenv activate ${PWD##*/}'
 alias act='source .venv/bin/activate'
 # alias act='activate'
 
+alias kc=kubectl
+
 # bindkey '^[[A' history-substring-search-up
 # bindkey '^[[B' history-substring-search-down
 
-# Unbind keys 
+# Unbind keys
 bindkey -r "^J"
 
 qwe() {
@@ -369,7 +424,6 @@ export FZF_CTRL_R_OPTS="--with-nth 2.."
 eval "$(starship init zsh)"
 
 # Start up
-export AWS_DEFAULT_PROFILE=default
 export AWS_DEFAULT_REGION=ap-southeast-2
 export EDITOR='nvim'
 
@@ -378,7 +432,7 @@ export EDITOR='nvim'
 autoload -U +X bashcompinit && bashcompinit
 
 
-# Set up z 
+# Set up z
 eval "$(zoxide init zsh)"
 
 # set up mise (coding language version manager)
