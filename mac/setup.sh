@@ -75,6 +75,22 @@ install_plugin "zsh-autosuggestions" "https://github.com/zsh-users/zsh-autosugge
 
 install_plugin "F-Sy-H" "https://github.com/z-shell/F-Sy-H.git"
 
+# Install tmux plugin manager (tpm)
+TPM_DIR="$HOME/.tmux/plugins/tpm"
+
+if [ -d "$TPM_DIR" ]; then
+  echo "tmux plugin manager (tpm) is already installed."
+else
+  echo "tmux plugin manager (tpm) not found. Installing..."
+  git clone https://github.com/tmux-plugins/tpm "$TPM_DIR"
+  tmux source ~/.tmux.conf
+  if [ $? -eq 0 ]; then
+    echo "tmux plugin manager (tpm) has been successfully installed."
+  else
+    echo "Failed to install tmux plugin manager (tpm). Please check your internet connection and try again."
+  fi
+fi
+
 # Configure auto hide/appear dock settings
 defaults write com.apple.dock autohide-time-modifier -float 0.7
 defaults write com.apple.dock autohide-delay -float 0
