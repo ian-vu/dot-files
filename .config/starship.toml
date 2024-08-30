@@ -21,7 +21,13 @@ error_symbol = '[➜](bold red)'
 disabled = false
 
 [aws]
-disabled = true
+disabled = false
 
 [docker_context]
 disabled = true
+
+[kubernetes]
+disabled = false
+
+# Show only when there is a file containing the below names
+detect_files = ["aladdin"]
