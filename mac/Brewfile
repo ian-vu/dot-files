@@ -107,7 +107,30 @@ brew "minikube"
 brew "kubernetes-cli"
 # Create machine images from configuration files
 brew "hashicorp/tap/packer"
-brew "nvm"
+# Install newer version of bash
+brew "bash"
+# Installs isolate virtual environments for linking scripts. eg. pipx install aws-sso-util
+brew "pipx"
+# Tool to rerun a command every x seconds, e.g watch -n 1 osx-cpu-temp
+brew "watch"
+# Query HTML like jq but for HTML, uses CSS selectors
+brew "htmlq"
+# psql command line tool for PostgreSQL
+brew "libpq"
+#########################################################################################
+# Install GNU tools
+#########################################################################################
+brew "coreutils"
+brew "ed"
+brew "findutils"
+brew "gawk"
+brew "gnu-sed"
+brew "gnu-tar"
+brew "grep"
+brew "make"
+#########################################################################################
+# End
+#########################################################################################
 
 
 #########################################################################################
@@ -125,8 +148,6 @@ cask "kitty"
 cask "neovide"
 # CLI for command-line API management on Postman
 cask "postman-cli"
-# App to build and share containerised applications and microservices
-cask "docker"
 # macOS Space/desktop indicator for the menu bar
 cask "spaceid"
 # Note takingapp
@@ -139,4 +160,6 @@ cask "bettertouchtool"
 cask "karabiner-elements"
 cask "spotify"
 cask "obsidian"
+cask "meetingbar"
+cask "appcleaner"
 
