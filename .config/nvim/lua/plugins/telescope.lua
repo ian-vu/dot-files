@@ -33,6 +33,7 @@ return {
         ".mypy_cache",
         ".pytest_cache",
         ".idea",
+        "Env",
       }
 
       -- opts.pickers = vim.tbl_deep_extend("force", opts.pickers or {}, {
