@@ -68,7 +68,8 @@ return {
       fps = 60,
       render = "default",
       top_down = false,
-      timeout = 1000,
+      -- time to show notification
+      timeout = 1250,
     },
   },
   {
