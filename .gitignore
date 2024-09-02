@@ -17,7 +17,7 @@ aws/config
 .config/nvim/foo.*
 .config/nvim/*.log
 .config/nvim/data
-.config/nvim/lazy-lock.json
+# .config/nvim/lazy-lock.json
 .config/nvim/lua/config/keymaps.lua
 .config/nvim/spell/en.utf-8.add
 .config/nvim/spell/en.utf-8.add.spl
