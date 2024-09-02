@@ -95,3 +95,6 @@ fi
 defaults write com.apple.dock autohide-time-modifier -float 0.7
 defaults write com.apple.dock autohide-delay -float 0
 killall Dock
+
+# Disable hold down key showing accented characters popup
+defaults write -g ApplePressAndHoldEnabled -bool false
