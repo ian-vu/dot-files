@@ -286,7 +286,7 @@ return {
     "hedyhli/outline.nvim",
     opts = {
       outline_window = {
-        position = "left",
+        position = "right",
         width = 35,
         relative_width = false, -- set to true for % based width. false for fixed integer width
       },
@@ -295,7 +295,10 @@ return {
       },
       keymaps = {
         close = "q",
-        toggle_preview = "P",
+        toggle_preview = "<c-p>",
+        unfold = "i",
+        fold_all = "H",
+        unfold_all = "I",
       },
     },
   },
