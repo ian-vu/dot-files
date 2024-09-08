@@ -115,7 +115,7 @@ Download release and install by double clicking the font file.
 
 #### Adding new formula
 
-Add a new row with one of the following
+Add a new row with one of the following lines to the brewfile
 
 ```bash
 brew <formula_name>
@@ -127,8 +127,10 @@ Then run the following commands
 
 ```bash
 brew bundle cleanup -v
-brew bundle install -v
+brew bundle install --cleanup -v
 ```
+
+_Note:_ to avoid upgrades use `--no-upgrade` flag
 
 ### [age file encryption](https://github.com/FiloSottile/age)
 
