@@ -319,7 +319,12 @@ zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
 
 # Fuzzy finder
 # https://github.com/junegunn/fzf#fuzzy-completion-for-bash-and-zsh
-eval "$(fzf --zsh)"
+if is_mac; then
+  eval "$(fzf --zsh)"
+else
+  [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+fi
+
 
 # Remove fzf deplicates
 setopt HIST_IGNORE_ALL_DUPS
