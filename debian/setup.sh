@@ -109,17 +109,12 @@ done
 sudo snap install neovim --classic
 
 #########################################################################################
-TPM_DIR="$HOME/.tmux/plugins/tpm"
+# Install TPM
+#########################################################################################
 
-if [ -d "$TPM_DIR" ]; then
-  echo "tmux plugin manager (tpm) is already installed."
-else
-  echo "tmux plugin manager (tpm) not found. Installing..."
+if [ ! -d "$TPM_DIR" ]; then
+  echo "TPM directory not found. Cloning the repository..."
   git clone https://github.com/tmux-plugins/tpm "$TPM_DIR"
-  tmux source ~/.tmux.conf
-  if [ $? -eq 0 ]; then
-    echo "tmux plugin manager (tpm) has been successfully installed."
-  else
-    echo "Failed to install tmux plugin manager (tpm). Please check your internet connection and try again."
-  fi
+else
+  echo "TPM directory already exists."
 fi
