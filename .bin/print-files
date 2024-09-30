@@ -1,0 +1,73 @@
+#!/bin/bash
+
+###############################################################################
+#
+# Prints the contents of all files in a folder, recursively.
+#
+# Usage:
+#     print-files <folder_to_traverse> <ignore_patterns...>
+#
+# Arguments:
+#     folder_to_traverse: The folder to traverse.
+#     ignore_patterns...: Patterns to ignore. Any file or folder whose path
+#                         contains one of these patterns will be ignored.
+#
+# Example:
+#     print-files . "*.txt" "*.md"
+#
+###############################################################################
+
+# Check if correct number of arguments are provided
+if [ $# -lt 1 ]; then
+  echo "Usage: $0 <folder_to_traverse> <ignore_patterns...>"
+  exit 1
+fi
+
+# First argument is the folder to traverse
+folder="$1"
+shift
+
+# Remaining arguments are ignore patterns
+ignore_patterns=("$@")
+
+# Function to check if a file/folder should be ignored
+should_ignore() {
+  local path="$1"
+  for pattern in "${ignore_patterns[@]}"; do
+    if [[ "$path" == *"$pattern"* ]]; then
+      return 0 # Should ignore
+    fi
+  done
+  return 1 # Should not ignore
+}
+
+# Function to recursively traverse the folder
+traverse_folder() {
+  local current_folder="$1"
+
+  # Use find to safely iterate over files and directories
+  find "$current_folder" -mindepth 1 -maxdepth 1 | while read -r item; do
+    # Skip if the item should be ignored
+    if should_ignore "$item"; then
+      continue
+    fi
+
+    if [ -f "$item" ]; then
+      # If it's a file, print its name and contents
+      echo "File: $item"
+      echo "Contents:"
+      cat "$item"
+      echo "----------------------------------------"
+    elif [ -d "$item" ]; then
+      # If it's a directory (but not . or ..), recurse into it
+      case "$item" in
+      */.) continue ;;
+      */..) continue ;;
+      *) traverse_folder "$item" ;;
+      esac
+    fi
+  done
+}
+
+# Start traversing from the specified folder
+traverse_folder "$folder"
