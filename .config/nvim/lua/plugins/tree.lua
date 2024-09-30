@@ -130,7 +130,10 @@ return {
         bufhidden = "hide",
       },
       view_options = {
-        show_hidden = false,
+        show_hidden = true,
+      },
+      float = {
+        padding = 3,
       },
       -- Send deleted files to the trash instead of permanently deleting them (:help oil-trash)
       delete_to_trash = true,

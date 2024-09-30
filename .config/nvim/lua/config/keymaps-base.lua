@@ -122,7 +122,9 @@ vim.keymap.set({ "n", "v" }, "<D-t>", lazyterm, { desc = "Terminal (root dir)" }
 vim.keymap.set({ "n", "v" }, "<C-_>", lazyterm, { desc = "Terminal (root dir)" })
 
 -- Oil Plugin
-vim.keymap.set({ "n", "v" }, "<leader>ee", "<cmd>Oil<cr>", { desc = "Open oil" })
+vim.keymap.set({ "n", "v" }, "<leader>ef", function()
+  require("oil").open_float()
+end, { desc = "Explorer buffers", remap = true })
 
 -- Neotree Plugin
 vim.keymap.set({ "n", "v" }, "<leader>es", function()
@@ -158,15 +160,7 @@ vim.keymap.set({ "n", "v" }, "<leader>eg", ":Neotree git_status<CR>", { desc = "
 --     toggle = false,
 --   })
 -- end, { desc = "Explorer git changes", remap = true })
-vim.keymap.set({ "n", "v" }, "<leader>ef", function()
-  require("neo-tree.command").execute({
-    action = "focus",
-    source = "filesystem",
-    toggle = false,
-    position = "float",
-    reveal = true,
-  })
-end, { desc = "Explorer buffers", remap = true })
+vim.keymap.set({ "n", "v" }, "<leader>ee", "<cmd>Oil<cr>", { desc = "Open oil in current window" })
 vim.keymap.set({ "n", "v" }, "<leader>ec", function()
   -- require("edgy").close("left")
   require("neo-tree.command").execute({ action = "close" })
