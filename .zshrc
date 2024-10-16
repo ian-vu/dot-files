@@ -227,9 +227,20 @@ print-files() {
 bindkey '^ ' autosuggest-execute
 bindkey '^[ ' autosuggest-accept
 
+activate_venv() {
+    if [ -d "venv" ]; then
+        source venv/bin/activate
+    elif [ -d ".venv" ]; then
+        source .venv/bin/activate
+    else
+        echo "No virtual environment found. Create one using 'python -m venv venv' or 'python -m venv .venv'"
+    fi
+}
+alias av='activate_venv'
+
 alias de='pyenv deactivate'
 alias activate='pyenv activate ${PWD##*/}'
-alias act='source .venv/bin/activate'
+alias act='activate_venv'
 # alias act='activate'
 
 alias kc=kubectl
@@ -462,3 +473,8 @@ setopt HIST_IGNORE_ALL_DUPS
 setopt HIST_IGNORE_SPACE
 setopt HIST_FIND_NO_DUPS
 setopt HIST_SAVE_NO_DUPS
+
+# This should be last line in .zshrc
+if [[ -f ~/.zshrc_local ]]; then
+  source ~/.zshrc_local
+fi
