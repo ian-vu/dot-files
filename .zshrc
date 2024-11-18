@@ -228,13 +228,17 @@ bindkey '^ ' autosuggest-execute
 bindkey '^[ ' autosuggest-accept
 
 activate_venv() {
-    if [ -d "venv" ]; then
-        source venv/bin/activate
-    elif [ -d ".venv" ]; then
-        source .venv/bin/activate
-    else
-        echo "No virtual environment found. Create one using 'python -m venv venv' or 'python -m venv .venv'"
-    fi
+    local venv_dirs=("venv" ".venv" "env" "Env")
+
+    for dir in "${venv_dirs[@]}"; do
+        if [ -d "$dir" ]; then
+            source "$dir/bin/activate"
+            return 0
+        fi
+    done
+
+    echo "No virtual environment found. Create one using 'python -m venv venv' or 'python -m venv .venv'"
+    return 1
 }
 alias av='activate_venv'
 
