@@ -227,6 +227,10 @@ print-files() {
 bindkey '^ ' autosuggest-execute
 bindkey '^[ ' autosuggest-accept
 
+# Ctrl-x Ctrl-x to edit command line in code editor
+autoload -U edit-command-line
+bindkey '^x^x' edit-command-line
+
 activate_venv() {
     local venv_dirs=("venv" ".venv" "env" "Env")
 
