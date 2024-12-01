@@ -417,8 +417,8 @@ return {
           },
         },
       },
-      general = {
-        update_interval = 200,
+      bar = {
+        debounce = 200,
       },
     },
   },
