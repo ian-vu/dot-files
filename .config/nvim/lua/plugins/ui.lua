@@ -16,6 +16,21 @@ return {
   --   },
   -- },
   {
+    "folke/snacks.nvim",
+    priority = 1000,
+    lazy = false,
+    opts = {
+      dashboard = { enabled = false },
+      lazygit = { enabled = false },
+      rename = { enabled = false },
+      scratch = { enabled = false },
+      terminal = { enabled = false },
+      notifier = {
+        top_down = false,
+      },
+    },
+  },
+  {
     "echasnovski/mini.indentscope",
     enabled = true,
     opts = function(_, opts)
