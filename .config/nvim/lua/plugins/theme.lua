@@ -10,7 +10,7 @@ return {
   },
   {
     "f-person/auto-dark-mode.nvim",
-    enabled = true,
+    enabled = false,
     opts = {
       update_interval = 5000,
       set_dark_mode = function()
