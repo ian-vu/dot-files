@@ -141,6 +141,8 @@ return {
       preview = {
         min_width = { 100, 0.8 },
       },
+      -- Set to true to watch the filesystem for changes and reload oil
+      watch_for_changes = true,
     },
   },
 }
