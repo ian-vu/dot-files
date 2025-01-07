@@ -163,4 +163,5 @@ cask "spotify"
 cask "obsidian"
 cask "meetingbar"
 cask "appcleaner"
+cask "rectangle"
 
