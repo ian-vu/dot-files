@@ -37,3 +37,6 @@ vim.keymap.set(
 
 -- Buffer
 vim.keymap.set("n", "I", "<cmd>bnext<cr>", { desc = "Next buffer", noremap = true })
+
+-- Jump list forwards
+vim.keymap.set("n", "<C-m>", "<C-i>", { desc = "Jump list forwards", noremap = true })
