@@ -350,6 +350,10 @@ setopt HIST_IGNORE_ALL_DUPS
 
 alias f="fzf --preview 'cat {}'"
 
+python-dict-to-json() {
+  python3 -c 'import json, sys; print(json.dumps(eval(sys.stdin.read())))'
+}
+
 # cd to selected parent directory
 fpd() {
   local declare dirs=()
