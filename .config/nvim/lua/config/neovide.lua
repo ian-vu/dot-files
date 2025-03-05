@@ -12,6 +12,9 @@ if vim.g.neovide then
   -- Currently cannot get this to show smooth line with gitsigns :(
   vim.opt.linespace = 4 -- Space between lines
 
+  -- Font
+  vim.o.guifont = "Maple Mono NF"
+
   -- Scale UI
   vim.g.neovide_scale_factor = 1.2
   local change_scale_factor = function(delta)
