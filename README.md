@@ -126,6 +126,7 @@ cask <cask_name>
 Then run the following commands
 
 ```bash
+cd mac
 brew bundle cleanup -v
 brew bundle install --cleanup -v
 ```
