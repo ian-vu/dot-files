@@ -57,8 +57,6 @@ brew "neovim"
 brew "openssh"
 # Search tool like grep and The Silver Searcher
 brew "ripgrep"
-# Powerful, clean, object-oriented scripting language
-brew "ruby"
 # Cross-shell prompt for astronauts
 brew "starship"
 # Organize software neatly under a single directory tree (e.g. /usr/local)
@@ -117,7 +115,7 @@ brew "watch"
 brew "htmlq"
 # psql command line tool for PostgreSQL
 brew "libpq"
-brew "postgresql"
+brew "postgresql@15"
 #########################################################################################
 # Install GNU tools
 #########################################################################################
@@ -164,4 +162,6 @@ cask "obsidian"
 cask "meetingbar"
 cask "appcleaner"
 cask "rectangle"
-
+# Terminal emulator
+cask "ghostty"
+cask "google-cloud-sdk"
