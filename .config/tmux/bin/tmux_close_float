@@ -1,0 +1,10 @@
+#!/usr/bin/env sh
+
+current_session=$(tmux display-message -p -F "#{session_name}")
+
+# Currently in floating session
+case "$current_session" in
+*float*)
+  tmux detach-client
+  ;;
+esac
