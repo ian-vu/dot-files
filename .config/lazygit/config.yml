@@ -6,6 +6,10 @@ gui:
       - bold
   scrollHeight: 20
   nerdFontsVersion: "3"
+  tabWidth: 2
+  commitHashLength: 3
+  enlargedSideViewLocation: top
+  expandFocusedSidePanel: true
 
 git:
   paging:
