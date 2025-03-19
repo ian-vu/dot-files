@@ -299,6 +299,11 @@ return {
         unfold = "i",
         fold_all = "H",
         unfold_all = "I",
+        -- Move down/up by one line and peek_location immediately.
+        -- You can also use outline_window.auto_jump=true to do this for any
+        -- j/k/<down>/<up>.
+        down_and_jump = "<C-n>",
+        up_and_jump = "<C-e>",
       },
     },
   },
