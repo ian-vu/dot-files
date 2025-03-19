@@ -45,7 +45,7 @@ return {
           -- stylua: ignore
           center = {
             { action = 'lua require("persistence").load()', desc = " Restore Session", icon = " ", key = "s"},
-            { action = 'lua require("oil").open_float()',                               desc = " Explorer",        icon = "󱏒 ", key = "e"},
+            { action = 'lua require("oil").open()',         desc = " Explorer",        icon = "󱏒 ", key = "e"},
             { action = "ene | startinsert",                 desc = " New file",        icon = " ", key = "n"},
             { action = "ObsidianToday",                     desc = " Today's note",    icon = "󰇈 ", key = "t"},
             { action = "ObsidianTomorrow",                  desc = " Tomorrow's note", icon = "󰇈 ", key = "T"},
