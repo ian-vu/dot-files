@@ -77,12 +77,6 @@ plugins=(
 
 source $ZSH/oh-my-zsh.sh
 
-# Custom
-# source ~/.oh-my-zsh/custom/plugins/aws_zsh_completer.sh
-
-
-# User configuration
-
 # export MANPATH="/usr/local/man:$MANPATH"
 
 # You may need to manually set your language environment
@@ -99,7 +93,7 @@ source $ZSH/oh-my-zsh.sh
 # export ARCHFLAGS="-arch x86_64"
 
 # ssh
-# export SSH_KEY_PATH="~/.ssh/rsa_id"
+export SSH_KEY_PATH="~/.ssh/keys"
 
 # Set personal aliases, overriding those provided by oh-my-zsh libs,
 # plugins, and themes. Aliases can be placed here, though oh-my-zsh
@@ -169,11 +163,9 @@ alias npr='npm run --silent $*'
 alias chrome="open -a 'Google Chrome'"
 alias arst='asdf'
 
-alias setaws="source ~/.bin/setawsprofile $1"
 
 
 # Export AWS credentials to environment variables. Uses aws-sso-util to initiate login if necessary.
-
 setawsprofile() {
     if [ $# -ne 1 ]; then
         echo "Usage: setawsprofile <profile_name>"
@@ -182,18 +174,6 @@ setawsprofile() {
     fi
 
     export AWS_PROFILE="$1"
-
-    # # Check if aws-sso-util is installed
-    # if ! command -v aws-sso-util &> /dev/null; then
-    #     echo "Error: aws-sso-util is not installed. Please install it and try again."
-    #     return 1
-    # fi
-    #
-    # # Check if the token is valid
-    # if ! aws-sso-util check | grep -q "Token appears to be valid for use"; then
-    #     echo "AWS SSO token is not valid. Initiating login..."
-    #     aws-sso-util
-    # fi
 
     # Export AWS credentials
     eval $(aws configure export-credentials --profile $AWS_PROFILE --format env)
@@ -210,7 +190,7 @@ _setawsprofile_completion() {
     local config_file="$HOME/.aws/config"
     local profiles=""
     
-    profiles=$(grep '^\[profile' "$config_file" | sed -e 's/\[profile //' -e 's/\]//')
+      profiles=$(grep '^\[profile' "$config_file" | sed -e 's/\[profile //' -e 's/\]//')
     
     COMPREPLY=($(compgen -W "$profiles" -- "$cur"))
     return 0
@@ -296,55 +276,16 @@ col() {
 
 alias qwf=col
 
-proxyOn() {
-  export http_proxy=http://localhost:3128
-  export https_proxy=http://localhost:3128
-  export HTTP_PROXY=http://localhost:3128
-  export HTTPS_PROXY=http://localhost:3128
-  ln -sf ~/.ssh/config-proxy-on ~/.ssh/config
-  echo "Telstra Proxy on"
-}
-alias on='proxyOn'
-
-proxyOff() {
-  unset http_proxy
-  unset https_proxy
-  unset HTTP_PROXY
-  unset HTTPS_PROXY
-  ln -sf ~/.ssh/config-proxy-off ~/.ssh/config
-  echo "Telstra Proxy off"
-}
-alias off='proxyOff'
-
-# Switch Mac Location
-alias switch='networksetup -switchtolocation $1'
-alias location='networksetup -getcurrentlocation'
-
-alias wifiStatus='networksetup -getairportpower en0'
-alias wifi='networksetup -setairportpower en0 $1 | echo Wifi $1'
-
 # Open man page in preview
 pman () {
     man -t "${1}" | open -f -a /Applications/Preview.app
 }
 
-
-# Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
 export PATH=/usr/local/bin:$HOME/bin:$PATH
 export PATH="$PATH:$HOME/.rvm/bin"
-export PATH="$PATH:/usr/local/Cellar/python/2.7.13_1/bin"
-export PATH="$PATH:/usr/local/Cellar/openvpn/2.4.3/sbin"
 export PATH="$PATH:/usr/local/sbin"
-export PATH="$PATH:/Applications/Couchbase\ Server.app/Contents/Resources/couchbase-core/bin/cbq"
-export PATH="$PATH:/Users/ivu/dev/git/git-fzf"
 export PATH="$PATH:$HOME/.bin"
 export PATH="$PATH:$HOME/.config/tmux/bin"
-
-
-# Set up fzf-tab
-# autoload -U compinit; compinit
-# source $ZSH_CUSTOM/plugins/fzf-tab/fzf-tab.plugin.zsh
-
 
 # Case insensitive tab completion for zsh
 autoload -Uz compinit && compinit
@@ -358,11 +299,8 @@ else
   [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 fi
 
-
 # Remove fzf deplicates
 setopt HIST_IGNORE_ALL_DUPS
-
-alias f="fzf --preview 'cat {}'"
 
 python-dict-to-json() {
   python3 -c 'import json, sys; print(json.dumps(eval(sys.stdin.read())))'
@@ -400,46 +338,6 @@ sort -u | awk '{print "\x1b[34;1mbranch\x1b[m\t" $1}') || return
   git checkout $(echo "$target" | awk '{print $2}')
 }
 
-# fshow - git commit browser with previews
-alias glNoGraph='git log --color=always --format="%C(auto)%h%d %s %C(black)%C(bold)%cr% C(auto)%an" "$@"'
-local _gitLogLineToHash="echo {} | grep -o '[a-f0-9]\{7\}' | head -1"
-local _viewGitLogLine="$_gitLogLineToHash | xargs -I % sh -c 'git show --color=always % | diff-so-fancy'"
-
-# fcoc_preview - checkout git commit with previews
-fcoc() {
-  local commit
-  commit=$( glNoGraph |
-    fzf --no-sort --reverse --tiebreak=index --no-multi \
-        --ansi --preview $_viewGitLogLine ) &&
-  git checkout $(echo "$commit" | sed "s/ .*//")
-}
-
-# fshow - git commit browser with previews
-fshow() {
-    glNoGraph |
-        fzf --no-sort --reverse --tiebreak=index --no-multi \
-            --ansi --preview $_viewGitLogLine \
-                --header "enter to view, alt-y to copy hash" \
-                --bind "enter:execute:$_viewGitLogLine   | less -R" \
-                --bind "alt-y:execute:$_gitLogLineToHash | xclip"
-}
-
-
-# unalias z
-# z() {
-#   if [[ -z "$*" ]]; then
-#     cd "$(_z -l 2>&1 | fzf +s --tac | sed 's/^[0-9,.]* *//')"
-#   else
-#     _last_z_args="$@"
-#     _z "$@"
-#   fi
-# }
-
-# zz() {
-#   cd "$(_z -l 2>&1 | sed 's/^[0-9,.]* *//' | fzf -q "$_last_z_args")"
-# }
-
-
 # Setting fd as the default source for fzf
 export FZF_DEFAULT_COMMAND="fd -I -E '*/node_modules/*' -E '*/coverage/*'"
 
@@ -455,13 +353,6 @@ export FZF_ALT_C_COMMAND="$FZF_DEFAULT_COMMAND --type d"
 # Hide command number from results
 export FZF_CTRL_R_OPTS="--with-nth 2.."
 
-# # Set up pyenv
-# export PYENV_ROOT="$HOME/.pyenv"
-# command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
-# eval "$(pyenv init -)"
-# eval "$(pyenv virtualenv-init -)"
-# export PYENV_VIRTUALENV_DISABLE_PROMPT=1
-
 # Set up theme Starship
 eval "$(starship init zsh)"
 
@@ -473,7 +364,6 @@ export EDITOR='nvim'
 
 autoload -U +X bashcompinit && bashcompinit
 
-
 # Set up z
 eval "$(zoxide init zsh)"
 
@@ -482,15 +372,6 @@ eval "$(~/.local/bin/mise activate zsh)"
 
 # Set config for lazygit
 export XDG_CONFIG_HOME="$HOME/.config"
-
-# Zsh autocompletions - https://github.com/marlonrichert/zsh-autocomplete?tab=readme-ov-file
-# bindkey '\t' menu-complete "$terminfo[kcbt]" reverse-menu-complete
-# bindkey '\t' menu-select "$terminfo[kcbt]" menu-select
-# bindkey -M menuselect '\t' menu-complete "$terminfo[kcbt]" reverse-menu-complete
-
-# Limit number of lines
-# zstyle ':autocomplete:*' delay 100  # seconds (float)
-# zstyle ':autocomplete:*' default-context history-incremental-search-backward
 
 # Hide duplicates from search history
 setopt HIST_EXPIRE_DUPS_FIRST
