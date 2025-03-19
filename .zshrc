@@ -204,6 +204,20 @@ setawsprofile() {
 
 alias awssetprofile='setawsprofile'
 
+# Add tab completion for AWS profiles by reading directly from ~/.aws/config
+_setawsprofile_completion() {
+    local cur=${COMP_WORDS[COMP_CWORD]}
+    local config_file="$HOME/.aws/config"
+    local profiles=""
+    
+    profiles=$(grep '^\[profile' "$config_file" | sed -e 's/\[profile //' -e 's/\]//')
+    
+    COMPREPLY=($(compgen -W "$profiles" -- "$cur"))
+    return 0
+}
+
+# Register the completion function
+complete -F _setawsprofile_completion setawsprofile
 
 # Function to process files recursively printing path and contents to be used with ai
 print-files() {
