@@ -30,6 +30,9 @@ vim.keymap.set(
   { noremap = true, desc = "Move to pane right" }
 )
 
+-- scroll buffer down
+vim.keymap.set({ "n", "v" }, "<C-k>", "<C-e>", { noremap = true, desc = "Scroll buffer down one line" })
+
 -- vim.keymap.set({ "n", "v", "i" }, "<C-h>", "<C-w>h", { desc = "Go to left window", noremap = true })
 -- vim.keymap.set({ "n", "v", "i" }, "<C-n>", "<C-w>j", { desc = "Go to lower window", noremap = true })
 -- vim.keymap.set({ "n", "v", "i" }, "<C-e>", "<C-w>k", { desc = "Go to upper window", noremap = true })
