@@ -281,6 +281,12 @@ pman () {
     man -t "${1}" | open -f -a /Applications/Preview.app
 }
 
+if is_mac; then
+  export MANPAGER="sh -c 'col -bx | bat -l man -p'"
+else
+  export MANPAGER="sh -c 'col -bx | batcat -l man -p'"
+fi
+
 export PATH=/usr/local/bin:$HOME/bin:$PATH
 export PATH="$PATH:$HOME/.rvm/bin"
 export PATH="$PATH:/usr/local/sbin"
