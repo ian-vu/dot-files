@@ -116,6 +116,8 @@ brew "htmlq"
 # psql command line tool for PostgreSQL
 brew "libpq"
 brew "postgresql@15"
+# Tool for networking 
+brew "telnet"
 #########################################################################################
 # Install GNU tools
 #########################################################################################
