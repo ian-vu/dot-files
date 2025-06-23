@@ -64,7 +64,7 @@
   "outline.nvim": { "branch": "main", "commit": "6c44527837ff7ac1cd054dc365a721e881020a2e" },
   "persistence.nvim": { "branch": "main", "commit": "f6aad7dde7fcf54148ccfc5f622c6d5badd0cc3d" },
   "plenary.nvim": { "branch": "master", "commit": "2d9b06177a975543726ce5c73fca176cedbffe9d" },
-  "render-markdown.nvim": { "branch": "main", "commit": "f3cda24c71261f6a52f5ddafb95786684d862d87" },
+  "render-markdown.nvim": { "branch": "main", "commit": "76f7ce56ccb913632745714f160faa53164c5574" },
   "snacks.nvim": { "branch": "main", "commit": "67894ee778d567c8fb6f3e1e1774d1606d19ed27" },
   "snippet-converter.nvim": { "branch": "main", "commit": "d7e783618f02541641980ebd823e439bdef64a4f" },
   "supermaven-nvim": { "branch": "main", "commit": "07d20fce48a5629686aefb0a7cd4b25e33947d50" },

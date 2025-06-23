@@ -107,6 +107,11 @@ return {
         ["<CR>"] = "actions.select",
         ["<S-s>"] = "actions.select_vsplit",
         -- ["<C-h>"] = "actions.select_split",
+        ["<C-s>"] = {
+          callback = function()
+            require("oil").save()
+          end,
+        },
         ["<C-h>"] = false,
         ["<C-t>"] = "actions.select_tab",
         ["<C-p>"] = "actions.preview",
@@ -127,7 +132,7 @@ return {
       },
       -- Buffer-local options to use for oil buffers
       buf_options = {
-        buflisted = false,
+        buflisted = true,
         bufhidden = "hide",
       },
       view_options = {

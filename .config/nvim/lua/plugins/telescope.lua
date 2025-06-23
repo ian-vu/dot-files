@@ -27,6 +27,8 @@ return {
       FILE_IGNORE_PATTERNS = {
         ".git",
         "node_modules",
+        "node_modules",
+        "package-lock.json",
         "venv",
         ".venv",
         "__pycache__",
