@@ -17,8 +17,6 @@ tap "hashicorp/tap"
 #########################################################################################
 # Run your GitHub Actions locally
 brew "act"
-# Extendable version manager with support for Ruby, Node.js, Erlang & more
-brew "asdf"
 # Per-project, per-directory shell environments
 brew "autoenv"
 # Official Amazon AWS command-line interface
