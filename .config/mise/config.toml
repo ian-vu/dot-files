@@ -5,3 +5,6 @@ nodejs = "22"
 ruby = "3.3.4"
 node = "latest"
 
+[settings]
+# Add support for files like .python-version, .node-version, etc.
+idiomatic_version_file_enable_tools = ["python", "node"]
