@@ -162,6 +162,7 @@ alias zshrca='atom ~/.zshrc'
 alias npr='npm run --silent $*'
 alias chrome="open -a 'Google Chrome'"
 alias arst='asdf'
+alias claude="~/.claude/local/claude"
 
 
 
@@ -292,6 +293,7 @@ export PATH="$PATH:$HOME/.rvm/bin"
 export PATH="$PATH:/usr/local/sbin"
 export PATH="$PATH:$HOME/.bin"
 export PATH="$PATH:$HOME/.config/tmux/bin"
+export PATH="$PATH:/usr/local/bin"
 
 # Case insensitive tab completion for zsh
 autoload -Uz compinit && compinit
@@ -368,6 +370,13 @@ export EDITOR='nvim'
 
 # eval $(thefuck --alias)
 
+# Add brew executables to tab completion
+if type brew &>/dev/null; then
+  FPATH="$(brew --prefix)/share/zsh/completions:${FPATH}"
+  autoload -Uz compinit
+  compinit
+fi
+
 autoload -U +X bashcompinit && bashcompinit
 
 # Set up z
@@ -391,3 +400,4 @@ setopt HIST_SAVE_NO_DUPS
 if [[ -f ~/.zshrc_local ]]; then
   source ~/.zshrc_local
 fi
+
