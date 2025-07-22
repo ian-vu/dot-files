@@ -11,10 +11,28 @@ tap "mrkai77/cask"
 tap "noahgorstein/tap"
 tap "warrensbox/tap"
 tap "hashicorp/tap"
+# For sketchybar
+tap "FelixKratz/formulae"
 
 #########################################################################################
 # Brews
 #########################################################################################
+
+#########################################################################################
+# Install GNU tools
+#########################################################################################
+brew "coreutils"
+brew "ed"
+brew "findutils"
+brew "gawk"
+brew "gnu-sed"
+brew "gnu-tar"
+brew "grep"
+brew "make"
+#########################################################################################
+# End
+#########################################################################################
+
 # Run your GitHub Actions locally
 brew "act"
 # Per-project, per-directory shell environments
@@ -116,21 +134,16 @@ brew "libpq"
 brew "postgresql@15"
 # Tool for networking 
 brew "telnet"
-#########################################################################################
-# Install GNU tools
-#########################################################################################
-brew "coreutils"
-brew "ed"
-brew "findutils"
-brew "gawk"
-brew "gnu-sed"
-brew "gnu-tar"
-brew "grep"
-brew "make"
-#########################################################################################
-# End
-#########################################################################################
-
+# MonogoDB shell
+brew "mongosh"
+# Used for file type identification
+brew "libmagic"
+# xml query tool / formatter
+brew "xq"
+# MacOS menu bar
+brew "sketchybar"
+# Fast Rust NPM package manager
+brew "pnpm"
 
 #########################################################################################
 # Casks
@@ -165,3 +178,9 @@ cask "rectangle"
 # Terminal emulator
 cask "ghostty"
 cask "google-cloud-sdk"
+cask "raycast"
+cask "font-maple-mono-nf"
+cask "slack"
+# Docker replacement
+cask "orbstack"
+cask "session-manager-plugin"
