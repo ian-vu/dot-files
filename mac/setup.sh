@@ -91,6 +91,17 @@ else
   fi
 fi
 
+# Install poetry
+if ! command -v poetry &>/dev/null; then
+  echo "Installing poetry..."
+  curl -sSL https://install.python-poetry.org | python3 -
+  if [ $? -eq 0 ]; then
+    echo "Poetry has been successfully installed."
+  else
+    echo "There was an error installing poetry. Please check your internet connection and try again."
+  fi
+fi
+
 # Configure auto hide/appear dock settings
 defaults write com.apple.dock autohide-time-modifier -float 0.7
 defaults write com.apple.dock autohide-delay -float 0
