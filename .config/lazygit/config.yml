@@ -1,3 +1,8 @@
+#
+# Link to lazygit configuration file documentation
+# https://github.com/jesseduffield/lazygit/blob/master/docs/Config.md
+#
+
 gui:
   sidePanelWidth: 0.25 # gives you more space to show things side-by-side
   theme:
@@ -27,3 +32,9 @@ keybinding:
     prevItem: "e"
     edit: "E"
     new: "N"
+    scrollUpMain-alt1: <c-b>
+    scrollDownMain-alt1: <c-f>
+    filteringMenu: "J" # <c-f> is already used for page down
+  files:
+    findBaseCommitForFixup: J # <c-f> is already used for page down
+    openStatusFilter: K # <c-b> is already used for page down
