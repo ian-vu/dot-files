@@ -16,6 +16,16 @@ gui:
   enlargedSideViewLocation: top
   expandFocusedSidePanel: true
 
+  # If true, add a "/" root item in the file tree representing the root of the repository. It is only added when necessary, i.e. when there is more than one item at top level.
+  showRootItemInFileTree: false
+
+  # Whether to show the divergence from the base branch in the branches view.
+  # One of: 'none' | 'onlyArrow'  | 'arrowAndNumber'
+  showDivergenceFromBaseBranch: arrowAndNumber
+
+  # How things are filtered when typing '/'.
+  # One of 'substring' (default) | 'fuzzy'
+  filterMode: substring
 git:
   paging:
     colorArg: always
@@ -26,6 +36,24 @@ git:
     # Use gitconfig
     # useConfig: true
 
+  # If true, lazygit will automatically stage files that used to have merge
+  # conflicts but no longer do; and it will also ask you if you want to
+  # continue a merge or rebase if you've resolved all conflicts. If false, it
+  # won't do either of these things.
+  autoStageResolvedConflicts: false
+
+  # If true, parse emoji strings in commit messages e.g. render :rocket: as 🚀
+  # (This should really be under 'gui', not 'git')
+  parseEmoji: true
+
+  log:
+    # One of: 'date-order' | 'author-date-order' | 'topo-order' | 'default'
+    # 'topo-order' makes it easier to read the git log graph, but commits may not
+    # appear chronologically. See https://git-scm.com/docs/
+    #
+    # Can be changed from within Lazygit with `Log menu -> Commit sort order` (`<c-l>` in the commits window by default).
+    order: date-order
+
 keybinding:
   universal:
     nextItem: "n"
@@ -35,6 +63,12 @@ keybinding:
     scrollUpMain-alt1: <c-b>
     scrollDownMain-alt1: <c-f>
     filteringMenu: "J" # <c-f> is already used for page down
+    scrollRight: I
+    prevPage: <c-u>
+    nextPage: <c-d>
+    undo: u
+    redo: <c-r>
   files:
     findBaseCommitForFixup: J # <c-f> is already used for page down
     openStatusFilter: K # <c-b> is already used for page down
+
