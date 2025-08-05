@@ -204,6 +204,13 @@ vim.keymap.set({ "n" }, "<leader>gf", "<cmd>DiffviewFileHistory %<CR>", { desc =
 vim.keymap.set({ "n" }, "<leader>gF", "<cmd>DiffviewFileHistory<CR>", { desc = "File history with other files" })
 vim.keymap.set({ "n" }, "<leader>gx", "<cmd>DiffviewClose<CR>", { desc = "Git diff close" })
 
+-- Octo (pull request plugin)
+vim.keymap.set({ "n" }, "<leader>gpl", function()
+  print("Listing PRs...")
+  vim.cmd("Octo pr list")
+end, { desc = "List PRs" })
+vim.keymap.set({ "n" }, "<leader>gpr", "<cmd>Octo review<CR>", { desc = "Review start/resume" })
+
 vim.api.nvim_set_keymap("", "<D-v>", "+p<CR>", { noremap = true, silent = true })
 vim.api.nvim_set_keymap("!", "<D-v>", "<C-R>+", { noremap = true, silent = true })
 vim.api.nvim_set_keymap("t", "<D-v>", "<C-R>+", { noremap = true, silent = true })
@@ -257,6 +264,18 @@ vim.keymap.set({ "n", "v" }, "<leader>cd", function()
   }
   vim.diagnostic.open_float(nil, opts)
 end, { desc = "Line diagnostic" })
+
+-- Copy current diagnostic message to clipboard
+vim.keymap.set("n", "<leader>cyd", function()
+  local diagnostics = vim.diagnostic.get(0, { lnum = vim.fn.line(".") - 1 })
+  if #diagnostics > 0 then
+    local message = diagnostics[1].message
+    vim.fn.setreg("+", message)
+    print("Copied diagnostic: " .. message)
+  else
+    print("No diagnostic on current line")
+  end
+end, { desc = "Copy diagnostic message" })
 
 -- harpoon
 vim.keymap.set({ "n", "v" }, "<leader>ha", function()
