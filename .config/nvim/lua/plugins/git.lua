@@ -8,9 +8,19 @@ return {
         enhanced_diff_hl = false,
         keymaps = {
           view = {
-            { "n", "q", "<cmd>DiffviewClose<cr>", { desc = "Close diffview" } },
+            {
+              "n",
+              "<tab>",
+              "<cmd>TmuxNavigateRight<cr>",
+              { desc = "Right pane" },
+            },
+            { "n", "]q", actions.select_next_entry, { desc = "Open the diff for the next file" } },
+            { "n", "[q", actions.select_prev_entry, { desc = "Open the diff for the next file" } },
+            { "n", "<c-q>", "<cmd>DiffviewClose<cr>", { desc = "Close diffview" } },
+            { "n", "<s-tab>", nil }, -- disable shift tab
           },
           file_panel = {
+            { "n", "<c-q>", "<cmd>DiffviewClose<cr>", { desc = "Close diffview" } },
             {
               "n",
               " ",
@@ -21,10 +31,13 @@ return {
             { "n", "<C-u>", actions.scroll_view(-0.4), { desc = "Scroll up half page" } },
             { "n", "<C-f>", actions.scroll_view(0.8)({ desc = "Scroll down full page" }) },
             { "n", "<C-b>", actions.scroll_view(-0.8), { desc = "Scroll up full page" } },
-            { "n", "j", actions.select_next_entry, { desc = "Open the diff for the next file" } },
-            { "n", "k", actions.select_prev_entry, { desc = "Open the diff for the next file" } },
+            { "n", "]q", actions.select_next_entry, { desc = "Open the diff for the next file" } },
+            { "n", "[q", actions.select_prev_entry, { desc = "Open the diff for the next file" } },
+            { "n", "n", actions.select_next_entry, { desc = "Open the diff for the next file" } },
+            { "n", "e", actions.select_prev_entry, { desc = "Open the diff for the next file" } },
+            { "n", "<tab>", nil }, -- disable shift tab
             { "n", "<cr>", actions.focus_entry, { desc = "Focus entry" } },
-            { "n", "q", "<cmd>DiffviewClose<cr>", { desc = "Close diffview" } },
+            { "n", "<c-q>", "<cmd>DiffviewClose<cr>", { desc = "Close diffview" } },
             {
               "n",
               "c",
@@ -51,7 +64,21 @@ return {
             },
           },
           file_history_panel = {
-            { "n", "q", "<cmd>DiffviewClose<cr>", { desc = "Close diffview" } },
+            { "n", "<c-q>", "<cmd>DiffviewClose<cr>", { desc = "Close diffview" } },
+            {
+              "n",
+              "<tab>",
+              "<cmd>TmuxNavigateRight<cr>",
+              { desc = "Right pane" },
+            },
+          },
+          option_panel = {
+            {
+              "n",
+              "<tab>",
+              "<cmd>TmuxNavigateRight<cr>",
+              { desc = "Right pane" },
+            },
           },
         },
         view = {
@@ -134,15 +161,35 @@ return {
   --   config = true,
   -- },
   --
-  -- { -- github pr
-  --   "pwntester/octo.nvim",
-  --   requires = {
-  --     "nvim-lua/plenary.nvim",
-  --     "nvim-telescope/telescope.nvim",
-  --     "nvim-tree/nvim-web-devicons",
-  --   },
-  --   opts = {},
-  -- },
+  { -- github pull request pr
+    "pwntester/octo.nvim",
+    requires = {
+      "nvim-lua/plenary.nvim",
+      "nvim-telescope/telescope.nvim",
+      "nvim-tree/nvim-web-devicons",
+    },
+    opts = {
+      use_local_fs = true,
+      mappings = {
+        review_thread = {
+          close_review_tab = { lhs = "<C-q>", desc = "close review tab" },
+        },
+        submit_win = {
+          close_review_tab = { lhs = "<C-q>", desc = "close submit tab", mode = { "n", "i" } },
+        },
+        review_diff = {
+          close_review_tab = { lhs = "<C-q>", desc = "close review tab" },
+          -- select_next_entry = { lhs = "<tab>", desc = "move to next changed file" },
+          -- select_prev_entry = { lhs = "<s-tab>", desc = "move to previous changed file" },
+          add_review_comment = { lhs = "<leader>gpc", desc = "add a new review comment", mode = { "n", "x" } },
+          add_review_suggestion = { lhs = "<leader>gps", desc = "add a new review suggestion", mode = { "n", "x" } },
+        },
+        file_panel = {
+          close_review_tab = { lhs = "<C-q>", desc = "close review tab" },
+        },
+      },
+    },
+  },
   {
     "julienvincent/hunk.nvim",
     cmd = { "DiffEditor" },
