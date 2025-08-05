@@ -15,6 +15,9 @@ version_format = '${raw}'
 # [line_break]
 # disabled = true
 
+[package]
+disabled = true
+
 [character] # The name of the module we are configuring is 'character'
 success_symbol = '[➜](bold green)'
 error_symbol = '[➜](bold red)'
