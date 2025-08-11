@@ -138,29 +138,15 @@
                         ]
                     },
                     {
-                        "description": "Z to Ctrl",
+                        "description": "v to Ctrl",
                         "manipulators": [
                             {
                                 "from": {
-                                    "key_code": "z",
+                                    "key_code": "v",
                                     "modifiers": { "optional": ["any"] }
                                 },
                                 "to": [{ "key_code": "right_control" }],
-                                "to_if_alone": [{ "key_code": "z" }],
-                                "type": "basic"
-                            }
-                        ]
-                    },
-                    {
-                        "description": "/ to Ctrl",
-                        "manipulators": [
-                            {
-                                "from": {
-                                    "key_code": "slash",
-                                    "modifiers": { "optional": ["any"] }
-                                },
-                                "to": [{ "key_code": "right_control" }],
-                                "to_if_alone": [{ "key_code": "slash" }],
+                                "to_if_alone": [{ "key_code": "v" }],
                                 "type": "basic"
                             }
                         ]
@@ -306,14 +292,6 @@
                         "is_keyboard": true,
                         "product_id": 306,
                         "vendor_id": 1390
-                    },
-                    "ignore": true
-                },
-                {
-                    "identifiers": {
-                        "is_keyboard": true,
-                        "product_id": 18805,
-                        "vendor_id": 12951
                     },
                     "ignore": true
                 },
