@@ -40,3 +40,11 @@ vim.cmd("autocmd User TelescopePreviewerLoaded setlocal wrap")
 vim.api.nvim_create_autocmd("FileType", {
   command = "set formatoptions-=o",
 })
+
+-- Auto-load markdown filetype for .mdc files
+vim.api.nvim_create_autocmd({"BufRead", "BufNewFile"}, {
+  pattern = {"*.mdc"},
+  callback = function()
+    vim.bo.filetype = "markdown"
+  end,
+})
