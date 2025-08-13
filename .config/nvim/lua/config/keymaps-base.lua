@@ -201,6 +201,12 @@ vim.keymap.set(
 )
 vim.keymap.set({ "n" }, "<leader>gs", "<cmd>DiffviewFileHistory -g --range=stash<CR>", { desc = "Stash" })
 vim.keymap.set({ "n" }, "<leader>gf", "<cmd>DiffviewFileHistory %<CR>", { desc = "File history current file only" })
+vim.keymap.set(
+  { "v" },
+  "<leader>gl",
+  "<cmd>'<,'>DiffviewFileHistory<CR>",
+  { desc = "File history current selected lines" }
+)
 vim.keymap.set({ "n" }, "<leader>gF", "<cmd>DiffviewFileHistory<CR>", { desc = "File history with other files" })
 vim.keymap.set({ "n" }, "<leader>gx", "<cmd>DiffviewClose<CR>", { desc = "Git diff close" })
 
@@ -276,6 +282,23 @@ vim.keymap.set("n", "<leader>cyd", function()
     print("No diagnostic on current line")
   end
 end, { desc = "Copy diagnostic message" })
+
+-- Copy current line number to clipboard
+vim.keymap.set("n", "<leader>cyl", function()
+  local git_root = vim.fn.system("git rev-parse --show-toplevel 2>/dev/null"):gsub("\n", "")
+  local current_file = vim.fn.expand("%:p")
+  local relative_path
+
+  if vim.v.shell_error == 0 and git_root ~= "" then
+    relative_path = vim.fn.fnamemodify(current_file, ":s?" .. git_root .. "/??")
+  else
+    relative_path = vim.fn.expand("%")
+  end
+
+  local file_line = relative_path .. ":" .. vim.fn.line(".")
+  vim.fn.setreg("+", file_line)
+  print("Copied: " .. file_line)
+end, { desc = "Copy line number" })
 
 -- harpoon
 vim.keymap.set({ "n", "v" }, "<leader>ha", function()
