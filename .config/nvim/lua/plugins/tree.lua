@@ -141,6 +141,13 @@ return {
       float = {
         padding = 3,
       },
+      lsp_file_methods = {
+        -- Time to wait for LSP file operations to complete before skipping
+        timeout_ms = 2000,
+        -- Set to true to autosave buffers that are updated with LSP willRenameFiles
+        -- Set to "unmodified" to only save unmodified buffers
+        autosave_changes = true,
+      },
       -- Send deleted files to the trash instead of permanently deleting them (:help oil-trash)
       delete_to_trash = true,
       preview = {
