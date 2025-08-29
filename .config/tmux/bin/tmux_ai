@@ -12,11 +12,11 @@ ai_pane=$(tmux list-panes -F "#{pane_id} #{pane_current_command}" | grep -m1 "${
 # Case 1: No AI process running - split and start claude
 if [ -z "$ai_pane" ]; then
   tmux split-window -h "$ai_process_command"
+  tmux select-pane -R
 
 # Case 2: Currently in AI process pane - swap to right pane and maximize
 elif [[ "$current_command" == "$ai_process" ]]; then
   tmux select-pane -R
-  tmux resize-pane -Z
 
 # Case 3: AI process is running but current pane isn't AI process - just maximize
 else
