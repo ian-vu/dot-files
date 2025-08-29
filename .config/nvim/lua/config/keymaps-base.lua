@@ -192,7 +192,19 @@ vim.keymap.set(
 )
 
 -- diffview
-vim.keymap.set({ "n" }, "<leader>gd", "<cmd>DiffviewOpen<CR>", { desc = "Diff view local changes" })
+vim.keymap.set({ "n" }, "<leader>gd", function()
+  for _, tab in ipairs(vim.api.nvim_list_tabpages()) do
+    for _, win in ipairs(vim.api.nvim_tabpage_list_wins(tab)) do
+      local buf = vim.api.nvim_win_get_buf(win)
+      local filetype = vim.api.nvim_buf_get_option(buf, "filetype")
+      if filetype == "DiffviewFiles" then
+        vim.api.nvim_set_current_tabpage(tab)
+        return
+      end
+    end
+  end
+  vim.cmd("DiffviewOpen")
+end, { desc = "Diff view local changes" })
 vim.keymap.set(
   { "n" },
   "<leader>gD",
@@ -271,20 +283,8 @@ vim.keymap.set({ "n", "v" }, "<leader>cd", function()
   vim.diagnostic.open_float(nil, opts)
 end, { desc = "Line diagnostic" })
 
--- Copy current diagnostic message to clipboard
-vim.keymap.set("n", "<leader>cyd", function()
-  local diagnostics = vim.diagnostic.get(0, { lnum = vim.fn.line(".") - 1 })
-  if #diagnostics > 0 then
-    local message = diagnostics[1].message
-    vim.fn.setreg("+", message)
-    print("Copied diagnostic: " .. message)
-  else
-    print("No diagnostic on current line")
-  end
-end, { desc = "Copy diagnostic message" })
-
--- Copy current line number to clipboard
-vim.keymap.set("n", "<leader>cyl", function()
+-- Helper functions for copy keymaps
+local function get_file_line()
   local git_root = vim.fn.system("git rev-parse --show-toplevel 2>/dev/null"):gsub("\n", "")
   local current_file = vim.fn.expand("%:p")
   local relative_path
@@ -295,10 +295,48 @@ vim.keymap.set("n", "<leader>cyl", function()
     relative_path = vim.fn.expand("%")
   end
 
-  local file_line = relative_path .. ":" .. vim.fn.line(".")
+  return relative_path .. ":" .. vim.fn.line(".")
+end
+
+local function get_current_diagnostic()
+  local diagnostics = vim.diagnostic.get(0, { lnum = vim.fn.line(".") - 1 })
+  if #diagnostics > 0 then
+    return diagnostics[1].message
+  end
+  return nil
+end
+
+-- Copy current diagnostic message to clipboard
+vim.keymap.set("n", "<leader>cyd", function()
+  local message = get_current_diagnostic()
+  if message then
+    vim.fn.setreg("+", message)
+    print("Copied diagnostic: " .. message)
+  else
+    print("No diagnostic on current line")
+  end
+end, { desc = "Copy diagnostic message" })
+
+-- Copy current line number to clipboard
+vim.keymap.set("n", "<leader>cyl", function()
+  local file_line = get_file_line()
   vim.fn.setreg("+", file_line)
   print("Copied: " .. file_line)
 end, { desc = "Copy line number" })
+
+-- Copy current line number and diagnostic message to clipboard
+vim.keymap.set("n", "cyD", function()
+  local file_line = get_file_line()
+  local diagnostic = get_current_diagnostic()
+  
+  if diagnostic then
+    local result = string.format("Code path: %s, Diagnostic: %s", file_line, diagnostic)
+    vim.fn.setreg("+", result)
+    print("Copied: " .. result)
+  else
+    print("No diagnostic on current line")
+  end
+end, { desc = "Copy line number and diagnostic" })
 
 -- harpoon
 vim.keymap.set({ "n", "v" }, "<leader>ha", function()
