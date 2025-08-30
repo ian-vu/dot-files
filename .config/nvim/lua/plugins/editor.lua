@@ -336,9 +336,9 @@ return {
       -- },
     },
   },
-
   { -- breadcrumbs
     "Bekaboo/dropbar.nvim",
+    enabled = false,
     -- optional, but required for fuzzy finder support
     dependencies = {
       "nvim-telescope/telescope-fzf-native.nvim",
@@ -426,5 +426,22 @@ return {
         debounce = 200,
       },
     },
+  },
+  {
+    "nvim-treesitter/nvim-treesitter-context",
+    opts = {
+      multiwindow = true,
+      seperator = "~",
+    },
+    config = function(_, opts)
+      require("treesitter-context").setup(opts)
+      vim.cmd("hi TreesitterContext None")
+      -- vim.cmd("hi TreesitterContextBottom gui=underline guisp=Grey")
+      vim.cmd("hi TreesitterContextLineNumberBottom gui=underline guisp=Grey")
+    end,
+  },
+  {
+    "oribarilan/lensline.nvim",
+    tag = "1.0.0",
   },
 }
