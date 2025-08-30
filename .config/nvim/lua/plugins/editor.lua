@@ -440,8 +440,4 @@ return {
       vim.cmd("hi TreesitterContextLineNumberBottom gui=underline guisp=Grey")
     end,
   },
-  {
-    "oribarilan/lensline.nvim",
-    tag = "1.0.0",
-  },
 }
