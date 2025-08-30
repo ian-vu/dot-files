@@ -328,7 +328,7 @@ end, { desc = "Copy line number" })
 vim.keymap.set("n", "cyD", function()
   local file_line = get_file_line()
   local diagnostic = get_current_diagnostic()
-  
+
   if diagnostic then
     local result = string.format("Code path: %s, Diagnostic: %s", file_line, diagnostic)
     vim.fn.setreg("+", result)
@@ -446,3 +446,8 @@ vim.keymap.set("n", "<leader>oT", "<cmd>ObsidianTomorrow<CR>", { desc = "Tomorro
 
 -- breadcrumbs
 vim.keymap.set("n", "<leader>cb", "<cmd>lua require('dropbar.api').pick()<CR>", { desc = "Select breadcrumbs" })
+
+-- treesitter context
+vim.keymap.set("n", "<leader>uH", function()
+  require("treesitter-context").toggle()
+end, { desc = "Toggle Header Treesitter Context" })
