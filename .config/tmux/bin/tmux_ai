@@ -19,7 +19,7 @@ elif [[ "$current_command" == "$ai_process" ]]; then
   tmux select-pane -L
   tmux resize-pane -Z
 
-# Case 3: AI process is running but current pane isn't AI process - switch to it
+# Case 3: AI process is running but current pane isn't AI process - close hide the pane
 else
-  tmux select-pane -R
+  tmux resize-pane -Z
 fi
