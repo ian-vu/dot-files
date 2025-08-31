@@ -7,8 +7,13 @@ gui:
   sidePanelWidth: 0.25 # gives you more space to show things side-by-side
   theme:
     activeBorderColor:
+      # - "#82AAFF"
       - green
       - bold
+    selectedLineBgColor:
+      - "#2E3F76"
+  #  authorColors:
+  #    "*": white
   scrollHeight: 20
   nerdFontsVersion: "3"
   tabWidth: 2
