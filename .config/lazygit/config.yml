@@ -8,7 +8,7 @@ gui:
   theme:
     activeBorderColor:
       # - "#82AAFF"
-      - green
+      - "#DE8563"
       - bold
     selectedLineBgColor:
       - "#2E3F76"
