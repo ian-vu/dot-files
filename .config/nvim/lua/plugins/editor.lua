@@ -149,6 +149,7 @@ return {
     optional = true,
     event = "VeryLazy",
     opts = {
+      preset = "helix",
       spec = {
         {
           mode = { "n", "v" },
