@@ -152,16 +152,7 @@ vim.keymap.set({ "n", "v" }, "<leader>eg", ":Neotree git_status<CR>", { desc = "
 --     toggle = false,
 --   })
 -- end, { desc = "Explorer git changes", remap = true })
-vim.keymap.set({ "n", "v" }, "<leader>ee", "<cmd>Oil<cr>", { desc = "Open oil in current window" })
-vim.keymap.set({ "n", "v" }, "<leader>ec", function()
-  -- require("edgy").close("left")
-  require("neo-tree.command").execute({ action = "close" })
-end, { desc = "Close", remap = true })
-vim.keymap.set({ "n", "v" }, "<leader>er", function()
-  -- require("edgy").close("left")
-  require("neo-tree.command").execute({ position = "right" })
-end, { desc = "Right position", remap = true })
-
+vim.keymap.set({ "n", "v" }, "<leader>e", "<cmd>Oil<cr>", { desc = "Open oil in current window" })
 -- Comment Plugin
 -- Normal mode mappings
 vim.keymap.set(
@@ -177,7 +168,7 @@ vim.keymap.set(
   { desc = "Comment line", noremap = true }
 )
 
--- Normal mode mappings
+-- Visual mode mappings
 vim.keymap.set(
   { "v" },
   "<leader>/",
