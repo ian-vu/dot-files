@@ -14,7 +14,7 @@ PLUGIN_DIR="$CONFIG_DIR/plugins"
 # If you are looking for other colors, see the color picker:
 # https://felixkratz.github.io/SketchyBar/config/tricks#color-picker
 
-sketchybar --bar position=top height=32 blur_radius=30 color=0x40000000
+sketchybar --bar position=top height=39 blur_radius=30 color=0x40000000
 
 #sketchybar --load-font ~/Library/Fonts/JetBrainsMonoNLNerdFont-Regular.ttf
 
