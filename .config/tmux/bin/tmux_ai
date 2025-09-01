@@ -19,9 +19,9 @@ elif [[ "$current_command" == "$ai_process" ]]; then
   tmux select-pane -L
   tmux resize-pane -Z
 
-# Case 3: AI process is running and current pane is maximized - go to right pane (AI)
+# Case 3: AI process is running and current pane is maximized - go to AI pane directly
 elif [[ $(tmux display-message -p "#{window_zoomed_flag}") == "1" ]]; then
-  tmux select-pane -R
+  tmux select-pane -t "$ai_pane"
 
 # Case 4: AI process is running but current pane isn't AI process - close hide the pane
 else
