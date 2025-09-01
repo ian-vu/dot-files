@@ -11,15 +11,19 @@ ai_pane=$(tmux list-panes -F "#{pane_id} #{pane_current_command}" | grep -m1 "${
 
 # Case 1: No AI process running - split and start claude
 if [ -z "$ai_pane" ]; then
-  # tmux split-window -h "$ai_process_command"
-  tmux split-window -h "$ai_process_command"
+  tmux split-window -h -l "35%" "$ai_process_command"
+  # tmux split-window -h -l 80 "$ai_process_command"
 
-# Case 2: Currently in AI process pane - swap to right pane and maximize effective hiding AI
+# Case 2: Currently in AI process pane - swap to left pane and maximize effective hiding AI
 elif [[ "$current_command" == "$ai_process" ]]; then
   tmux select-pane -L
   tmux resize-pane -Z
 
-# Case 3: AI process is running but current pane isn't AI process - close hide the pane
+# Case 3: AI process is running and current pane is maximized - go to right pane (AI)
+elif [[ $(tmux display-message -p "#{window_zoomed_flag}") == "1" ]]; then
+  tmux select-pane -R
+
+# Case 4: AI process is running but current pane isn't AI process - close hide the pane
 else
   tmux resize-pane -Z
 fi
