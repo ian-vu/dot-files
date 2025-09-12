@@ -1,0 +1,15 @@
+[mgr]
+prepend_keymap = [
+  { on = [
+    "e",
+  ], run = "arrow -1", desc = "Move cursor up" },
+  { on = [
+    "n",
+  ], run = "arrow 1", desc = "Move cursor down" },
+  { on = [
+    "i",
+  ], run = "enter", desc = "Move cursor down" },
+  { on = [
+    "h",
+  ], run = "leave", desc = "Move cursor down" },
+]

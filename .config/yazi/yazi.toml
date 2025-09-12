@@ -1,0 +1,12 @@
+[mgr]
+show_hidden = true
+
+[manager]
+keymap = [
+  { on = [
+    "e",
+  ], run = "arrow -1", desc = "Move cursor up" },
+  { on = [
+    "n",
+  ], run = "arrow 1", desc = "Move cursor down" },
+]
