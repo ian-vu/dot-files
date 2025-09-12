@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # This script helps with pane toggling of panes with AI agents.
-# The aim is to have the agent running on the right pane.
+# The aim is to have the agent running on the left pane.
 
 # Set the process name to look for - currently claude cli runs under "node"
 ai_process="node"
@@ -11,12 +11,12 @@ ai_pane=$(tmux list-panes -F "#{pane_id} #{pane_current_command}" | grep -m1 "${
 
 # Case 1: No AI process running - split and start claude
 if [ -z "$ai_pane" ]; then
-  tmux split-window -h -l "35%" "$ai_process_command"
+  tmux split-window -h -l "35%" -b "$ai_process_command"
   # tmux split-window -h -l 80 "$ai_process_command"
 
-# Case 2: Currently in AI process pane - swap to left pane and maximize effective hiding AI
+# Case 2: Currently in AI process pane - swap to right pane and maximize effective hiding AI
 elif [[ "$current_command" == "$ai_process" ]]; then
-  tmux select-pane -L
+  tmux select-pane -R
   tmux resize-pane -Z
 
 # Case 3: AI process is running and current pane is maximized - go to AI pane directly
