@@ -124,7 +124,7 @@
                         ]
                     },
                     {
-                        "description": ", + c to Escape",
+                        "description": ", + c to Escape and Ctrl+C",
                         "manipulators": [
                             {
                                 "from": {
@@ -134,7 +134,13 @@
                                         "optional": ["any"]
                                     }
                                 },
-                                "to": [{ "key_code": "escape" }],
+                                "to": [
+                                    { "key_code": "escape" },
+                                    {
+                                        "key_code": "c",
+                                        "modifiers": ["left_control"]
+                                    }
+                                ],
                                 "type": "basic"
                             }
                         ]
