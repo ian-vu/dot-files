@@ -4,7 +4,7 @@
 #
 
 gui:
-  sidePanelWidth: 0.25 # gives you more space to show things side-by-side
+  sidePanelWidth: 0.20 # gives you more space to show things side-by-side
   theme:
     activeBorderColor:
       # - "#82AAFF"
