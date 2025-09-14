@@ -1,10 +1,11 @@
 # This is Git's per-user configuration file.
 [user]
-	name = ian-vu
+	name = Ian Vu
 	email = iaanvuu@gmail.com
-# Please adapt and uncomment the following lines:
-#	name = Ian Vu
-#	email = ivu@Ians-MacBook-Pro.local
+
+# Work-specific config for repositories in ~/dev/work/
+[includeIf "gitdir:/Users/ivu/dev/work/**"]
+    path = /Users/ivu/.gitconfig-work
 
 [push]
   # Automatically set up remote for pushing

@@ -12,6 +12,7 @@ This will install the required `gnu-stow` brew along with
 all formulas and applications
 
 ```bash
+cd mac
 brew bundle install -v
 ```
 
@@ -153,6 +154,64 @@ age --encrypt --identity ~/.age/secret-key.txt <PATH_TO_FILE> <ENCRYPTED_FILE_PA
 
 ```bash
 age --decrypt --identity ~/.age/secret-key.txt <ENCRYPTED_FILE_PATH>
+```
+
+## Git Configuration
+
+This repository uses a conditional Git configuration setup to automatically switch between personal and work identities based on the directory structure.
+
+### How it works
+
+- **Default (Personal)**: All repositories default to personal email (`personal@gmail.com`)
+- **Work Override**: Repositories in `~/dev/work/**` automatically use work email (`work@company.com`)
+
+### Directory Structure
+
+```
+~/dev/
+├── work/                 # All work repositories go here
+│   ├── company-project/ # Current company repositories
+│   ├── company-api/
+│   └── company-docs/
+├── personal/            # Personal repositories
+└── [other]/            # Any other repositories (use personal config)
+```
+
+### Configuration Files
+
+- **`.gitconfig`** - Main config with personal email as default + conditional include
+- **`~/.gitconfig-work`** - Work-specific overrides (email, name, SSH keys, etc.)
+
+### Setup for New Work Environment
+
+When switching companies or setting up on a new work laptop:
+
+1. **Move work repositories**: Place all work repos under `~/dev/work/`
+2. **Update work config**: Edit `~/.gitconfig-work` with new work email/settings
+3. **No changes needed**: The main `.gitconfig` remains unchanged
+
+### Example Work Config (`~/.gitconfig-work`)
+
+```ini
+[user]
+    name = Your Name
+    email = work@company.com
+[core]
+    sshCommand = ssh -i ~/.ssh/work_key
+```
+
+### Verification
+
+Test the setup in any repository:
+
+```bash
+# In work repo
+cd ~/dev/work/some-project
+git config user.email  # Should show work email
+
+# In personal repo
+cd ~/dev/personal/some-project
+git config user.email  # Should show personal email
 ```
 
 ## More information
