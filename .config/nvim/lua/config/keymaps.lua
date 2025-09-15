@@ -4,6 +4,7 @@
 -- Clear highlights on search when pressing <Esc> in normal mode
 --  See `:help hlsearch`
 vim.keymap.set("n", "<esc><esc>", "<cmd>noh<cr>")
+vim.keymap.set("n", "<esc><C-c>", "<cmd>noh<cr>")
 
 -- Diagnostic keymaps
 vim.keymap.set("n", "<leader>q", vim.diagnostic.setloclist, { desc = "Open diagnostic [Q]uickfix list" })
