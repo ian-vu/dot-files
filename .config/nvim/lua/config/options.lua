@@ -104,7 +104,7 @@ vim.o.cmdheight = 0
 -- 	3: always and ONLY the last window
 -- The screen looks nicer with a status line if you have several
 -- windows, but it takes another screen line. |status-line|
-vim.o.laststatus = 3
+vim.o.laststatus = 2
 
 -- Defines the default border style of floating windows. The default value
 vim.o.winborder = "rounded"

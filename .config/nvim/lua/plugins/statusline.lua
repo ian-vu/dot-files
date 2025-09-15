@@ -27,12 +27,11 @@ return {
 			-- local icons = require('lazyvim.config').icons
 
 			local icons = require("config.icons")
-			vim.o.laststatus = vim.g.lualine_laststatus
 
 			return {
 				options = {
 					theme = "auto",
-					globalstatus = true,
+					-- globalstatus = true,
 					disabled_filetypes = { statusline = { "dashboard", "alpha", "starter" } },
 				},
 				sections = {
