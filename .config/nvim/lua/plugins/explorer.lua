@@ -138,7 +138,16 @@ return {
 			},
 			view_options = {
 				show_hidden = true,
-				is_always_hidden = function(name, bufnr) end,
+				-- Configurable list of strings to always hide
+				is_always_hidden = function(name, bufnr)
+					local hidden_strings = { ".DS_Store", "__pycache__", ".cache", ".venv" }
+					for _, hidden_str in ipairs(hidden_strings) do
+						if name:match(hidden_str) then
+							return true
+						end
+					end
+					return false
+				end,
 			},
 			float = {
 				padding = 3,
