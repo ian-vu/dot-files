@@ -28,37 +28,21 @@ return {
 		opts = function()
 			local actions = require("diffview.actions")
 			return {
-				enhanced_diff_hl = false,
+				enhanced_diff_hl = true,
 				keymaps = {
 					view = {
-						{
-							"n",
-							"<tab>",
-							"<cmd>TmuxNavigateRight<cr>",
-							{ desc = "Right pane" },
-						},
 						{ "n", "]q", actions.select_next_entry, { desc = "Open the diff for the next file" } },
 						{ "n", "[q", actions.select_prev_entry, { desc = "Open the diff for the next file" } },
 						{ "n", "<c-q>", "<cmd>DiffviewClose<cr>", { desc = "Close diffview" } },
-						{ "n", "<s-tab>", nil }, -- disable shift tab
 					},
 					file_panel = {
 						{ "n", "<c-q>", "<cmd>DiffviewClose<cr>", { desc = "Close diffview" } },
-						-- {
-						--   "n",
-						--   " ",
-						--   actions.toggle_stage_entry,
-						--   { desc = "Stage / unstage the selected entry" },
-						-- },
 						{ "n", "<C-d>", actions.scroll_view(0.4), { desc = "Scroll down half page" } },
 						{ "n", "<C-u>", actions.scroll_view(-0.4), { desc = "Scroll up half page" } },
 						{ "n", "<C-f>", actions.scroll_view(0.8)({ desc = "Scroll down full page" }) },
 						{ "n", "<C-b>", actions.scroll_view(-0.8), { desc = "Scroll up full page" } },
 						{ "n", "]q", actions.select_next_entry, { desc = "Open the diff for the next file" } },
 						{ "n", "[q", actions.select_prev_entry, { desc = "Open the diff for the next file" } },
-						{ "n", "n", actions.select_next_entry, { desc = "Open the diff for the next file" } },
-						{ "n", "e", actions.select_prev_entry, { desc = "Open the diff for the next file" } },
-						{ "n", "<tab>", nil }, -- disable shift tab
 						{ "n", "<cr>", actions.focus_entry, { desc = "Focus entry" } },
 						{ "n", "<c-q>", "<cmd>DiffviewClose<cr>", { desc = "Close diffview" } },
 						{
@@ -88,20 +72,6 @@ return {
 					},
 					file_history_panel = {
 						{ "n", "<c-q>", "<cmd>DiffviewClose<cr>", { desc = "Close diffview" } },
-						{
-							"n",
-							"<tab>",
-							"<cmd>TmuxNavigateRight<cr>",
-							{ desc = "Right pane" },
-						},
-					},
-					option_panel = {
-						{
-							"n",
-							"<tab>",
-							"<cmd>TmuxNavigateRight<cr>",
-							{ desc = "Right pane" },
-						},
 					},
 				},
 				view = {
