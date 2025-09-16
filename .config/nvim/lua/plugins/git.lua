@@ -29,6 +29,10 @@ return {
 			local actions = require("diffview.actions")
 			return {
 				enhanced_diff_hl = true,
+				default_args = {
+					DiffviewOpen = { "--untracked-files=all", "--imply-local" },
+					DiffviewFileHistory = { "--base=LOCAL" },
+				},
 				keymaps = {
 					view = {
 						{ "n", "]q", actions.select_next_entry, { desc = "Open the diff for the next file" } },
