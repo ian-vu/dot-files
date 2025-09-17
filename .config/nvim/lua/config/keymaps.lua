@@ -246,6 +246,17 @@ vim.keymap.set("n", "<leader>cyl", function()
 	print("Copied: " .. file_line)
 end, { desc = "Copy line number" })
 
+-- Copy range of lines in visual mode with file path and line range
+vim.keymap.set("v", "<leader>cyl", function()
+	vim.cmd('normal! "vy')
+	local start_line = vim.fn.line("'<")
+	local end_line = vim.fn.line("'>")
+	local file_path = get_relative_file()
+	local result = file_path .. ":" .. start_line .. "-" .. end_line
+	vim.fn.setreg("+", result)
+	print("Copied " .. result)
+end, { desc = "Copy range of lines with path" })
+
 -- Copy current line number and diagnostic message to clipboard
 vim.keymap.set("n", "<leader>cyD", function()
 	local file_line = get_file_line()
