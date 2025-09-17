@@ -11,7 +11,7 @@ ai_pane=$(tmux list-panes -F "#{pane_id} #{pane_current_command}" | grep -m1 "${
 
 # Case 1: No AI process running - split and start claude
 if [ -z "$ai_pane" ]; then
-  tmux split-window -h -l "35%" -b "zsh -c '$ai_process_command; exec zsh'"
+  tmux split-window -h -l "35%" -b "$ai_process_command"
   # tmux split-window -h -l 80 "$ai_process_command"
 
 # Case 2: Currently in AI process pane - swap to right pane and maximize effective hiding AI
