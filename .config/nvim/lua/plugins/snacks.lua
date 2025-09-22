@@ -56,8 +56,10 @@ return {
 				matcher = {
 					history_bonus = true,
 					cwd_bonus = true,
+					frecency = true,
 				},
 				layout = {
+					cycle = false,
 					height = 0.9,
 				},
 				formatters = {
