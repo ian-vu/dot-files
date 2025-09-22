@@ -52,7 +52,7 @@ cd debian
 Add icloud to a better location
 
 ```bash
-ln -s ~/Library/Mobile\ Documents/iCloud\~md\~obsidian/Documents/obsidian ~/obsidian
+ln -s ~/Library/Mobile\ Documents/iCloud\~md\~obsidian/Documents/obsidian ~/notes
 ````
 
 #### Tmux
