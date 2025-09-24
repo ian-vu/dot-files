@@ -60,7 +60,10 @@ return {
 				},
 				layout = {
 					cycle = false,
-					height = 0.9,
+					-- Use custom layout when wide enough, otherwise default vertical
+					preset = function()
+						return vim.o.columns >= 150 and "default" or "vertical"
+					end,
 				},
 				formatters = {
 					file = {
