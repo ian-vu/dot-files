@@ -62,14 +62,46 @@ return {
 					cycle = false,
 					-- Use custom layout when wide enough, otherwise default vertical
 					preset = function()
-						return vim.o.columns >= 150 and "default" or "vertical"
+						return vim.o.columns >= 150 and "ivy" or "vertical"
 					end,
+				},
+				layouts = {
+					default = {
+						layout = {
+							width = 0.98,
+							height = 0.85,
+						},
+					},
+					ivy = {
+						layout = {
+							box = "vertical",
+							backdrop = false,
+							row = -1,
+							width = 0,
+							height = 0.85,
+							border = "top",
+							title = " {title} {live} {flags}",
+							title_pos = "left",
+							{ win = "input", height = 1, border = "bottom" },
+							{
+								box = "horizontal",
+								{ win = "list", border = "none" },
+								{ win = "preview", title = "{preview}", width = 0.6, border = "left" },
+							},
+						},
+					},
+					vertical = {
+						layout = {
+							width = 0.98,
+							height = 0.85,
+						},
+					},
 				},
 				formatters = {
 					file = {
-						filename_first = true,
+						filename_first = false,
 						git_status_hl = false, -- highlights files with git status
-						truncate = 200, -- truncate the file path to (roughly) this length
+						truncate = 100, -- truncate the file path to (roughly) this length
 					},
 				},
 				win = {
@@ -134,7 +166,7 @@ return {
 					Snacks.toggle.treesitter():map("<leader>uT")
 					Snacks.toggle
 						.option("background", { off = "light", on = "dark", name = "Dark Background" })
-						:map("<leader>ub")
+						:map("<leader>uB")
 					Snacks.toggle.inlay_hints():map("<leader>uh")
 					-- Snacks.toggle.indent():map '<leader>ug' -- indent toggle not available
 					Snacks.toggle.dim():map("<leader>uD")
