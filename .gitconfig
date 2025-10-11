@@ -22,11 +22,6 @@
     diffFilter = delta --color-only
 
 [delta]
-    ; navigate = true    # use n and N to move between diff sections
-
-    # delta detects terminal colors automatically; set one of these to disable auto-detection
-    # dark = true
-    # light = true
 
 [merge]
     conflictstyle = diff3
@@ -35,7 +30,7 @@
     colorMoved = default
 
 [delta]
-    side-by-side = true
+    ; side-by-side = true
     ; line-numbers-right-format = "{np:>4}│"
     ; line-numbers-left-format = "{np:>4}│"
     ; line-numbers-left-style = grey
@@ -44,3 +39,9 @@
     line-numbers-left-format = "{np:>4} "
     # Hide the chunk header
     hunk-header-style = omit
+
+    ; navigate = true    # use n and N to move between diff sections
+
+    # delta detects terminal colors automatically; set one of these to disable auto-detection
+    # dark = true
+    # light = true

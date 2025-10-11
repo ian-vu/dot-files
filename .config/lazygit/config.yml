@@ -4,7 +4,7 @@
 #
 
 gui:
-  sidePanelWidth: 0.20 # gives you more space to show things side-by-side
+  sidePanelWidth: 0.4 # gives you more space to show things side-by-side
   theme:
     activeBorderColor:
       # - "#82AAFF"
@@ -19,7 +19,7 @@ gui:
   tabWidth: 2
   commitHashLength: 3
   enlargedSideViewLocation: top
-  expandFocusedSidePanel: true
+  expandFocusedSidePanel: false
 
   # If true, add a "/" root item in the file tree representing the root of the repository. It is only added when necessary, i.e. when there is more than one item at top level.
   showRootItemInFileTree: false
