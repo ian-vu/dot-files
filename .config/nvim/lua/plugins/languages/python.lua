@@ -71,9 +71,11 @@ return {
 						python = {
 							analysis = {
 								-- typeCheckingMode = 'basic', -- 'basic' or 'strict' or 'off'
+								-- typeCheckingMode = "strict",
 								autoImportCompletions = true,
 								autoSearchPaths = true,
-								diagnosticMode = "openFilesOnly",
+								diagnosticMode = "openFilesOnly", -- 'workspace' or 'openFilesOnly'
+								-- diagnosticMode = "workspace", -- 'workspace' or 'openFilesOnly'
 								useLibraryCodeForTypes = true,
 								reportUnusedImport = true,
 								reportUnusedVariable = true,
