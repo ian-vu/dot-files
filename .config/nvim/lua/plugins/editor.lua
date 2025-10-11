@@ -232,15 +232,16 @@ return {
 				options = {
 					style_preset = bufferline.style_preset.no_italic,
 					-- numbers = "ordinal",
+					-- Show number next to buffer name
 					numbers = function(opts)
 						-- Find the index of the current buffer in the sorted list
 						for i, buf in ipairs(_G.sorted_buffers) do
 							if buf == opts.id then
-								return string.format("%s", opts.raise(i))
+								return string.format("%s", opts.lower(i))
 							end
 						end
 						-- Fallback to ordinal if not found
-						return string.format("%s", opts.raise(opts.ordinal))
+						return string.format("%s", opts.lower(opts.ordinal))
 					end,
 					themeable = true,
 					indicator = {
