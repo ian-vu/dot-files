@@ -158,4 +158,65 @@ return {
 		---@type quicker.SetupOptions
 		opts = {},
 	},
+	{
+		"nvim-mini/mini.hipatterns",
+		version = "*",
+		opts = {
+			-- Table with highlighters (see |MiniHipatterns.config| for more details).
+			-- Nothing is defined by default. Add manually for visible effect.
+			highlighters = {},
+
+			-- Delays (in ms) defining asynchronous highlighting process
+			delay = {
+				-- How much to wait for update after every text change
+				text_change = 200,
+
+				-- How much to wait for update after window scroll
+				scroll = 50,
+			},
+		},
+	},
+	{
+		"norcalli/nvim-colorizer.lua",
+		event = "BufRead",
+		opts = {},
+	},
+	{
+		-- Search and replace
+		"nvim-pack/nvim-spectre",
+		event = "VeryLazy",
+		dependencies = {
+			"nvim-lua/plenary.nvim",
+		},
+		opts = {},
+	},
+	{
+		"akinsho/bufferline.nvim",
+		version = "*",
+		dependencies = "nvim-tree/nvim-web-devicons",
+		opts = function()
+			local bufferline = require("bufferline")
+			return {
+				options = {
+					style_preset = bufferline.style_preset.no_italic,
+					-- numbers = "ordinal",
+					numbers = function(opts)
+						return string.format("%s", opts.raise(opts.ordinal))
+						-- return string.format("%s |", opts.ordinal)
+					end,
+					themeable = true,
+					indicator = {
+						-- icon = "",
+						style = "none",
+					},
+					show_buffer_icons = false,
+					show_buffer_close_icons = false,
+					pick = {
+						-- alphabet = "neiluym,.",
+					},
+					sort_by = "insert_after_current",
+				},
+			}
+		end,
+	},
 }

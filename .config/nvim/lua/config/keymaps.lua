@@ -66,6 +66,23 @@ vim.keymap.set("n", "<leader>t5", ":tabn 5", { desc = "Switch to tab 5" })
 
 -- Buffers
 vim.keymap.set({ "n", "v", "x" }, "<leader>bb", "<cmd>e #<CR>", { desc = "Switch to previous buffer" })
+vim.keymap.set({ "n", "v", "x" }, "<leader>.", "<cmd>BufferLineCycleNext<cr>", { desc = "Next buffer" })
+vim.keymap.set({ "n", "v", "x" }, "<leader>,", "<cmd>BufferLineCyclePrev<cr>", { desc = "Previous buffer" })
+vim.keymap.set("n", "<leader>bo", "<cmd>BufferLineCloseOthers<cr>", { desc = "Delete all buffers except current" })
+vim.keymap.set("n", "<leader>bc", "<cmd>BufferLinePickClose<cr>", { desc = "Close pick buffer" })
+vim.keymap.set("n", "<leader>bs", "<cmd>BufferLinePick<cr>", { desc = "Select pick buffer" })
+vim.keymap.set("n", "<leader>bp", "<cmd>BufferLineTogglePin<cr>", { desc = "Pin buffer" })
+
+-- Buffer switching
+vim.keymap.set({ "n", "v", "x" }, "<leader>1", "<cmd>BufferLineGoToBuffer 1<cr>", { desc = "Buffer 1" })
+vim.keymap.set({ "n", "v", "x" }, "<leader>2", "<cmd>BufferLineGoToBuffer 2<cr>", { desc = "Buffer 2" })
+vim.keymap.set({ "n", "v", "x" }, "<leader>3", "<cmd>BufferLineGoToBuffer 3<cr>", { desc = "Buffer 3" })
+vim.keymap.set({ "n", "v", "x" }, "<leader>4", "<cmd>BufferLineGoToBuffer 4<cr>", { desc = "Buffer 4" })
+vim.keymap.set({ "n", "v", "x" }, "<leader>5", "<cmd>BufferLineGoToBuffer 5<cr>", { desc = "Buffer 5" })
+vim.keymap.set({ "n", "v", "x" }, "<leader>6", "<cmd>BufferLineGoToBuffer 6<cr>", { desc = "Buffer 6" })
+vim.keymap.set({ "n", "v", "x" }, "<leader>7", "<cmd>BufferLineGoToBuffer 7<cr>", { desc = "Buffer 7" })
+vim.keymap.set({ "n", "v", "x" }, "<leader>8", "<cmd>BufferLineGoToBuffer 8<cr>", { desc = "Buffer 8" })
+vim.keymap.set({ "n", "v", "x" }, "<leader>9", "<cmd>BufferLineGoToBuffer 9<cr>", { desc = "Buffer 9" })
 
 -- harpoon
 vim.keymap.set({ "n", "v" }, "<leader>ha", function()
@@ -169,6 +186,12 @@ vim.keymap.set(
 	"<cmd>TmuxNavigateRight<cr>",
 	{ noremap = true, silent = true, desc = "Move to pane right" }
 )
+
+-- Undotree
+vim.keymap.set("n", "<leader>uu", "<cmd>UndotreeToggle<cr>", { desc = "[U]ndotree toggle " })
+
+-- Spectre - search and replace
+vim.keymap.set("n", "<leader>sr", "<cmd>Spectre<cr>", { desc = "[S]pectre search and replace" })
 
 -- Explorer
 vim.keymap.set({ "n", "v", "x", "o" }, "<leader>e", "<cmd>Oil<cr>", { desc = "[E]xplorer: Toggle file explorer" })
@@ -279,37 +302,29 @@ vim.keymap.set({ "n", "x", "o" }, "S", function()
 	require("flash").treesitter()
 end, { desc = "Flash Treesitter" })
 
-local layout_side_by_side_default = {
-	-- fullscreen = true,
-	layout = {
-		width = 0.98,
-		height = 0.85,
-	},
-}
-
 -- Snacks plugin keymaps
 -- Top Pickers & Explorer
 vim.keymap.set("n", "<leader><space>", function()
-	Snacks.picker.smart({ filter = { cwd = true }, layout = layout_side_by_side_default })
+	Snacks.picker.smart({ filter = { cwd = true } })
 	-- Snacks.picker.smart()
 end, { desc = "Smart Find Files" })
 vim.keymap.set("n", "<leader>fw", function()
-	Snacks.picker.grep({ hidden = true, layout = layout_side_by_side_default })
+	Snacks.picker.grep({ hidden = true })
 end, { desc = "Grep" })
 vim.keymap.set("n", "<leader>fb", function()
-	Snacks.picker.buffers({ layout = layout_side_by_side_default })
+	Snacks.picker.buffers()
 end, { desc = "Buffers" })
 vim.keymap.set("n", "<leader>ff", function()
-	Snacks.picker.files({ hidden = true, layout = layout_side_by_side_default })
+	Snacks.picker.files({ hidden = true })
 end, { desc = "Find Files" })
 vim.keymap.set("n", "<leader>fg", function()
-	Snacks.picker.git_files({ layout = layout_side_by_side_default })
+	Snacks.picker.git_files()
 end, { desc = "Find Git Files" })
 -- vim.keymap.set('n', '<leader>fp', function()
 --   Snacks.picker.projects()
 -- end, { desc = 'Projects' })
 vim.keymap.set("n", "<leader>fr", function()
-	Snacks.picker.recent({ filter = { cwd = true }, layout = layout_side_by_side_default })
+	Snacks.picker.recent({ filter = { cwd = true } })
 end, { desc = "Recent" })
 
 -- git
@@ -354,9 +369,13 @@ vim.keymap.set("n", "<leader>gof", function()
 	Snacks.gitbrowse.open({ what = "file", line_start = nil, line_end = nil })
 end, { desc = "Git open [f]ile" })
 
+vim.keymap.set("n", "<leader>ub", function()
+	require("gitsigns").blame()
+end, { desc = "Toggle Git blame" })
+
 -- Grep
 vim.keymap.set("n", "<leader>sb", function()
-	Snacks.picker.lines()
+	Snacks.picker.lines({ layout = { layout = { height = 0.3 } } })
 end, { desc = "Buffer Lines" })
 vim.keymap.set("n", "<leader>sB", function()
 	Snacks.picker.grep_buffers()
@@ -388,7 +407,7 @@ vim.keymap.set("n", "<leader>sD", function()
 	Snacks.picker.diagnostics()
 end, { desc = "Diagnostics" })
 vim.keymap.set("n", "<leader>sd", function()
-	Snacks.picker.diagnostics_buffer({ layout = layout_side_by_side_default })
+	Snacks.picker.diagnostics_buffer()
 end, { desc = "Buffer Diagnostics" })
 vim.keymap.set("n", "<leader>sh", function()
 	Snacks.picker.help()
@@ -400,7 +419,7 @@ vim.keymap.set("n", "<leader>si", function()
 	Snacks.picker.icons()
 end, { desc = "Icons" })
 vim.keymap.set("n", "<leader>sj", function()
-	Snacks.picker.jumps({ filter = { cwd = true }, layout = layout_side_by_side_default })
+	Snacks.picker.jumps({ filter = { cwd = true } })
 end, { desc = "Jumps" })
 vim.keymap.set("n", "<leader>sk", function()
 	Snacks.picker.keymaps()
@@ -409,7 +428,7 @@ vim.keymap.set("n", "<leader>sl", function()
 	Snacks.picker.loclist()
 end, { desc = "Location List" })
 vim.keymap.set("n", "<leader>sm", function()
-	Snacks.picker.marks({ layout = layout_side_by_side_default })
+	Snacks.picker.marks()
 end, { desc = "Marks" })
 vim.keymap.set("n", "<leader>sM", function()
 	Snacks.picker.man()
@@ -447,10 +466,10 @@ vim.keymap.set("n", "gt", function()
 	Snacks.picker.lsp_type_definitions()
 end, { desc = "Goto [T]ype Definition" })
 vim.keymap.set("n", "<leader>ss", function()
-	Snacks.picker.lsp_symbols({ layout = layout_side_by_side_default })
+	Snacks.picker.lsp_symbols()
 end, { desc = "LSP Symbols" })
 vim.keymap.set("n", "<leader>sS", function()
-	Snacks.picker.lsp_workspace_symbols({ layout = layout_side_by_side_default })
+	Snacks.picker.lsp_workspace_symbols()
 end, { desc = "LSP Workspace Symbols" })
 
 -- Other
@@ -460,16 +479,16 @@ end, { desc = "Toggle Zen Mode" })
 vim.keymap.set("n", "<leader>Z", function()
 	Snacks.zen.zoom()
 end, { desc = "Toggle Zoom" })
-vim.keymap.set("n", "<leader>.", function()
-	Snacks.scratch()
-end, { desc = "Toggle Scratch Buffer" })
+-- vim.keymap.set("n", "<leader>.", function()
+-- 	Snacks.scratch()
+-- end, { desc = "Toggle Scratch Buffer" })
 vim.keymap.set("n", "<leader>S", function()
 	Snacks.scratch.select()
 end, { desc = "Select Scratch Buffer" })
 vim.keymap.set("n", "<leader>n", function()
 	Snacks.notifier.show_history()
 end, { desc = "Notification History" })
-vim.keymap.set("n", "<leader>bd", function()
+vim.keymap.set("n", "<leader>bx", function()
 	Snacks.bufdelete()
 end, { desc = "Delete Buffer" })
 vim.keymap.set("n", "<leader>cR", function()
