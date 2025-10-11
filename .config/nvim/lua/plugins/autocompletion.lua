@@ -82,7 +82,7 @@ return {
 					-- documentation = { window = { border = 'single' } },
 				},
 				-- Don't select by default, auto insert on selection
-				list = { selection = { preselect = false, auto_insert = true } },
+				list = { selection = { preselect = true, auto_insert = false } },
 				ghost_text = { enabled = false },
 			},
 
