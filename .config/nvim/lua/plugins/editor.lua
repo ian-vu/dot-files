@@ -204,6 +204,13 @@ return {
 			-- Set up autocommand to track buffer visits and keep sorted list
 			vim.api.nvim_create_autocmd("BufEnter", {
 				callback = function(args)
+					-- Skip if in a floating window (picker, etc.)
+					local win = vim.api.nvim_get_current_win()
+					local config = vim.api.nvim_win_get_config(win)
+					if config.relative ~= "" then
+						return
+					end
+
 					_G.buffer_access_times[args.buf] = os.time()
 
 					-- Update sorted buffer list
