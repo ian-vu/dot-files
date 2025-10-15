@@ -110,14 +110,14 @@
                         ]
                     },
                     {
-                        "description": "Press right_command alone produces f16",
+                        "description": "right_command to right_option and alone produces f16",
                         "manipulators": [
                             {
                                 "from": {
                                     "key_code": "right_command",
                                     "modifiers": { "optional": ["any"] }
                                 },
-                                "to": [{ "key_code": "left_control" }],
+                                "to": [{ "key_code": "right_option" }],
                                 "to_if_alone": [{ "key_code": "f16" }],
                                 "type": "basic"
                             }
