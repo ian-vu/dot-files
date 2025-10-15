@@ -86,7 +86,7 @@ return {
 							{
 								box = "horizontal",
 								{ win = "list", border = "none" },
-								{ win = "preview", title = "{preview}", width = 0.6, border = "left" },
+								{ win = "preview", title = "{preview}", width = 0.55, border = "left" },
 							},
 						},
 					},
