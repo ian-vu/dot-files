@@ -76,4 +76,6 @@ keybinding:
   files:
     findBaseCommitForFixup: J # <c-f> is already used for page down
     openStatusFilter: K # <c-b> is already used for page down
+    stashAllChanges: S # usually s
+    viewStashOptions: s # usually S
 
