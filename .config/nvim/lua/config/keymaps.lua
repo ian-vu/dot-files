@@ -87,6 +87,7 @@ vim.keymap.set({ "n", "v", "x" }, "<leader>9", "<cmd>BufferLineGoToBuffer 9<cr>"
 -- harpoon
 vim.keymap.set({ "n", "v" }, "<leader>ha", function()
 	require("harpoon"):list():add()
+	print("Added to Harpoon")
 end, { desc = "Add current file" })
 vim.keymap.set({ "n", "v" }, "<leader>hc", function()
 	require("harpoon"):list():clear()
