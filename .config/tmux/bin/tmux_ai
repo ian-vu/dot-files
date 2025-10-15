@@ -23,7 +23,16 @@ elif [[ "$current_command" == "$ai_process" ]]; then
 elif [[ $(tmux display-message -p "#{window_zoomed_flag}") == "1" ]]; then
   tmux select-pane -t "$ai_pane"
 
-# Case 4: AI process is running but current pane isn't AI process - close hide the pane
+# Case 4: AI process is running but current pane isn't AI process - toggle AI pane size
 else
-  tmux resize-pane -Z
+  ai_pane_width=$(tmux display-message -t "$ai_pane" -p "#{pane_width}")
+  if [[ "$ai_pane_width" -le 2 ]]; then
+    # AI pane is minimized, expand it back to 35%
+    window_width=$(tmux display-message -p "#{window_width}")
+    target_width=$((window_width * 35 / 100))
+    tmux resize-pane -t "$ai_pane" -x "$target_width"
+  else
+    # AI pane is normal size, minimize it
+    tmux resize-pane -t "$ai_pane" -x 1
+  fi
 fi
