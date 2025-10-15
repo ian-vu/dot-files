@@ -30,7 +30,15 @@ gui:
 
   # How things are filtered when typing '/'.
   # One of 'substring' (default) | 'fuzzy'
-  filterMode: substring
+  filterMode: fuzzy
+
+  # If true, show the number of lines changed per file in the Files view
+  # showNumstatInFilesView: true
+
+# If true, display a confirmation when subprocess terminates. This allows you to
+# view the output of the subprocess before returning to Lazygit.
+promptToReturnFromSubprocess: false
+
 git:
   paging:
     colorArg: always
