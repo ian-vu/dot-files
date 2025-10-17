@@ -1,0 +1,24 @@
+version: v0.1.30
+log:
+    path: /tmp/vi-mongo.log
+    level: info
+    prettyPrint: true
+editor:
+    command: nvim
+    env: ""
+showConnectionPage: true
+showWelcomePage: true
+currentConnection: local
+connections:
+    - url: mongodb://localhost:27017/
+      host: localhost
+      port: 27017
+      database: ""
+      username: ""
+      password: ""
+      name: local
+      timeout: 5
+      options: {}
+styles:
+    betterSymbols: true
+    currentStyle: default.yaml
