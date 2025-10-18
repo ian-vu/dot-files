@@ -263,6 +263,13 @@ vim.keymap.set("n", "<leader>cyf", function()
 	print("Copied: " .. file)
 end, { desc = "Copy file path" })
 
+-- Copy full file path to clipboard
+vim.keymap.set("n", "<leader>cyF", function()
+	local full_path = vim.fn.expand("%:p")
+	vim.fn.setreg("+", full_path)
+	print("Copied: " .. full_path)
+end, { desc = "Copy full file path" })
+
 -- Copy current line number to clipboard
 vim.keymap.set("n", "<leader>cyl", function()
 	local file_line = get_file_line()
