@@ -13,6 +13,8 @@ tap "warrensbox/tap"
 tap "hashicorp/tap"
 # For sketchybar
 tap "FelixKratz/formulae"
+# For TUI mongodb
+tap "kopecmaciej/vi-mongo"
 
 #########################################################################################
 # Brews
@@ -144,6 +146,8 @@ brew "xq"
 brew "sketchybar"
 # Fast Rust NPM package manager
 brew "pnpm"
+# TUI mongodb
+brew "vi-mongo"
 
 #########################################################################################
 # Casks

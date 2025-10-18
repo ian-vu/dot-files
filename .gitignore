@@ -37,3 +37,4 @@ Gemfile.lock
 
 # Mac things
 **/.DS_Store
+.config/vi-mongo/history.txt
