@@ -88,6 +88,37 @@ return {
 					},
 				},
 				ruff = {
+					on_new_config = function(config, root_dir)
+						-- Try to find ruff in local virtual environment first
+						local local_ruff_paths = {
+							root_dir .. "/.venv/bin/ruff",
+							root_dir .. "/venv/bin/ruff",
+						}
+
+						-- Check if poetry is used in this project
+						local poetry_lock = root_dir .. "/poetry.lock"
+						if vim.fn.filereadable(poetry_lock) == 1 then
+							-- Get poetry venv path synchronously for initial config
+							local result = vim.fn.system("cd " .. root_dir .. " && poetry env info --path 2>/dev/null")
+							if vim.v.shell_error == 0 then
+								local venv_path = vim.trim(result)
+								if venv_path ~= "" then
+									table.insert(local_ruff_paths, 1, venv_path .. "/bin/ruff")
+								end
+							end
+						end
+
+						-- Use the first ruff binary that exists
+						for _, ruff_path in ipairs(local_ruff_paths) do
+							if vim.fn.executable(ruff_path) == 1 then
+								config.cmd = { ruff_path, "server", "--preview" }
+								return
+							end
+						end
+
+						-- Fallback to ruff in PATH (e.g., mason or system installation)
+						config.cmd = { "ruff", "server", "--preview" }
+					end,
 					cmd_env = { RUFF_TRACE = "messages" },
 					init_options = {
 						settings = {
