@@ -282,11 +282,13 @@ pman () {
     man -t "${1}" | open -f -a /Applications/Preview.app
 }
 
-if is_mac; then
-  export MANPAGER="sh -c 'col -bx | bat -l man -p'"
-else
-  export MANPAGER="sh -c 'col -bx | batcat -l man -p'"
-fi
+# if is_mac; then
+#   export MANPAGER="sh -c 'col -bx | bat -l man -p'"
+# else
+#   export MANPAGER="sh -c 'col -bx | batcat -l man -p'"
+# fi
+#
+export MANPAGER="nvim +Man!"
 
 export PATH=/usr/local/bin:$HOME/bin:$PATH
 export PATH="$PATH:$HOME/.rvm/bin"
@@ -294,6 +296,7 @@ export PATH="$PATH:/usr/local/sbin"
 export PATH="$PATH:$HOME/.bin"
 export PATH="$PATH:$HOME/.config/tmux/bin"
 export PATH="$PATH:/usr/local/bin"
+export PATH="$PATH:/opt/homebrew/opt/libpq/bin"
 
 # Case insensitive tab completion for zsh
 autoload -Uz compinit && compinit
