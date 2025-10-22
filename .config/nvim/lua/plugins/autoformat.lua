@@ -1,3 +1,6 @@
+-- Global variable to control format on save
+vim.g.autoformat_enabled = true
+
 return {
 	{ -- Autoformat
 		"stevearc/conform.nvim",
@@ -19,6 +22,11 @@ return {
 			-- Conform will notify you when no formatters are available for the buffer
 			notify_no_formatters = true,
 			format_on_save = function(bufnr)
+				-- Check if autoformat is disabled globally
+				if not vim.g.autoformat_enabled then
+					return nil
+				end
+
 				-- Disable "format_on_save lsp_fallback" for languages that don't
 				-- have a well standardized coding style. You can add additional
 				-- languages here or re-enable it for the disabled ones.

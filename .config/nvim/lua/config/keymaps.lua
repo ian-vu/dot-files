@@ -47,6 +47,16 @@ vim.keymap.set({ "n" }, "<C-k>", function()
 	require("blink.cmp").show({ providers = { "lsp" } })
 end, { desc = "Show LSP completion on current word" })
 
+-- Toggle autoformat on save
+vim.keymap.set("n", "<leader>uf", function()
+	vim.g.autoformat_enabled = not vim.g.autoformat_enabled
+	if vim.g.autoformat_enabled then
+		vim.notify("Autoformat on save: enabled", vim.log.levels.INFO)
+	else
+		vim.notify("Autoformat on save: disabled", vim.log.levels.INFO)
+	end
+end, { desc = "Toggle autoformat on save" })
+
 -- misc
 vim.keymap.set({ "n", "v", "i", "x", "o" }, "<C-c>", "<esc>", { desc = "Esc" })
 -- vim.keymap.set('n', '<leader>p', '<cmd>pu<cr>', { desc = 'Paste on new line' })
