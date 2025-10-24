@@ -13,7 +13,7 @@ else
 fi
 
 # Install Brew packages
-brew bundle install
+brew bundle install --file ~/.homebrew/Brewfile
 
 # Install mise (language version manager)
 if ! command -v mise &>/dev/null; then

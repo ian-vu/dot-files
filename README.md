@@ -6,16 +6,6 @@ This directory contains the dotfiles for my system
 
 Ensure you have the following installed on your system
 
-### Brew packages/applications
-
-This will install the required `gnu-stow` brew along with
-all formulas and applications
-
-```bash
-cd mac
-brew bundle install -v
-```
-
 ## Installation
 
 First, check out the dotfiles repo in your $HOME directory using git
@@ -111,28 +101,6 @@ Download release and install by double clicking the font file.
 [link](https://github.com/subframe7537/maple-font/releases)
 
 ## Useful information
-
-### Brewfile
-
-#### Adding new formula
-
-Add a new row with one of the following lines to the brewfile
-
-```bash
-brew <formula_name>
-tap <tap_name>
-cask <cask_name>
-```
-
-Then run the following commands
-
-```bash
-cd mac
-brew bundle cleanup -v
-brew bundle install --cleanup -v
-```
-
-_Note:_ to avoid upgrades use `--no-upgrade` flag
 
 ### [age file encryption](https://github.com/FiloSottile/age)
 

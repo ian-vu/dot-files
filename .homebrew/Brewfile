@@ -2,8 +2,6 @@
 # Taps
 #########################################################################################
 tap "1password/tap"
-tap "homebrew/bundle"
-tap "homebrew/services"
 tap "joshmedeski/sesh"
 tap "kevinswiber/postmanctl"
 tap "koekeishiya/formulae"
@@ -148,6 +146,8 @@ brew "sketchybar"
 brew "pnpm"
 # TUI mongodb
 brew "vi-mongo"
+# TUI system monitor
+brew "btop"
 
 #########################################################################################
 # Casks
@@ -161,7 +161,7 @@ cask "font-ubuntu-mono-nerd-font"
 # GPU-based terminal emulator
 cask "kitty"
 # Neovim Client
-cask "neovide"
+cask "neovide-app"
 # CLI for command-line API management on Postman
 cask "postman-cli"
 # macOS Space/desktop indicator for the menu bar
@@ -181,7 +181,6 @@ cask "appcleaner"
 cask "rectangle"
 # Terminal emulator
 cask "ghostty"
-cask "google-cloud-sdk"
 cask "raycast"
 cask "font-maple-mono-nf"
 cask "slack"

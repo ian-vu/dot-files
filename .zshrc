@@ -367,6 +367,12 @@ export FZF_CTRL_R_OPTS="--with-nth 2.."
 # Set up theme Starship
 eval "$(starship init zsh)"
 
+# Brew
+# Disable auto update
+export HOMEBREW_NO_AUTO_UPDATE=1
+# Set global Brewfile location
+export HOMEBREW_BUNDLE_FILE_GLOBAL='~/.homebrew/Brewfile'
+
 # Start up
 export AWS_DEFAULT_REGION=ap-southeast-2
 export EDITOR='nvim'

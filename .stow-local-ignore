@@ -27,7 +27,5 @@ _darcs
 \.DS_Store
 Gemfile
 vimium.json
-Brewfile
-Brewfile.lock.json
 mac
 debian
