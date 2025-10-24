@@ -87,3 +87,5 @@ keybinding:
     stashAllChanges: S # usually s
     viewStashOptions: s # usually S
 
+os:
+  edit: "neovide {{filename}}"
