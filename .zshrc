@@ -353,7 +353,7 @@ sort -u | awk '{print "\x1b[34;1mbranch\x1b[m\t" $1}') || return
 export FZF_DEFAULT_COMMAND="fd -I -E '*/node_modules/*' -E '*/coverage/*'"
 
 # # default ops when calling fzf
-export FZF_DEFAULT_OPTS='--pointer "➜" --info right --prompt "➜ " --color=gutter:-1 --height 20%'
+export FZF_DEFAULT_OPTS='--pointer "➜" --info right --prompt "➜ " --color=gutter:#222436 --height 20%'
 
 # To apply the command to CTRL-T as well
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND --type f"
