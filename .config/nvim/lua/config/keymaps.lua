@@ -313,10 +313,10 @@ vim.keymap.set("n", "<leader>cyD", function()
 end, { desc = "Copy line number and diagnostic" })
 
 -- Flash keymaps
-vim.keymap.set({ "n", "x", "o" }, "s", function()
+vim.keymap.set({ "n", "x", "o" }, "<CR>", function()
 	require("flash").jump()
 end, { desc = "Flash" })
-vim.keymap.set({ "n", "x", "o" }, "S", function()
+vim.keymap.set({ "n", "x", "o" }, "<S-CR>", function()
 	require("flash").treesitter()
 end, { desc = "Flash Treesitter" })
 

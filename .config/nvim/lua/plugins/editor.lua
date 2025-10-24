@@ -263,4 +263,12 @@ return {
 			})
 		end,
 	},
+	{
+		{
+			"nvim-mini/mini.surround",
+			event = "BufRead",
+			version = false,
+			opts = {},
+		},
+	},
 }
