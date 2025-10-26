@@ -2,7 +2,7 @@
 add_newline = true
 
 [directory]
-format = '╭─ [$path]($style)[$read_only]($read_only_style) '
+format = '[╭─](#ff966c) [$path]($style)[$read_only]($read_only_style) '
 
 [git_branch]
 format = '[$symbol$branch(:$remote_branch)]($style) '
@@ -22,8 +22,9 @@ version_format = '${raw}'
 disabled = true
 
 [character] # The name of the module we are configuring is 'character'
-success_symbol = '[╰](bold)'
-error_symbol = '╰[](bold red)'
+success_symbol = '[╰](bold #ff966c)'
+error_symbol = '[╰](bold red)'
+# error_symbol = '[╰](bold #ff966c)[](bold red)'
 disabled = false
 
 [aws]
