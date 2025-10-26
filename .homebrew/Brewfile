@@ -148,6 +148,8 @@ brew "pnpm"
 brew "vi-mongo"
 # TUI system monitor
 brew "btop"
+# Run project specific commands
+brew "just"
 
 #########################################################################################
 # Casks

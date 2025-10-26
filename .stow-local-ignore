@@ -24,8 +24,21 @@ _darcs
 
 
 # My own
+#
+# Pattern syntax:
+# - Plain pattern (e.g., "foo")       -> matches at ANY depth
+# - ^/pattern (e.g., "^/foo")         -> matches ONLY at root level
+# - Use \. to match literal dots (e.g., "\.txt" not ".txt")
+# - Regex wildcards: .+ (one or more), .* (zero or more), ^ (start), $ (end)
+#
+# Examples:
+# - "\.justfile"     ignores .justfile everywhere (nested too)
+# - "^/\.justfile"   ignores .justfile only at package root
+# - ".*\.log"        ignores all .log files at any depth
+
 \.DS_Store
 Gemfile
 vimium.json
 mac
 debian
+\.justfile
