@@ -164,6 +164,21 @@ alias chrome="open -a 'Google Chrome'"
 alias arst='asdf'
 alias claude="~/.claude/local/claude"
 
+# Locally gitignore a file (adds to .git/info/exclude)
+gitignore-local() {
+    if [ -z "$1" ]; then
+        echo "Usage: gitignore-local <file-or-pattern>"
+        return 1
+    fi
+    if [ ! -d .git ]; then
+        echo "Error: Not in a git repository"
+        return 1
+    fi
+    echo "$1" >> .git/info/exclude
+    echo "Added '$1' to .git/info/exclude"
+}
+alias gil='gitignore-local'
+
 
 
 # Export AWS credentials to environment variables. Uses aws-sso-util to initiate login if necessary.

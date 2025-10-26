@@ -17,6 +17,7 @@
 
 [core]
     pager = delta
+	excludesfile = /Users/ivu/.gitignore_global
 
 [interactive]
     diffFilter = delta --color-only
