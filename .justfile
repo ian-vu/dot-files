@@ -1,12 +1,15 @@
 mod homebrew '.homebrew'
 
+# List available recipes
 default:
     @just --list
 
 # Symlink dot-files into home directory
-stow:
+[group: 'stow']
+link:
     stow .
 
 # Dry run to see what would be symlinked
-stow-dry:
+[group: 'stow']
+link-dry:
     stow --simulate .
