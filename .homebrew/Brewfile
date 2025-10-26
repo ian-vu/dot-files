@@ -150,6 +150,12 @@ brew "vi-mongo"
 brew "btop"
 # Run project specific commands
 brew "just"
+# Interactive cheatsheet tool for the command-line
+brew "navi"
+# better ls
+brew "eza"
+# stats on git repo
+brew 'onefetch'
 
 #########################################################################################
 # Casks

@@ -109,6 +109,11 @@ alias ..='cd ..'
 alias ...='cd ../..'
 alias ....='cd ../../..'
 
+alias ls='eza'
+alias ll='eza -l'
+alias !ls!='ls'
+alias !ll!='ls -l'
+
 alias vim='nvim'
 alias v='vim'
 
