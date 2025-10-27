@@ -28,6 +28,9 @@ aws/config
 Brewfile.lock.json
 Gemfile.lock
 
+# Local machine-specific Brewfile (create .homebrew/Brewfile.local for machine-specific packages)
+.homebrew/Brewfile.local
+
 # age secrey identity used for encryption
 .age/secret-key.txt
 

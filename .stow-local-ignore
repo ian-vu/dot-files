@@ -42,3 +42,4 @@ vimium.json
 mac
 debian
 \.justfile
+.homebrew
