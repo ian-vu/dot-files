@@ -66,6 +66,7 @@ return {
 	},
 	{ -- undo history
 		"mbbill/undotree",
+		enabled = true,
 		event = "BufRead",
 		config = function()
 			vim.g.undotree_WindowLayout = 3
@@ -74,6 +75,22 @@ return {
 			vim.g.undotree_DiffpanelHeight = 20
 			vim.g.undotree_SplitWidth = 40
 		end,
+	},
+	{
+		"XXiaoA/atone.nvim",
+		enabled = false,
+		event = "BufRead",
+		opts = {
+			layout = {
+				direction = "right",
+			},
+			keymaps = {
+				tree = {
+					next_node = "n",
+					pre_node = "e",
+				},
+			},
+		},
 	},
 	{
 		"folke/trouble.nvim",
