@@ -404,6 +404,15 @@ if type brew &>/dev/null; then
   compinit
 fi
 
+# yazi
+function y() {
+	local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd
+	yazi "$@" --cwd-file "$tmp"
+	IFS= read -r -d '' cwd < "$tmp"
+	[ -n "$cwd" ] && [ "$cwd" != "$PWD" ] && builtin cd -- "$cwd"
+	rm -- "$tmp"
+}
+
 autoload -U +X bashcompinit && bashcompinit
 
 # Set up z
