@@ -69,15 +69,15 @@ vim.keymap.set("n", "<leader>tn", "<cmd>tabnew<cr>", { desc = "New Tab" })
 vim.keymap.set("n", "<leader>tx", "<cmd>tabclose<cr>", { desc = "Close Tab" })
 vim.keymap.set("n", "<leader>tt", "g<tab>", { desc = "Switch to previous tab" })
 vim.keymap.set("n", "<leader>t1", ":tabn 1<cr>", { desc = "Switch to tab 1" })
-vim.keymap.set("n", "<leader>t2", ":tabn 2", { desc = "Switch to tab 2" })
-vim.keymap.set("n", "<leader>t3", ":tabn 3", { desc = "Switch to tab 3" })
-vim.keymap.set("n", "<leader>t4", ":tabn 4", { desc = "Switch to tab 4" })
-vim.keymap.set("n", "<leader>t5", ":tabn 5", { desc = "Switch to tab 5" })
+vim.keymap.set("n", "<leader>t2", ":tabn 2<cr>", { desc = "Switch to tab 2" })
+vim.keymap.set("n", "<leader>t3", ":tabn 3<cr>", { desc = "Switch to tab 3" })
+vim.keymap.set("n", "<leader>t4", ":tabn 4<cr>", { desc = "Switch to tab 4" })
+vim.keymap.set("n", "<leader>t5", ":tabn 5<cr>", { desc = "Switch to tab 5" })
 
 -- Buffers
 vim.keymap.set({ "n", "v", "x" }, "<leader>bb", "<cmd>e #<CR>", { desc = "Switch to previous buffer" })
-vim.keymap.set({ "n", "v", "x" }, "<leader>.", "<cmd>BufferLineCycleNext<cr>", { desc = "Next buffer" })
-vim.keymap.set({ "n", "v", "x" }, "<leader>,", "<cmd>BufferLineCyclePrev<cr>", { desc = "Previous buffer" })
+-- vim.keymap.set({ "n", "v", "x" }, "<leader>.", "<cmd>BufferLineCycleNext<cr>", { desc = "Next buffer" })
+-- vim.keymap.set({ "n", "v", "x" }, "<leader>,", "<cmd>BufferLineCyclePrev<cr>", { desc = "Previous buffer" })
 vim.keymap.set("n", "<leader>bo", "<cmd>BufferLineCloseOthers<cr>", { desc = "Delete all buffers except current" })
 vim.keymap.set("n", "<leader>bc", "<cmd>BufferLinePickClose<cr>", { desc = "Close pick buffer" })
 vim.keymap.set("n", "<leader>bs", "<cmd>BufferLinePick<cr>", { desc = "Select pick buffer" })
@@ -313,12 +313,12 @@ vim.keymap.set("n", "<leader>cyD", function()
 end, { desc = "Copy line number and diagnostic" })
 
 -- Flash keymaps
-vim.keymap.set({ "n", "x", "o" }, "<CR>", function()
-	require("flash").jump()
-end, { desc = "Flash" })
-vim.keymap.set({ "n", "x", "o" }, "<S-CR>", function()
-	require("flash").treesitter()
-end, { desc = "Flash Treesitter" })
+-- vim.keymap.set({ "n", "x", "o" }, "<CR>", function()
+-- 	require("flash").jump()
+-- end, { desc = "Flash" })
+-- vim.keymap.set({ "n", "x", "o" }, "<S-CR>", function()
+-- 	require("flash").treesitter()
+-- end, { desc = "Flash Treesitter" })
 
 -- Snacks plugin keymaps
 -- Top Pickers & Explorer
@@ -497,9 +497,9 @@ end, { desc = "Toggle Zen Mode" })
 vim.keymap.set("n", "<leader>Z", function()
 	Snacks.zen.zoom()
 end, { desc = "Toggle Zoom" })
--- vim.keymap.set("n", "<leader>.", function()
--- 	Snacks.scratch()
--- end, { desc = "Toggle Scratch Buffer" })
+vim.keymap.set("n", "<leader>.", function()
+	Snacks.scratch()
+end, { desc = "Toggle Scratch Buffer" })
 vim.keymap.set("n", "<leader>S", function()
 	Snacks.scratch.select()
 end, { desc = "Select Scratch Buffer" })
@@ -663,3 +663,55 @@ vim.keymap.set({ "n" }, "<leader>gpr", function()
 	print("Reviewing PR...")
 	vim.cmd("Octo review")
 end, { desc = "[r]eview start/resume" })
+vim.keymap.set({ "n" }, "<leader>gpb", function()
+	print("Browing PR...")
+	vim.cmd("Octo browse")
+end, { desc = "[b]rowse PR without starting a review" })
+vim.keymap.set({ "n" }, "<leader>gpx", function()
+	print("Closing PR...")
+	vim.cmd("Octo review close")
+end, { desc = "close the review window and return to the PR" })
+vim.keymap.set({ "n" }, "<leader>gps", function()
+	print("Searching for open PRs...")
+	-- Get repo info
+	local repo = vim.fn.system("gh repo view --json nameWithOwner -q .nameWithOwner 2>/dev/null"):gsub("\n", "")
+	if vim.v.shell_error ~= 0 or repo == "" then
+		vim.notify("Not in a git repository or gh not authenticated", vim.log.levels.ERROR)
+		return
+	end
+
+	-- Fetch open PRs and extract unique authors
+	local pr_list = vim.fn.system("gh pr list --state open --json author --jq '.[].author.login' 2>/dev/null")
+	if vim.v.shell_error ~= 0 then
+		vim.notify("Failed to fetch PRs", vim.log.levels.ERROR)
+		return
+	end
+
+	-- Get unique authors
+	local authors = { "All authors" }
+	local seen = {}
+	for author in pr_list:gmatch("[^\n]+") do
+		if author ~= "" and not seen[author] then
+			table.insert(authors, author)
+			seen[author] = true
+		end
+	end
+
+	if #authors == 1 then -- Only "All authors" exists
+		vim.notify("No open PRs found", vim.log.levels.WARN)
+		return
+	end
+
+	-- Use vim.ui.select to pick an author
+	vim.ui.select(authors, {
+		prompt = "Select author (or cancel for all):",
+	}, function(selected)
+		if not selected or selected == "All authors" then
+			vim.notify(string.format("Searching for all open PRs in %s...", repo), vim.log.levels.INFO)
+			vim.cmd(string.format("Octo search is:pr is:open repo:%s", repo))
+		else
+			vim.notify(string.format("Searching for open PRs by %s in %s...", selected, repo), vim.log.levels.INFO)
+			vim.cmd(string.format("Octo search is:pr is:open author:%s repo:%s", selected, repo))
+		end
+	end)
+end, { desc = "[s]earch open PRs by author" })
