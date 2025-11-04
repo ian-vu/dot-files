@@ -89,14 +89,25 @@ return {
 								box = "horizontal",
 								border = "top",
 								{ win = "list", border = "none" },
-								{ win = "preview", title = "{preview}", width = 0.55, border = "none" },
+								{ win = "preview", title = "{preview}", width = 0.55, border = true },
 							},
 						},
 					},
 					vertical = {
+						hidden = { "preview" }, -- default don't show preview
 						layout = {
-							width = 0.98,
+							box = "vertical",
+							backdrop = true, -- true blur background
+							row = -1,
+							width = 0,
 							height = 0.85,
+							min_height = 25,
+							border = "top",
+							title = " {title} {live} {flags}",
+							title_pos = "left",
+							{ win = "input", height = 1, border = "none" },
+							{ win = "list", border = "top" },
+							{ win = "preview", title = "{preview}", border = true },
 						},
 					},
 				},
@@ -112,7 +123,7 @@ return {
 						keys = {
 							-- ["<Esc>"] = { "close", mode = { "n", "i" } }, -- esc to close without going to normal mode first
 							["n"] = { "list_down", mode = { "n" } },
-							["e"] = { "list_up", mode = { "n" } },
+							["e"] = { "list_up", mode = { "n" } }, -- remap preview toggle from <a-p> to <c-p>
 							["<c-p>"] = { "toggle_preview", mode = { "i", "n" } }, -- remap preview toggle from <a-p> to <c-p>
 							["<c-t>"] = {
 								"trouble_open",
