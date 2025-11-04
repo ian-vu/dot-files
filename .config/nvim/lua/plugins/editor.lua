@@ -154,20 +154,6 @@ return {
 			{ "=p", "<Plug>(YankyPutAfterFilter)", desc = "Put After Applying a Filter" },
 		},
 	},
-	{
-		"nvim-treesitter/nvim-treesitter-context",
-		event = "BufRead",
-		opts = {
-			multiwindow = true,
-			seperator = "~",
-		},
-		config = function(_, opts)
-			require("treesitter-context").setup(opts)
-			-- vim.cmd 'hi TreesitterContext None'
-			-- vim.cmd("hi TreesitterContextBottom gui=underline guisp=Grey")
-			-- vim.cmd 'hi TreesitterContextLineNumberBottom gui=underline guisp=Grey'
-		end,
-	},
 	{ -- better quick fix qflist
 		"stevearc/quicker.nvim",
 		event = "FileType qf",
