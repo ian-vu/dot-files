@@ -715,3 +715,6 @@ vim.keymap.set({ "n" }, "<leader>gps", function()
 		end
 	end)
 end, { desc = "[s]earch open PRs by author" })
+
+-- markdown preview
+vim.keymap.set("n", "<leader>mp", "<cmd>MarkdownPreview<cr>", { desc = "[m]arkdown [p]review" })

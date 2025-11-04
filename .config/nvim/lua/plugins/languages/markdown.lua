@@ -28,25 +28,15 @@ return {
 			},
 		},
 	},
-
-	{ -- Markdown preview
+	-- install with yarn or npm
+	{
 		"iamcco/markdown-preview.nvim",
 		cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
-		build = function()
-			require("lazy").load({ plugins = { "markdown-preview.nvim" } })
-			vim.fn["mkdp#util#install"]()
+		build = "cd app && yarn install",
+		init = function()
+			vim.g.mkdp_filetypes = { "markdown" }
 		end,
-		keys = {
-			{
-				"<leader>cp",
-				ft = "markdown",
-				"<cmd>MarkdownPreviewToggle<cr>",
-				desc = "Markdown Preview",
-			},
-		},
-		config = function()
-			vim.cmd([[do FileType]])
-		end,
+		ft = { "markdown" },
 	},
 	{
 		"MeanderingProgrammer/render-markdown.nvim",
