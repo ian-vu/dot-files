@@ -16,7 +16,7 @@ return {
 	},
 	{
 		"NMAC427/guess-indent.nvim", -- Detect tabstop and shiftwidth automatically
-		enabled = false,
+		enabled = true,
 		event = "BufRead",
 	},
 	{ -- Navigate between tmux panes
