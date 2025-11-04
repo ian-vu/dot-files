@@ -168,6 +168,7 @@ alias npr='npm run --silent $*'
 alias chrome="open -a 'Google Chrome'"
 alias arst='asdf'
 alias claude="~/.claude/local/claude"
+alias gitstats="onefetch"
 
 # Locally gitignore a file (adds to .git/info/exclude)
 gitignore-local() {
