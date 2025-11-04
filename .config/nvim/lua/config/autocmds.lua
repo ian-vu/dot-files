@@ -25,3 +25,13 @@ vim.api.nvim_create_autocmd("FileType", {
 		vim.keymap.set("n", "<CR>", "<C-w><CR>", { buffer = true })
 	end,
 })
+
+-- Set folding options after buffer is loaded
+-- This ensures fold settings aren't overridden by plugins
+vim.api.nvim_create_autocmd({ "BufRead", "BufWinEnter", "BufNewFile" }, {
+	desc = "Set fold options for TreeSitter folding",
+	group = vim.api.nvim_create_augroup("treesitter-folding", { clear = true }),
+	callback = function()
+		vim.opt_local.foldmethod = "expr"
+	end,
+})
