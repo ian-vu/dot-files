@@ -75,18 +75,19 @@ return {
 					ivy = {
 						layout = {
 							box = "vertical",
-							backdrop = false,
+							backdrop = true,
 							row = -1,
 							width = 0,
 							height = 0.85,
+							min_height = 25,
 							border = "top",
 							title = " {title} {live} {flags}",
 							title_pos = "left",
-							{ win = "input", height = 1, border = "bottom" },
+							{ win = "input", height = 1, border = true },
 							{
 								box = "horizontal",
-								{ win = "list", border = "none" },
-								{ win = "preview", title = "{preview}", width = 0.55, border = "left" },
+								{ win = "list", border = true },
+								{ win = "preview", title = "{preview}", width = 0.55, border = true },
 							},
 						},
 					},
@@ -108,6 +109,7 @@ return {
 					input = {
 						keys = {
 							["<Esc>"] = { "close", mode = { "n", "i" } }, -- esc to close without going to normal mode first
+							["<c-p>"] = { "toggle_preview", mode = { "i", "n" } }, -- remap preview toggle from <a-p> to <c-p>
 							["<c-t>"] = {
 								"trouble_open",
 								mode = { "n", "i" },
