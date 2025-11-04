@@ -7,11 +7,16 @@ gui:
   sidePanelWidth: 0.35 # gives you more space to show things side-by-side
   theme:
     activeBorderColor:
-      # - "#82AAFF"
-      - "#ff966c"
+      # - "#C3E88D" # green
+      # - "#82AAFF" # blue
+      - "#ff966c" # orange
       - bold
     selectedLineBgColor:
-      - "#2E3F76"
+      # - "#ff966c" # orange
+      - "#2E3F76" # blue
+      # - "#556CA4" # darker blue
+      # - "#2F334D" # grey
+      # - "#8268AE" # purple
   #  authorColors:
   #    "*": white
   scrollHeight: 20
@@ -88,4 +93,5 @@ keybinding:
     viewStashOptions: s # usually S
 
 os:
-  edit: "neovide {{filename}}"
+  edit: 'sh -c ''WIN=$(tmux list-windows -F "#{window_index} #{pane_current_command}" | grep -E "n?vim" | head -n1 | cut -d" " -f1); if [ -n "$WIN" ]; then tmux select-window -t $WIN && tmux send-keys Escape ":e {{filename}}" Enter; else nvim "{{filename}}"; fi'''
+  editAtLine: 'sh -c ''WIN=$(tmux list-windows -F "#{window_index} #{pane_current_command}" | grep -E "n?vim" | head -n1 | cut -d" " -f1); if [ -n "$WIN" ]; then tmux select-window -t $WIN && tmux send-keys Escape ":e {{filename}}" Enter ":{{line}}" Enter; else nvim "+{{line}}" "{{filename}}"; fi'''
