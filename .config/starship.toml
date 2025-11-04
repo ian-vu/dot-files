@@ -6,7 +6,8 @@ format = '[╭─](#ff966c) [$path]($style)[$read_only]($read_only_style) '
 
 [git_branch]
 format = '[$symbol$branch(:$remote_branch)]($style) '
-symbol = '🌱 '
+symbol = '󰘬 '
+# symbol = '🌱 '
 
 [git_status]
 stashed = ""
