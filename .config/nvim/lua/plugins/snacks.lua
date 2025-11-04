@@ -73,9 +73,10 @@ return {
 						},
 					},
 					ivy = {
+						hidden = { "preview" }, -- default don't show preview
 						layout = {
 							box = "vertical",
-							backdrop = true,
+							backdrop = true, -- true blur background
 							row = -1,
 							width = 0,
 							height = 0.85,
@@ -83,11 +84,12 @@ return {
 							border = "top",
 							title = " {title} {live} {flags}",
 							title_pos = "left",
-							{ win = "input", height = 1, border = true },
+							{ win = "input", height = 1, border = "none" },
 							{
 								box = "horizontal",
-								{ win = "list", border = true },
-								{ win = "preview", title = "{preview}", width = 0.55, border = true },
+								border = "top",
+								{ win = "list", border = "none" },
+								{ win = "preview", title = "{preview}", width = 0.55, border = "none" },
 							},
 						},
 					},
@@ -108,7 +110,9 @@ return {
 				win = {
 					input = {
 						keys = {
-							["<Esc>"] = { "close", mode = { "n", "i" } }, -- esc to close without going to normal mode first
+							-- ["<Esc>"] = { "close", mode = { "n", "i" } }, -- esc to close without going to normal mode first
+							["n"] = { "list_down", mode = { "n" } },
+							["e"] = { "list_up", mode = { "n" } },
 							["<c-p>"] = { "toggle_preview", mode = { "i", "n" } }, -- remap preview toggle from <a-p> to <c-p>
 							["<c-t>"] = {
 								"trouble_open",
