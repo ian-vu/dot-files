@@ -247,6 +247,7 @@ return {
 
 			bufferline.setup({
 				options = {
+					separator_style = "slope",
 					style_preset = bufferline.style_preset.no_italic,
 					-- numbers = "ordinal",
 					-- Show number next to buffer name
