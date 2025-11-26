@@ -72,6 +72,12 @@ git:
     # Can be changed from within Lazygit with `Log menu -> Commit sort order` (`<c-l>` in the commits window by default).
     order: date-order
 
+  # If true, periodically fetch from remote
+  autoFetch: false
+
+  # If true, periodically refresh files and submodules
+  autoRefresh: false
+
 keybinding:
   universal:
     nextItem: "n"
