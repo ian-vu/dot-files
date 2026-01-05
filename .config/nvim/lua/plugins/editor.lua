@@ -196,6 +196,7 @@ return {
 	{
 		{
 			"nvim-mini/mini.surround",
+			enabled = false,
 			event = "BufRead",
 			version = false,
 			opts = {},
