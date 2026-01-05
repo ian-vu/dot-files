@@ -93,6 +93,11 @@ return {
 			}
 		end,
 	},
+	{
+		"trevorhauter/gitportal.nvim",
+		event = "VeryLazy",
+		opts = {},
+	},
 	{ -- github pull request pr
 		"pwntester/octo.nvim",
 		requires = {
