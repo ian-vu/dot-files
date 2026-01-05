@@ -158,6 +158,10 @@ brew 'onefetch'
 brew "jqp"
 # TUI file manager
 brew "yazi"
+# cli for notifcation
+brew 'terminal-notifier'
+# markdown slideshow
+brew 'marp-cli'
 
 #########################################################################################
 # Casks
@@ -200,3 +204,5 @@ cask "session-manager-plugin"
 # HTTP gui 
 cask "yaak"
 cask "notion"
+# Calculator app
+cask "numi"
