@@ -23,6 +23,28 @@
           }
         ]
       }
+    ],
+    "PermissionRequest": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/bin/bash ~/.claude/notify_on_finish_script.sh"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/bin/bash ~/.claude/notify_on_finish_script.sh"
+          }
+        ]
+      }
     ]
   },
   "statusLine": {
