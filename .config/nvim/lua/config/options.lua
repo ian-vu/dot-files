@@ -126,6 +126,9 @@ vim.opt.fillchars = {
 	eob = " ",
 }
 
+-- Default open all folds
+vim.opt.foldlevel = 99
+
 -- Automatically reload files when changed outside of Neovim
 vim.o.autoread = true
 
