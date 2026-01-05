@@ -73,7 +73,7 @@ return {
 						},
 					},
 					ivy = {
-						hidden = { "preview" }, -- default don't show preview
+						-- hidden = { "preview" }, -- default don't show preview
 						layout = {
 							box = "vertical",
 							backdrop = true, -- true blur background
@@ -94,7 +94,7 @@ return {
 						},
 					},
 					vertical = {
-						hidden = { "preview" }, -- default don't show preview
+						-- hidden = { "preview" }, -- default don't show preview
 						layout = {
 							box = "vertical",
 							backdrop = true, -- true blur background
