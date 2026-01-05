@@ -21,6 +21,14 @@ vim.keymap.set("t", "<Esc><Esc>", "<c-\\><c-n>", { desc = "Exit terminal mode" }
 vim.keymap.set("n", "<c-h>", "<c-w><c-h>", { desc = "Move focus to the left window" })
 vim.keymap.set("n", "<c-l>", "<c-w><c-l>", { desc = "Move focus to the right window" })
 vim.keymap.set("n", "<c-j>", "<c-w><c-j>", { desc = "Move focus to the lower window" })
+vim.keymap.set("n", "<C-w><C-s>", function()
+	vim.cmd("split")
+	vim.lsp.buf.definition()
+end, { desc = "Horizontal split and go to definition" })
+vim.keymap.set("n", "<C-w><C-v>", function()
+	vim.cmd("vsplit")
+	vim.lsp.buf.definition()
+end, { desc = "Vertical split and go to definition" })
 
 -- Code diagnostics
 vim.keymap.set({ "n", "v" }, "<leader>cd", function()
@@ -75,6 +83,7 @@ vim.keymap.set("n", "<leader>t4", ":tabn 4<cr>", { desc = "Switch to tab 4" })
 vim.keymap.set("n", "<leader>t5", ":tabn 5<cr>", { desc = "Switch to tab 5" })
 
 -- Buffers
+vim.keymap.set("n", "<leader>br", "<cmd>bufdo e<cr>", { desc = "Reload all buffers" })
 vim.keymap.set({ "n", "v", "x" }, "<leader>bb", "<cmd>e #<CR>", { desc = "Switch to previous buffer" })
 -- vim.keymap.set({ "n", "v", "x" }, "<leader>.", "<cmd>BufferLineCycleNext<cr>", { desc = "Next buffer" })
 -- vim.keymap.set({ "n", "v", "x" }, "<leader>,", "<cmd>BufferLineCyclePrev<cr>", { desc = "Previous buffer" })
@@ -313,12 +322,12 @@ vim.keymap.set("n", "<leader>cyD", function()
 end, { desc = "Copy line number and diagnostic" })
 
 -- Flash keymaps
--- vim.keymap.set({ "n", "x", "o" }, "<CR>", function()
--- 	require("flash").jump()
--- end, { desc = "Flash" })
--- vim.keymap.set({ "n", "x", "o" }, "<S-CR>", function()
--- 	require("flash").treesitter()
--- end, { desc = "Flash Treesitter" })
+vim.keymap.set({ "n" }, "s", function()
+	require("flash").jump()
+end, { desc = "Flash" })
+vim.keymap.set({ "n" }, "S", function()
+	require("flash").treesitter()
+end, { desc = "Flash Treesitter" })
 
 -- Snacks plugin keymaps
 -- Top Pickers & Explorer
@@ -385,6 +394,18 @@ vim.keymap.set("n", "<leader>gol", function()
 end, { desc = "Git open [l]ine" })
 vim.keymap.set("n", "<leader>gof", function()
 	Snacks.gitbrowse.open({ what = "file", line_start = nil, line_end = nil })
+end, { desc = "Git open [f]ile" })
+
+vim.keymap.set("n", "<leader>gol", function()
+	require("gitportal").open_file_in_browser()
+end, { desc = "Git open [l]ine" })
+
+vim.keymap.set("v", "<leader>gol", function()
+	require("gitportal").open_file_in_browser()
+end, { desc = "Git open [l]ine" })
+
+vim.keymap.set("n", "<leader>gof", function()
+	require("gitportal").open_file_in_browser()
 end, { desc = "Git open [f]ile" })
 
 vim.keymap.set("n", "<leader>ub", function()
@@ -625,12 +646,19 @@ vim.keymap.set({ "n" }, "<leader>gd", function()
 	end
 	vim.cmd("DiffviewOpen")
 end, { desc = "Diff view local changes" })
-vim.keymap.set(
-	{ "n" },
-	"<leader>gD",
-	"<cmd>DiffviewOpen origin/HEAD...HEAD --imply-local<CR>",
-	{ desc = "Diff view changes against origin/HEAD" }
-)
+vim.keymap.set({ "n" }, "<leader>gD", function()
+	-- Find the merge base (where the branch branched from)
+	local handle = io.popen("git merge-base origin/HEAD HEAD 2>/dev/null")
+	if handle then
+		local merge_base = handle:read("*a"):gsub("%s+", "")
+		handle:close()
+		if merge_base ~= "" then
+			vim.cmd("DiffviewOpen " .. merge_base .. "..HEAD --imply-local")
+		else
+			vim.notify("Could not find merge base", vim.log.levels.ERROR)
+		end
+	end
+end, { desc = "Diff view changes against branch point" })
 vim.keymap.set({ "n" }, "<leader>gs", "<cmd>DiffviewFileHistory -g --range=stash<CR>", { desc = "Stash" })
 vim.keymap.set({ "n" }, "<leader>gf", "<cmd>DiffviewFileHistory %<CR>", { desc = "File history current file only" })
 vim.keymap.set(
