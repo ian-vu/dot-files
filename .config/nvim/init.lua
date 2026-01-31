@@ -2,6 +2,9 @@
 -- This should be te first thing in init.lua as it sets things required for plugins
 require("config")
 
+local idle_mode = require("config.idle_mode")
+idle_mode.setup()
+
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
