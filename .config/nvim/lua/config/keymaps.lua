@@ -236,7 +236,10 @@ vim.keymap.set(
 	{ desc = "Comment line", remap = true }
 )
 
--- Helper functions for copy keymaps
+local function get_filepath_prefix()
+	return "@"
+end
+
 local function get_relative_file()
 	local git_root = vim.fn.system("git rev-parse --show-toplevel 2>/dev/null"):gsub("\n", "")
 	local current_file = vim.fn.expand("%:p")
@@ -277,21 +280,21 @@ end, { desc = "Copy diagnostic message" })
 
 -- Copy current file to clipboard
 vim.keymap.set("n", "<leader>cyf", function()
-	local file = get_relative_file()
+	local file = get_filepath_prefix() .. get_relative_file()
 	vim.fn.setreg("+", file)
 	print("Copied: " .. file)
 end, { desc = "Copy file path" })
 
 -- Copy full file path to clipboard
 vim.keymap.set("n", "<leader>cyF", function()
-	local full_path = vim.fn.expand("%:p")
+	local full_path = get_filepath_prefix() .. vim.fn.expand("%:p")
 	vim.fn.setreg("+", full_path)
 	print("Copied: " .. full_path)
 end, { desc = "Copy full file path" })
 
 -- Copy current line number to clipboard
 vim.keymap.set("n", "<leader>cyl", function()
-	local file_line = get_file_line()
+	local file_line = get_filepath_prefix() .. get_file_line()
 	vim.fn.setreg("+", file_line)
 	print("Copied: " .. file_line)
 end, { desc = "Copy line number" })
@@ -302,14 +305,14 @@ vim.keymap.set("v", "<leader>cyl", function()
 	local start_line = vim.fn.line("'<")
 	local end_line = vim.fn.line("'>")
 	local file_path = get_relative_file()
-	local result = file_path .. ":" .. start_line .. "-" .. end_line
+	local result = get_filepath_prefix() .. file_path .. ":" .. start_line .. "-" .. end_line
 	vim.fn.setreg("+", result)
 	print("Copied " .. result)
 end, { desc = "Copy range of lines with path" })
 
 -- Copy current line number and diagnostic message to clipboard
 vim.keymap.set("n", "<leader>cyD", function()
-	local file_line = get_file_line()
+	local file_line = get_filepath_prefix() .. get_file_line()
 	local diagnostic = get_current_diagnostic()
 
 	if diagnostic then
@@ -382,7 +385,7 @@ vim.keymap.set("n", "<leader>gy", function()
 	end
 
 	local current_file = vim.fn.expand("%:p")
-	local relative_path = vim.fn.fnamemodify(current_file, ":~:.")
+	local relative_path = get_filepath_prefix() .. vim.fn.fnamemodify(current_file, ":~:.")
 
 	-- Copy to default register
 	vim.fn.setreg('"', relative_path)
