@@ -95,7 +95,7 @@ return {
 		"stevearc/oil.nvim",
 		-- Optional dependencies
 		dependencies = { "nvim-tree/nvim-web-devicons" },
-		event = "VeryLazy",
+		lazy = false,
 		opts = {
 			-- Keymaps in oil buffer. Can be any value that `vim.keymap.set` accepts OR a table of keymap
 			-- options with a `callback` (e.g. { callback = function() ... end, desc = "", mode = "n" })
