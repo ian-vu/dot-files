@@ -1,33 +1,24 @@
 version: v0.1.30
 log:
-    path: /tmp/vi-mongo.log
-    level: info
-    prettyPrint: true
+  path: /tmp/vi-mongo.log
+  level: info
+  prettyPrint: true
 editor:
-    command: nvim
-    env: EDITOR
+  command: nvim
+  env: EDITOR
 showConnectionPage: true
 showWelcomePage: false
 currentConnection: local
 connections:
-    - url: mongodb://localhost:27017/
-      host: localhost
-      port: 27017
-      database: ""
-      username: ""
-      password: ""
-      name: local
-      timeout: 5
-      options: {}
-    - url: mongodb://ianvu:bPa0T8wMqLSWSAz1@pl-0-ap-southeast-2.x2gdr.mongodb.net:1027,pl-0-ap-southeast-2.x2gdr.mongodb.net:1028,pl-0-ap-southeast-2.x2gdr.mongodb.net:1029/?ssl=true&authSource=admin&replicaSet=atlas-7uikz7-shard-0&tlsAllowInvalidHostnames=true&tlsAllowInvalidCertificates=true
-      host: pl-0-ap-southeast-2.x2gdr.mongodb.net
-      port: 1027
-      database: ""
-      username: ""
-      password: ""
-      name: staging
-      timeout: 5
-      options: {}
+  - url: mongodb://localhost:27017/
+    host: localhost
+    port: 27017
+    database: ""
+    username: ""
+    password: ""
+    name: staging
+    timeout: 5
+    options: {}
 styles:
-    betterSymbols: true
-    currentStyle: dark-blue.yaml
+  betterSymbols: true
+  currentStyle: dark-blue.yaml
