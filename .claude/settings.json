@@ -51,11 +51,11 @@
     "type": "command",
     "command": "bash ~/.claude/statusline.sh"
   },
+  "enabledPlugins": {
+    "planning-with-files@planning-with-files": true
+  },
   "alwaysThinkingEnabled": false,
   "feedbackSurveyState": {
     "lastShownTime": 1753940027251
-  },
-  "enabledPlugins": {
-    "planning-with-files@planning-with-files": true
   }
 }
