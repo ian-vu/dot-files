@@ -91,6 +91,7 @@ vim.keymap.set("n", "<leader>bo", "<cmd>BufferLineCloseOthers<cr>", { desc = "De
 vim.keymap.set("n", "<leader>bc", "<cmd>BufferLinePickClose<cr>", { desc = "Close pick buffer" })
 vim.keymap.set("n", "<leader>bs", "<cmd>BufferLinePick<cr>", { desc = "Select pick buffer" })
 vim.keymap.set("n", "<leader>bp", "<cmd>BufferLineTogglePin<cr>", { desc = "Pin buffer" })
+vim.keymap.set("n", "<leader>bX", "<cmd>%bd<cr>", { desc = "Close all buffers" })
 
 -- Buffer switching
 vim.keymap.set({ "n", "v", "x" }, "<leader>1", "<cmd>BufferLineGoToBuffer 1<cr>", { desc = "Buffer 1" })
