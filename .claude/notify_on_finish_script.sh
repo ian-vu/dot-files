@@ -34,6 +34,15 @@ INPUT=$(cat)
 SESSION_ID=$(echo "$INPUT" | jq -r ".session_id")
 MESSAGE="$(cat /tmp/claude_code_session_${SESSION_ID}_prompt)"
 
+# Include tmux session name in the title if available
+TITLE="ClaudeCode"
+if [ -n "$TMUX" ]; then
+  TMUX_SESSION=$(tmux display-message -p '#S' 2>/dev/null)
+  if [ -n "$TMUX_SESSION" ]; then
+    TITLE="ClaudeCode ($TMUX_SESSION)"
+  fi
+fi
+
 # Send the notification
-terminal-notifier -title "ClaudeCode" \
+terminal-notifier -title "$TITLE" \
   -message "$MESSAGE"
