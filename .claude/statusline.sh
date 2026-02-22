@@ -127,4 +127,15 @@ if [ -n "$context_pct" ] && [ "$context_pct" != "null" ]; then
 fi
 
 # Output the complete status line
-echo "$dir_info$py_info$aws_info$context_info$cost_info$duration_info"
+# Build output with long pipes between sections
+parts=()
+for part in "$dir_info" "$py_info" "$aws_info" "$context_info" "$cost_info" "$duration_info"; do
+  trimmed=$(echo -n "$part" | sed 's/ *$//')
+  [ -n "$trimmed" ] && parts+=("$trimmed")
+done
+result=""
+for i in "${!parts[@]}"; do
+  [ "$i" -gt 0 ] && result+=" ┃ "
+  result+="${parts[$i]}"
+done
+echo "$result"
