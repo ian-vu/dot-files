@@ -95,20 +95,7 @@ return {
 							root_dir .. "/venv/bin/ruff",
 						}
 
-						-- Check if poetry is used in this project
-						local poetry_lock = root_dir .. "/poetry.lock"
-						if vim.fn.filereadable(poetry_lock) == 1 then
-							-- Get poetry venv path synchronously for initial config
-							local result = vim.fn.system("cd " .. root_dir .. " && poetry env info --path 2>/dev/null")
-							if vim.v.shell_error == 0 then
-								local venv_path = vim.trim(result)
-								if venv_path ~= "" then
-									table.insert(local_ruff_paths, 1, venv_path .. "/bin/ruff")
-								end
-							end
-						end
-
-						-- Use the first ruff binary that exists
+						-- Use the first local ruff binary that exists (non-blocking)
 						for _, ruff_path in ipairs(local_ruff_paths) do
 							if vim.fn.executable(ruff_path) == 1 then
 								config.cmd = { ruff_path, "server", "--preview" }
@@ -116,7 +103,40 @@ return {
 							end
 						end
 
-						-- Fallback to ruff in PATH (e.g., mason or system installation)
+						-- Check if poetry is used in this project (async, non-blocking)
+						local poetry_lock = root_dir .. "/poetry.lock"
+						if vim.fn.filereadable(poetry_lock) == 1 then
+							vim.system({ "poetry", "env", "info", "--path" }, {
+								cwd = root_dir,
+								timeout = 2000,
+							}, function(result)
+								if result.code ~= 0 or not result.stdout then
+									return
+								end
+
+								local venv_path = vim.trim(result.stdout)
+								if venv_path == "" then
+									return
+								end
+
+								local ruff_path = venv_path .. "/bin/ruff"
+								if vim.uv.fs_stat(ruff_path) then
+									vim.schedule(function()
+										for _, client in pairs(vim.lsp.get_clients({ name = "ruff" })) do
+											if client.config.root_dir == root_dir then
+												client.config.cmd = { ruff_path, "server", "--preview" }
+												client.stop()
+											end
+										end
+										vim.defer_fn(function()
+											vim.cmd("LspStart ruff")
+										end, 100)
+									end)
+								end
+							end)
+						end
+
+						-- Start with ruff from PATH immediately, poetry override will restart if needed
 						config.cmd = { "ruff", "server", "--preview" }
 					end,
 					cmd_env = { RUFF_TRACE = "messages" },
