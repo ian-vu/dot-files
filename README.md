@@ -100,6 +100,14 @@ Download release and install by double clicking the font file.
 
 [link](https://github.com/subframe7537/maple-font/releases)
 
+#### Git Blame
+
+After cloning, configure git blame to ignore whitespace-only commits:
+
+```bash
+git config blame.ignoreRevsFile .git-blame-ignore-revs
+```
+
 ## Useful information
 
 ### [age file encryption](https://github.com/FiloSottile/age)

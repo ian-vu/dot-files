@@ -43,3 +43,4 @@ mac
 debian
 \.justfile
 .homebrew
+\.git-blame-ignore-revs
