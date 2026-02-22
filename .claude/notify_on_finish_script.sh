@@ -34,12 +34,39 @@ INPUT=$(cat)
 SESSION_ID=$(echo "$INPUT" | jq -r ".session_id")
 MESSAGE="$(cat /tmp/claude_code_session_${SESSION_ID}_prompt)"
 
-# Include tmux session name in the title if available
-TITLE="ClaudeCode"
+# Build notification title: ⟫ session  ⧉  window
+TITLE="⟫"
 if [ -n "$TMUX" ]; then
   TMUX_SESSION=$(tmux display-message -p '#S' 2>/dev/null)
+  TMUX_WINDOW=$(tmux display-message -p '#W' 2>/dev/null)
+  # Window name may contain ⚡ or 🔔 from hooks; strip before using in title
+  TMUX_WINDOW="${TMUX_WINDOW% ⚡}"
+  TMUX_WINDOW="${TMUX_WINDOW% 🔔}"
   if [ -n "$TMUX_SESSION" ]; then
-    TITLE="ClaudeCode ($TMUX_SESSION)"
+    TITLE="⟫ $TMUX_SESSION"
+    if [ -n "$TMUX_WINDOW" ]; then
+      TITLE="$TITLE  ⧉  $TMUX_WINDOW"
+    fi
+  fi
+fi
+
+# Update tmux window name: remove ⚡ (in-progress) and add 🔔 (done)
+# Only add 🔔 if the user is not currently in that window
+if [ -n "$TMUX" ] && [ -f "/tmp/claude_code_session_${SESSION_ID}_window" ]; then
+  WINDOW_ID=$(cat "/tmp/claude_code_session_${SESSION_ID}_window")
+  ACTIVE_WINDOW=$(tmux display-message -p '#{window_id}' 2>/dev/null)
+  CURRENT_NAME=$(tmux display-message -t "$WINDOW_ID" -p '#W' 2>/dev/null)
+  # Strip in-progress symbol (⚡) from window name
+  CLEAN_NAME="${CURRENT_NAME% ⚡}"
+  if [ "$WINDOW_ID" = "$ACTIVE_WINDOW" ]; then
+    # User is in this window, just remove hourglass
+    tmux rename-window -t "$WINDOW_ID" "$CLEAN_NAME"
+  else
+    # User is elsewhere, add bell if not already present
+    case "$CLEAN_NAME" in
+    *🔔) ;;
+    *) tmux rename-window -t "$WINDOW_ID" "$CLEAN_NAME 🔔" ;;
+    esac
   fi
 fi
 

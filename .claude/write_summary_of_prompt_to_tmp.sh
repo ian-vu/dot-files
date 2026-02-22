@@ -36,3 +36,15 @@ PROMPT=$(echo "$INPUT" | jq -r ".prompt")
 SESSION_ID=$(echo "$INPUT" | jq -r ".session_id")
 
 echo "$PROMPT" >"/tmp/claude_code_session_${SESSION_ID}_prompt"
+
+# Save the tmux window ID so the notify hook can target it
+if [ -n "$TMUX" ]; then
+  WINDOW_ID=$(tmux display-message -p '#{window_id}' 2>/dev/null)
+  echo "$WINDOW_ID" >"/tmp/claude_code_session_${SESSION_ID}_window"
+
+  # Clear status symbols and add hourglass to show Claude is working
+  CURRENT_NAME=$(tmux display-message -t "$WINDOW_ID" -p '#W' 2>/dev/null)
+  CLEAN_NAME="${CURRENT_NAME% 🔔}"
+  CLEAN_NAME="${CLEAN_NAME% ⚡}"
+  tmux rename-window -t "$WINDOW_ID" "$CLEAN_NAME ⚡"
+fi
