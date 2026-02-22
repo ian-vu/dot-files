@@ -1,0 +1,29 @@
+#!/usr/bin/env sh
+
+# Called by tmux session-created hook.
+# If the session started in a git repo, set up: nvim, lazygit, zsh.
+# Usage: tmux_git_setup <session_name> <session_path>
+
+session="$1"
+session_path="$2"
+
+# Skip float sessions
+case "$session" in float*) exit 0 ;; esac
+
+# Only act on git repos
+if git -C "$session_path" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  # Rename the default window and run nvim in it
+  tmux rename-window -t "$session:1" 'nvim'
+  tmux send-keys -t "$session:1" 'nvim' Enter
+
+  # Create lazygit window
+  tmux new-window -t "$session" -n 'lazygit' -c "$session_path" 'lazygit'
+
+  # Create empty shell window
+  tmux new-window -t "$session" -c "$session_path"
+
+  # Focus neovim window and open AI sidebar
+  tmux select-window -t "$session:1"
+  tmux split-window -t "$session:1" -h -l "35%" "$HOME/.claude/local/claude"
+  tmux select-pane -t "$session:1" -L
+fi
