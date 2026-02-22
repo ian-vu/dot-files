@@ -89,6 +89,14 @@ return {
 				},
 				ruff = {
 					on_new_config = function(config, root_dir)
+						-- Use cached ruff cmd if available
+						vim.g.ruff_cmd_cache = vim.g.ruff_cmd_cache or {}
+						local cached_cmd = vim.g.ruff_cmd_cache[root_dir]
+						if cached_cmd then
+							config.cmd = cached_cmd
+							return
+						end
+
 						-- Try to find ruff in local virtual environment first
 						local local_ruff_paths = {
 							root_dir .. "/.venv/bin/ruff",
@@ -98,7 +106,9 @@ return {
 						-- Use the first local ruff binary that exists (non-blocking)
 						for _, ruff_path in ipairs(local_ruff_paths) do
 							if vim.fn.executable(ruff_path) == 1 then
-								config.cmd = { ruff_path, "server", "--preview" }
+								local cmd = { ruff_path, "server", "--preview" }
+								vim.g.ruff_cmd_cache[root_dir] = cmd
+								config.cmd = cmd
 								return
 							end
 						end
@@ -121,10 +131,12 @@ return {
 
 								local ruff_path = venv_path .. "/bin/ruff"
 								if vim.uv.fs_stat(ruff_path) then
+									local cmd = { ruff_path, "server", "--preview" }
 									vim.schedule(function()
+										vim.g.ruff_cmd_cache[root_dir] = cmd
 										for _, client in pairs(vim.lsp.get_clients({ name = "ruff" })) do
 											if client.config.root_dir == root_dir then
-												client.config.cmd = { ruff_path, "server", "--preview" }
+												client.config.cmd = cmd
 												client.stop()
 											end
 										end
