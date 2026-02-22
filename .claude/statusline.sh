@@ -135,7 +135,9 @@ for part in "$dir_info" "$py_info" "$aws_info" "$context_info" "$cost_info" "$du
 done
 result=""
 for i in "${!parts[@]}"; do
-  [ "$i" -gt 0 ] && result+=" ┃ "
+  [ "$i" -gt 0 ] && result+=" | "
+  # [ "$i" -gt 0 ] && result+=" ┃ "
+  # [ "$i" -gt 0 ] && result+="  "
   result+="${parts[$i]}"
 done
 echo "$result"
