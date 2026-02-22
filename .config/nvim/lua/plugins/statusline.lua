@@ -41,7 +41,8 @@ return {
 						-- { "mode", icon = "" },
 					},
 					lualine_b = {
-						{ "branch", icon = "󰘬" },
+						-- { "branch", icon = "󰘬" },
+					"filetype",
 					},
 
 					lualine_c = {
@@ -197,8 +198,7 @@ return {
 						-- },
 					},
 					lualine_y = {
-            -- stylua: ignore
-            "filetype",
+            -- "filetype",
 						{ "progress", padding = { left = 1, right = 1 } },
 					},
 					lualine_z = {
