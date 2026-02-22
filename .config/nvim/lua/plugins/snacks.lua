@@ -126,7 +126,7 @@ return {
 					file = {
 						filename_first = false,
 						git_status_hl = false, -- highlights files with git status
-						truncate = 100, -- truncate the file path to (roughly) this length
+						truncate = 150,
 					},
 				},
 				win = {
