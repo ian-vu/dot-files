@@ -47,7 +47,7 @@ return {
 				actions = require("trouble.sources.snacks").actions,
 				enabled = true,
 				hidden = true,
-				ignore = {
+				exclude = {
 					"*.log",
 					"*.tmp",
 					"node_modules/",
@@ -109,6 +109,16 @@ return {
 							{ win = "input", height = 1, border = "none" },
 							{ win = "list", border = "top" },
 							{ win = "preview", title = "{preview}", border = true },
+						},
+					},
+				},
+				sources = {
+					smart = {
+						filter = {
+							cwd = true,
+							filter = function(item)
+								return not item.file or not item.file:find("/.worktrees/", 1, true)
+							end,
 						},
 					},
 				},

@@ -336,7 +336,7 @@ end, { desc = "Flash Treesitter" })
 -- Snacks plugin keymaps
 -- Top Pickers & Explorer
 vim.keymap.set("n", "<leader><space>", function()
-	Snacks.picker.smart({ filter = { cwd = true }, layout = { preview = false } })
+	Snacks.picker.smart({ layout = { preview = false } })
 	-- Snacks.picker.smart()
 end, { desc = "Smart Find Files" })
 vim.keymap.set("n", "<leader>fw", function()
