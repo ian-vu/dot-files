@@ -99,5 +99,5 @@ keybinding:
     viewStashOptions: s # usually S
 
 os:
-  edit: 'sh -c ''WIN=$(tmux list-windows -F "#{window_index} #{pane_current_command}" | grep -E "n?vim" | head -n1 | cut -d" " -f1); if [ -n "$WIN" ]; then tmux select-window -t $WIN && tmux send-keys Escape ":e {{filename}}" Enter; else nvim "{{filename}}"; fi'''
-  editAtLine: 'sh -c ''WIN=$(tmux list-windows -F "#{window_index} #{pane_current_command}" | grep -E "n?vim" | head -n1 | cut -d" " -f1); if [ -n "$WIN" ]; then tmux select-window -t $WIN && tmux send-keys Escape ":e {{filename}}" Enter ":{{line}}" Enter; else nvim "+{{line}}" "{{filename}}"; fi'''
+  edit: 'sh -c ''PANE=$(tmux list-panes -t :1 -F "#{pane_id} #{pane_current_command}" | grep -E "n?vim" | head -n1 | cut -d" " -f1); if [ -n "$PANE" ]; then tmux select-window -t :1 && tmux send-keys -t "$PANE" Escape ":e {{filename}}" Enter; else nvim "{{filename}}"; fi'''
+  editAtLine: 'sh -c ''PANE=$(tmux list-panes -t :1 -F "#{pane_id} #{pane_current_command}" | grep -E "n?vim" | head -n1 | cut -d" " -f1); if [ -n "$PANE" ]; then tmux select-window -t :1 && tmux send-keys -t "$PANE" Escape ":e {{filename}}" Enter ":{{line}}" Enter; else nvim "+{{line}}" "{{filename}}"; fi'''
