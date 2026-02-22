@@ -4,6 +4,9 @@
 # Path to your oh-my-zsh installation.
 export ZSH=~/.oh-my-zsh
 
+# Skip oh-my-zsh's internal compinit (we call it once ourselves later)
+skip_global_compinit=1
+
 #### Functions ####
 
 # Function to check if the system is macOS
@@ -81,14 +84,13 @@ plugins=(
   fzf-tab # This needs to be before zsh-autosuggestions and fast-syntax-highlighting
   fast-syntax-highlighting
   # z
-  F-Sy-H
   zsh-autosuggestions
   # zsh-autocomplete
   extract
   macos
   history
   # colored-man-pages
-  colorize
+  # colorize
 ) #vi-mode)
 
 
@@ -415,9 +417,7 @@ export EDITOR='nvim'
 # eval $(thefuck --alias)
 
 # Add brew executables to tab completion
-if type brew &>/dev/null; then
-  FPATH="$(brew --prefix)/share/zsh/completions:${FPATH}"
-fi
+FPATH="/opt/homebrew/share/zsh/completions:${FPATH}"
 
 # OPENSPEC:START
 # OpenSpec shell completions configuration
