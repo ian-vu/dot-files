@@ -11,6 +11,23 @@ is_mac() {
     [[ "$(uname)" == "Darwin" ]]
 }
 
+# Cache eval output to avoid spawning subprocesses on every shell start
+# Usage: _zsh_cache_eval <name> <command> [args...]
+# Clear cache: zsh-clear-cache
+_zsh_cache_dir="$HOME/.zsh_cache"
+[[ -d "$_zsh_cache_dir" ]] || mkdir -p "$_zsh_cache_dir"
+
+_zsh_cache_eval() {
+  local name="$1"; shift
+  local cache="$_zsh_cache_dir/$name.zsh"
+  if [[ ! -f "$cache" ]]; then
+    "$@" > "$cache" 2>/dev/null
+  fi
+  source "$cache"
+}
+
+zsh-clear-cache() { rm -rf "$_zsh_cache_dir"; echo "Cache cleared. Restart shell to regenerate." }
+
 # See https://github.com/robbyrussell/oh-my-zsh/wiki/Themes
 # ZSH_THEME="powerlevel9k/powerlevel9k"
 # ZSH_THEME="spaceship"
@@ -320,13 +337,12 @@ export PATH="$PATH:/usr/local/bin"
 export PATH="$PATH:/opt/homebrew/opt/libpq/bin"
 
 # Case insensitive tab completion for zsh
-autoload -Uz compinit && compinit
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
 
 # Fuzzy finder
 # https://github.com/junegunn/fzf#fuzzy-completion-for-bash-and-zsh
 if is_mac; then
-  eval "$(fzf --zsh)"
+  _zsh_cache_eval fzf fzf --zsh
 else
   [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 fi
@@ -386,7 +402,7 @@ export FZF_ALT_C_COMMAND="$FZF_DEFAULT_COMMAND --type d"
 export FZF_CTRL_R_OPTS="--with-nth 2.."
 
 # Set up theme Starship
-eval "$(starship init zsh)"
+_zsh_cache_eval starship starship init zsh
 
 # Brew
 # Disable auto update
@@ -401,9 +417,16 @@ export EDITOR='nvim'
 # Add brew executables to tab completion
 if type brew &>/dev/null; then
   FPATH="$(brew --prefix)/share/zsh/completions:${FPATH}"
-  autoload -Uz compinit
-  compinit
 fi
+
+# OPENSPEC:START
+# OpenSpec shell completions configuration
+fpath=("/Users/ivu/.oh-my-zsh/custom/completions" $fpath)
+# OPENSPEC:END
+
+# Single compinit call after all fpath additions (-C skips security check for speed)
+autoload -Uz compinit && compinit -C
+
 
 # yazi
 function y() {
@@ -417,10 +440,10 @@ function y() {
 autoload -U +X bashcompinit && bashcompinit
 
 # Set up z
-eval "$(zoxide init zsh)"
+_zsh_cache_eval zoxide zoxide init zsh
 
 # set up mise (coding language version manager)
-eval "$(~/.local/bin/mise activate zsh)"
+_zsh_cache_eval mise ~/.local/bin/mise activate zsh
 
 # Set config for lazygit
 export XDG_CONFIG_HOME="$HOME/.config"
