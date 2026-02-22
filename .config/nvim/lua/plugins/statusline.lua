@@ -42,7 +42,6 @@ return {
 					},
 					lualine_b = {
 						-- { "branch", icon = "󰘬" },
-					"filetype",
 					},
 
 					lualine_c = {
@@ -53,47 +52,21 @@ return {
 								modified = icons.git.modified,
 								removed = icons.git.removed,
 							},
-							-- source = function()
-							--   -- Get repository-wide git diff counts
-							--   local handle = io.popen 'git diff --numstat HEAD 2>/dev/null'
-							--   if not handle then
-							--     return nil
-							--   end
-							--
-							--   local result = handle:read '*a'
-							--   handle:close()
-							--
-							--   if not result or result == '' then
-							--     return nil
-							--   end
-							--
-							--   local added, removed = 0, 0
-							--   for line in result:gmatch '[^\r\n]+' do
-							--     local a, r = line:match '^(%d+)%s+(%d+)%s+'
-							--     if a and r then
-							--       added = added + tonumber(a)
-							--       removed = removed + tonumber(r)
-							--     end
-							--   end
-							--
-							--   -- Get modified files count
-							--   local modified_handle = io.popen 'git diff --name-only HEAD 2>/dev/null | wc -l'
-							--   local modified = 0
-							--   if modified_handle then
-							--     local count = modified_handle:read '*n'
-							--     modified_handle:close()
-							--     modified = count or 0
-							--   end
-							--
-							--   if added > 0 or removed > 0 or modified > 0 then
-							--     return {
-							--       added = added > 0 and added or nil,
-							--       modified = modified > 0 and modified or nil,
-							--       removed = removed > 0 and removed or nil,
-							--     }
-							--   end
-							--   return nil
-							-- end,
+							source = function()
+								-- Sum gitsigns diff counts across all loaded buffers
+								local added, modified, removed = 0, 0, 0
+								for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+									if vim.api.nvim_buf_is_loaded(buf) then
+										local signs = vim.b[buf].gitsigns_status_dict
+										if signs then
+											added = added + (signs.added or 0)
+											modified = modified + (signs.changed or 0)
+											removed = removed + (signs.removed or 0)
+										end
+									end
+								end
+								return { added = added, modified = modified, removed = removed }
+							end,
 						},
 						-- Util.lualine.root_dir(),
 						-- { "filetype", icon_only = true, separator = "", padding = { left = 1, right = 0 } },
@@ -198,7 +171,7 @@ return {
 						-- },
 					},
 					lualine_y = {
-            -- "filetype",
+						"filetype",
 						{ "progress", padding = { left = 1, right = 1 } },
 					},
 					lualine_z = {
