@@ -52,6 +52,7 @@ return {
 					"*.tmp",
 					"node_modules/",
 					".DS_Store",
+					".worktrees/",
 				},
 				matcher = {
 					history_bonus = true,
