@@ -14,23 +14,22 @@ if [ -z "$ai_pane" ]; then
   tmux split-window -h -l "35%" "zsh -c '$ai_process_command; zsh'"
   tmux set-option -p @is_ai_pane 1
 
-# Case 2: Currently in AI pane - swap to right pane and maximize, effectively hiding AI
+# Case 2: Currently in AI pane - minimize it and go back
 elif [[ "$current_pane" == "$ai_pane" ]]; then
-  tmux select-pane -R
-  tmux resize-pane -Z
+  tmux resize-pane -t "$ai_pane" -x 1
+  tmux select-pane -l
 
-# Case 3: AI pane exists and current pane is maximized - go to AI pane directly
-elif [[ $(tmux display-message -p "#{window_zoomed_flag}") == "1" ]]; then
-  tmux select-pane -t "$ai_pane"
-
-# Case 4: AI pane exists but current pane isn't AI - toggle AI pane size
+# Case 3: Not in AI pane - expand if minimized and focus it
 else
+  # Unzoom first if needed so all panes are visible
+  if [[ $(tmux display-message -p "#{window_zoomed_flag}") == "1" ]]; then
+    tmux resize-pane -Z
+  fi
   ai_pane_width=$(tmux display-message -t "$ai_pane" -p "#{pane_width}")
   if [[ "$ai_pane_width" -le 2 ]]; then
     window_width=$(tmux display-message -p "#{window_width}")
     target_width=$((window_width * 35 / 100))
     tmux resize-pane -t "$ai_pane" -x "$target_width"
-  else
-    tmux resize-pane -t "$ai_pane" -x 1
   fi
+  tmux select-pane -t "$ai_pane"
 fi
