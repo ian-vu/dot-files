@@ -16,7 +16,7 @@ connections:
     database: ""
     username: ""
     password: ""
-    name: staging
+    name: local
     timeout: 5
     options: {}
 styles:
