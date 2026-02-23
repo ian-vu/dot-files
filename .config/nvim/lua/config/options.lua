@@ -32,7 +32,7 @@ vim.o.showmode = false
 --  Remove this option if you want your OS clipboard to remain independent.
 --  See `:help 'clipboard'`
 vim.schedule(function()
-  vim.o.clipboard = "unnamedplus"
+	vim.o.clipboard = "unnamedplus"
 end)
 
 -- Enable break indent
@@ -101,10 +101,10 @@ vim.o.cmdheight = 0
 
 -- The value of this option influences when the last window will have a
 -- status line:
---  -1: never
---  0: only if there are at least two windows
---  2: always
---  3: always and ONLY the last window
+-- 	-1: never
+-- 	0: only if there are at least two windows
+-- 	2: always
+-- 	3: always and ONLY the last window
 -- The screen looks nicer with a status line if you have several
 -- windows, but it takes another screen line. |status-line|
 vim.o.laststatus = 3
@@ -121,12 +121,12 @@ vim.o.shiftwidth = 2
 
 -- Override chars
 vim.opt.fillchars = {
-  foldopen = "",
-  foldclose = "",
-  fold = " ",
-  foldsep = " ",
-  diff = "╱",
-  eob = " ",
+	foldopen = "",
+	foldclose = "",
+	fold = " ",
+	foldsep = " ",
+	diff = "╱",
+	eob = " ",
 }
 
 -- Default open all folds
@@ -137,6 +137,6 @@ vim.o.autoread = true
 
 -- Check for external file changes on these events
 vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter", "CursorHold", "CursorHoldI" }, {
-  pattern = "*",
-  command = "checktime",
+	pattern = "*",
+	command = "checktime",
 })
