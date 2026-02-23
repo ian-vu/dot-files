@@ -202,4 +202,100 @@ return {
 			opts = {},
 		},
 	},
+	{ -- sticky keymaps
+		"nvimtools/hydra.nvim",
+		event = "VeryLazy",
+		config = function()
+			local Hydra = require("hydra")
+
+			-- Move the split divider in an absolute direction:
+			-- > always moves divider right, < always moves left
+			-- + always moves divider down, - always moves up
+			local function move_divider(dir, amount)
+				local cur = vim.fn.winnr()
+				if dir == "right" then
+					if cur == vim.fn.winnr("l") then
+						vim.cmd(amount .. "wincmd <")
+					else
+						vim.cmd(amount .. "wincmd >")
+					end
+				elseif dir == "left" then
+					if cur == vim.fn.winnr("l") then
+						vim.cmd(amount .. "wincmd >")
+					else
+						vim.cmd(amount .. "wincmd <")
+					end
+				elseif dir == "down" then
+					if cur == vim.fn.winnr("j") then
+						vim.cmd(amount .. "wincmd -")
+					else
+						vim.cmd(amount .. "wincmd +")
+					end
+				elseif dir == "up" then
+					if cur == vim.fn.winnr("j") then
+						vim.cmd(amount .. "wincmd +")
+					else
+						vim.cmd(amount .. "wincmd -")
+					end
+				end
+			end
+
+			Hydra({
+				name = "Window Resize",
+				mode = "n",
+				body = "<C-w>",
+				heads = {
+					-- press <C-w> then tap >/</+/- to resize splits
+					{
+						">",
+						function()
+							move_divider("right", 4)
+						end,
+						{ desc = "Divider right" },
+					},
+					{
+						"<",
+						function()
+							move_divider("left", 4)
+						end,
+						{ desc = "Divider left" },
+					},
+					{
+						"+",
+						function()
+							move_divider("down", 4)
+						end,
+						{ desc = "Divider down" },
+					},
+					{
+						"-",
+						function()
+							move_divider("up", 4)
+						end,
+						{ desc = "Divider up" },
+					},
+					{ "=", "<C-w>=", { desc = "Equalize" } },
+					{ "<Esc>", nil, { exit = true } },
+				},
+			})
+		end,
+	},
+	{
+		-- Search and replace
+		"nvim-pack/nvim-spectre",
+		event = "VeryLazy",
+		dependencies = {
+			"nvim-lua/plenary.nvim",
+		},
+		opts = {},
+	},
+	{
+		{
+			"nvim-mini/mini.surround",
+			enabled = false,
+			event = "BufRead",
+			version = false,
+			opts = {},
+		},
+	},
 }
