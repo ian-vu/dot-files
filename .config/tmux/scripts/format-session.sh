@@ -17,12 +17,13 @@ truncate() {
 }
 
 case "$s" in
-  */wt/*)
-    repo="${s%%/wt/*}"
-    wt="${s##*/wt/}"
-    printf '%s 󰐅 [%s]' "$(truncate "$repo")" "$(truncate "$wt")"
-    ;;
-  *)
-    printf '%s' "$s"
-    ;;
+*/wt/*)
+  repo="${s%%/wt/*}"
+  wt="${s##*/wt/}"
+  # printf '%s 󰐅 [%s]' "$(truncate "$repo")" "$(truncate "$wt")"
+  printf '%s 🌳 [%s]' "$(truncate "$repo")" "$(truncate "$wt")"
+  ;;
+*)
+  printf '%s' "$s"
+  ;;
 esac
