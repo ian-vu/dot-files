@@ -2,72 +2,63 @@ return {
 	{
 		"akinsho/bufferline.nvim",
 		version = "*",
-		dependencies = "nvim-tree/nvim-web-devicons",
+		dependencies = { "nvim-tree/nvim-web-devicons", "ThePrimeagen/harpoon" },
 		config = function()
 			local bufferline = require("bufferline")
+			local harpoon = require("harpoon")
 
-			-- Track buffer access times globally
-			_G.buffer_access_times = _G.buffer_access_times or {}
-			_G.sorted_buffers = _G.sorted_buffers or {}
+			local harpoon_lookup = {}
 
-			-- Set up autocommand to track buffer visits and keep sorted list
-			vim.api.nvim_create_autocmd("BufEnter", {
-				callback = function(args)
-					-- Skip if in a floating window (picker, etc.)
-					local win = vim.api.nvim_get_current_win()
-					local config = vim.api.nvim_win_get_config(win)
-					if config.relative ~= "" then
-						return
-					end
+			local function sync()
+				harpoon_lookup = {}
+				for i, item in ipairs(harpoon:list().items) do
+					harpoon_lookup[item.value] = i
+					-- Register buffer so bufferline can show it before it's visited
+					local bufnr = vim.fn.bufadd(item.value)
+					vim.bo[bufnr].buflisted = true
+				end
+				vim.cmd("redrawtabline")
+			end
 
-					_G.buffer_access_times[args.buf] = os.time()
-
-					-- Update sorted buffer list
-					local buffers = vim.tbl_filter(function(b)
-						return vim.api.nvim_buf_is_valid(b) and vim.bo[b].buflisted
-					end, vim.api.nvim_list_bufs())
-
-					table.sort(buffers, function(a, b)
-						local time_a = _G.buffer_access_times[a] or 0
-						local time_b = _G.buffer_access_times[b] or 0
-						return time_a > time_b
-					end)
-
-					_G.sorted_buffers = buffers
-				end,
+			-- Sync on any harpoon list mutation instead of manual calls in keymaps
+			harpoon:extend({
+				ADD = sync,
+				REMOVE = sync,
+				REORDER = sync,
+				LIST_CHANGE = sync, -- covers bulk edits via harpoon UI
 			})
+
+			sync()
+
+			local function buf_harpoon_index(buf)
+				local rel = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(buf), ":.")
+				return harpoon_lookup[rel]
+			end
 
 			bufferline.setup({
 				options = {
 					separator_style = "slope",
 					style_preset = bufferline.style_preset.no_italic,
-					-- numbers = "ordinal",
-					-- Show number next to buffer name
 					numbers = function(opts)
-						-- Find the index of the current buffer in the sorted list
-						for i, buf in ipairs(_G.sorted_buffers) do
-							if buf == opts.id then
-								return string.format("%s", opts.lower(i))
-							end
+						local idx = buf_harpoon_index(opts.id)
+						if idx then
+							return string.format("%s", opts.lower(idx))
 						end
-						-- Fallback to ordinal if not found
-						return string.format("%s", opts.lower(opts.ordinal))
+						return ""
 					end,
 					themeable = true,
 					indicator = {
-						-- icon = "",
 						style = "none",
 					},
 					show_buffer_icons = false,
 					show_buffer_close_icons = false,
-					pick = {
-						-- alphabet = "neiluym,.",
-					},
+					custom_filter = function(buf_number)
+						return buf_harpoon_index(buf_number) ~= nil
+					end,
 					sort_by = function(buffer_a, buffer_b)
-						-- Sort by last access time (most recently accessed first)
-						local time_a = _G.buffer_access_times[buffer_a.id] or 0
-						local time_b = _G.buffer_access_times[buffer_b.id] or 0
-						return time_a > time_b
+						local idx_a = buf_harpoon_index(buffer_a.id) or 999
+						local idx_b = buf_harpoon_index(buffer_b.id) or 999
+						return idx_a < idx_b
 					end,
 				},
 			})

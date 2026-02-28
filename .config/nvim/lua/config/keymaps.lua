@@ -93,16 +93,12 @@ vim.keymap.set("n", "<leader>bs", "<cmd>BufferLinePick<cr>", { desc = "Select pi
 vim.keymap.set("n", "<leader>bp", "<cmd>BufferLineTogglePin<cr>", { desc = "Pin buffer" })
 vim.keymap.set("n", "<leader>bX", "<cmd>%bd<cr>", { desc = "Close all buffers" })
 
--- Buffer switching
-vim.keymap.set({ "n", "v", "x" }, "<leader>1", "<cmd>BufferLineGoToBuffer 1<cr>", { desc = "Buffer 1" })
-vim.keymap.set({ "n", "v", "x" }, "<leader>2", "<cmd>BufferLineGoToBuffer 2<cr>", { desc = "Buffer 2" })
-vim.keymap.set({ "n", "v", "x" }, "<leader>3", "<cmd>BufferLineGoToBuffer 3<cr>", { desc = "Buffer 3" })
-vim.keymap.set({ "n", "v", "x" }, "<leader>4", "<cmd>BufferLineGoToBuffer 4<cr>", { desc = "Buffer 4" })
-vim.keymap.set({ "n", "v", "x" }, "<leader>5", "<cmd>BufferLineGoToBuffer 5<cr>", { desc = "Buffer 5" })
-vim.keymap.set({ "n", "v", "x" }, "<leader>6", "<cmd>BufferLineGoToBuffer 6<cr>", { desc = "Buffer 6" })
-vim.keymap.set({ "n", "v", "x" }, "<leader>7", "<cmd>BufferLineGoToBuffer 7<cr>", { desc = "Buffer 7" })
-vim.keymap.set({ "n", "v", "x" }, "<leader>8", "<cmd>BufferLineGoToBuffer 8<cr>", { desc = "Buffer 8" })
-vim.keymap.set({ "n", "v", "x" }, "<leader>9", "<cmd>BufferLineGoToBuffer 9<cr>", { desc = "Buffer 9" })
+-- Harpoon navigation — leader+number selects harpoon mark N
+for i = 1, 9 do
+	vim.keymap.set({ "n", "v", "x" }, "<leader>" .. i, function()
+		require("harpoon"):list():select(i)
+	end, { desc = "Harpoon " .. i })
+end
 
 -- harpoon
 vim.keymap.set({ "n", "v" }, "<leader>ha", function()
