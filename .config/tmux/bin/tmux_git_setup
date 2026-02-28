@@ -22,8 +22,8 @@ if git -C "$session_path" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   # Create empty shell window
   tmux new-window -t "$session" -c "$session_path"
 
-  # Focus neovim window and open AI sidebar
+  # Focus neovim window
   tmux select-window -t "$session:1"
-  tmux split-window -t "$session:1" -h -l "35%" "$HOME/.claude/local/claude"
+  # tmux split-window -t "$session:1" -h -l "35%" "$HOME/.claude/local/claude"
   tmux select-pane -t "$session:1" -L
 fi
