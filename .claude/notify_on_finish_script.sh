@@ -43,7 +43,7 @@ if [ -n "$TMUX" ]; then
   TMUX_WINDOW="${TMUX_WINDOW% ⚡}"
   TMUX_WINDOW="${TMUX_WINDOW% 🔔}"
   if [ -n "$TMUX_SESSION" ]; then
-    TITLE="⟫ $TMUX_SESSION"
+    TITLE="$TMUX_SESSION"
     if [ -n "$TMUX_WINDOW" ]; then
       TITLE="$TITLE  ⧉  $TMUX_WINDOW"
     fi
