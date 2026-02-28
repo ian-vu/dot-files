@@ -140,3 +140,8 @@ vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter", "CursorHold", "CursorHo
 	pattern = "*",
 	command = "checktime",
 })
+
+-- disable swap files
+-- what are swap files?
+--  swap files are files that are used to store the changes made to a file as crash recovery
+vim.opt.swapfile = false
