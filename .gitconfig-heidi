@@ -1,0 +1,6 @@
+[user]
+	name = Ian Vu
+	email = ianvu@heidihealth.com
+
+[core]
+	sshCommand = ssh -i ~/.ssh/id_ed25519

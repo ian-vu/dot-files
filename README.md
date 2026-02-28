@@ -134,58 +134,46 @@ age --decrypt --identity ~/.age/secret-key.txt <ENCRYPTED_FILE_PATH>
 
 ## Git Configuration
 
-This repository uses a conditional Git configuration setup to automatically switch between personal and work identities based on the directory structure.
-
-### How it works
-
-- **Default (Personal)**: All repositories default to personal email (`personal@gmail.com`)
-- **Work Override**: Repositories in `~/dev/work/**` automatically use work email (`work@company.com`)
+Git is configured to automatically switch between personal and work identities based on the directory a repo is cloned into. SSH keys are also selected automatically via `core.sshCommand`.
 
 ### Directory Structure
 
 ```
 ~/dev/
-├── work/                 # All work repositories go here
-│   ├── company-project/ # Current company repositories
-│   ├── company-api/
-│   └── company-docs/
-├── personal/            # Personal repositories
-└── [other]/            # Any other repositories (use personal config)
+├── heidi/              # Work repositories (uses ~/.gitconfig-heidi)
+├── personal/           # Personal repositories (uses default config)
+└── <workplace>/        # Future workplaces get their own directory + config
 ```
 
-### Configuration Files
+### How it works
 
-- **`.gitconfig`** - Main config with personal email as default + conditional include
-- **`~/.gitconfig-work`** - Work-specific overrides (email, name, SSH keys, etc.)
+- **Default (Personal)**: `.gitconfig` sets personal identity and `sshCommand` using `~/.ssh/id_ed25519_personal`
+- **Work Override**: `includeIf` directives in `.gitconfig` load a workplace-specific config (e.g. `.gitconfig-heidi`) which overrides identity and `sshCommand`
 
-### Setup for New Work Environment
+### Adding a new workplace
 
-When switching companies or setting up on a new work laptop:
-
-1. **Move work repositories**: Place all work repos under `~/dev/work/`
-2. **Update work config**: Edit `~/.gitconfig-work` with new work email/settings
-3. **No changes needed**: The main `.gitconfig` remains unchanged
-
-### Example Work Config (`~/.gitconfig-work`)
-
-```ini
-[user]
-    name = Your Name
-    email = work@company.com
-[core]
-    sshCommand = ssh -i ~/.ssh/work_key
-```
+1. Create the directory: `mkdir ~/dev/<workplace>`
+2. Create `.gitconfig-<workplace>` in the dotfiles repo with the workplace identity and SSH key:
+   ```ini
+   [user]
+       name = Your Name
+       email = you@workplace.com
+   [core]
+       sshCommand = ssh -i ~/.ssh/<workplace_key>
+   ```
+3. Add an `includeIf` to the **end** of `.gitconfig` (must come after `[core]` to override `sshCommand`):
+   ```ini
+   [includeIf "gitdir:~/dev/<workplace>/"]
+       path = ~/.gitconfig-<workplace>
+   ```
+4. Run `stow .` from the dotfiles repo to symlink the new config file
 
 ### Verification
 
-Test the setup in any repository:
-
 ```bash
-# In work repo
-cd ~/dev/work/some-project
+cd ~/dev/heidi/some-project
 git config user.email  # Should show work email
 
-# In personal repo
 cd ~/dev/personal/some-project
 git config user.email  # Should show personal email
 ```

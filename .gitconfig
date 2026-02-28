@@ -1,48 +1,32 @@
-# This is Git's per-user configuration file.
 [user]
 	name = Ian Vu
 	email = iaanvuu@gmail.com
 
-# Work-specific config for repositories in ~/dev/work/
-[includeIf "gitdir:/Users/ivu/dev/work/**"]
-    path = /Users/ivu/.gitconfig-work
-
 [push]
-  # Automatically set up remote for pushing
 	autoSetupRemote = true
 
-############################################
-# Git diff things
-############################################
-
 [core]
-    pager = delta
+	pager = delta
 	excludesfile = /Users/ivu/.gitignore_global
+	sshCommand = ssh -i ~/.ssh/id_ed25519_personal
 
 [interactive]
-    diffFilter = delta --color-only
+	diffFilter = delta --color-only
 
 [delta]
+	line-numbers-right-format = "{np:>4} "
+	line-numbers-left-format = "{np:>4} "
+	hunk-header-style = omit
 
 [merge]
-    conflictstyle = diff3
+	conflictstyle = diff3
 
 [diff]
-    colorMoved = default
+	colorMoved = default
 
-[delta]
-    ; side-by-side = true
-    ; line-numbers-right-format = "{np:>4}│"
-    ; line-numbers-left-format = "{np:>4}│"
-    ; line-numbers-left-style = grey
-    ; line-numbers-right-style = grey
-    line-numbers-right-format = "{np:>4} "
-    line-numbers-left-format = "{np:>4} "
-    # Hide the chunk header
-    hunk-header-style = omit
+# Work-specific config (must be at the end to override core.sshCommand)
+[includeIf "gitdir:~/dev/heidi/"]
+	path = ~/.gitconfig-heidi
 
-    ; navigate = true    # use n and N to move between diff sections
-
-    # delta detects terminal colors automatically; set one of these to disable auto-detection
-    # dark = true
-    # light = true
+[includeIf "gitdir:~/dev/work/"]
+	path = ~/.gitconfig-heidi
