@@ -20,14 +20,15 @@ return {
 				vim.schedule(function()
 					sync_pending = false
 					harpoon_lookup = {}
-					for i, item in ipairs(harpoon:list().items) do
+					local items = harpoon:list().items
+					for i, item in ipairs(items) do
 						harpoon_lookup[item.value] = i
 						-- Register buffer so bufferline can show it before it's visited
 						local bufnr = vim.fn.bufadd(item.value)
 						vim.bo[bufnr].buflisted = true
 					end
 					-- Hide tabline when harpoon list is empty, unless multiple tabpages exist
-					vim.o.showtabline = (#harpoon:list().items > 0 or vim.fn.tabpagenr("$") > 1) and 2 or 0
+					vim.o.showtabline = (#items > 0 or vim.fn.tabpagenr("$") > 1) and 2 or 0
 					vim.cmd("redrawtabline")
 				end)
 			end
@@ -51,9 +52,8 @@ return {
 				sync()
 			end
 
-			-- Re-sync on events that can affect tabline visibility
-			-- (new buffers may cause bufferline to show, tab changes affect count)
-			vim.api.nvim_create_autocmd({ "BufAdd", "TabNew", "TabClosed" }, {
+			-- Re-sync on tab events that affect tabline visibility
+			vim.api.nvim_create_autocmd({ "TabNew", "TabClosed" }, {
 				callback = sync,
 			})
 
@@ -69,7 +69,7 @@ return {
 					numbers = function(opts)
 						local idx = buf_harpoon_index(opts.id)
 						if idx then
-							return string.format("%s", opts.lower(idx))
+							return opts.lower(idx)
 						end
 						return ""
 					end,
