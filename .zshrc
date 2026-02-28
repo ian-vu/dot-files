@@ -186,7 +186,7 @@ alias zshrca='atom ~/.zshrc'
 alias npr='npm run --silent $*'
 alias chrome="open -a 'Google Chrome'"
 alias arst='asdf'
-alias claude='[ -n "$TMUX" ] && tmux rename-window "claude"; ~/.local/bin/claude'
+alias claude='[ -n "$TMUX" ] && [ "$(tmux show-window-option -v automatic-rename 2>/dev/null)" != "off" ] && tmux rename-window "claude"; ~/.local/bin/claude'
 alias gitstats="onefetch"
 
 # Locally gitignore a file (adds to .git/info/exclude)
