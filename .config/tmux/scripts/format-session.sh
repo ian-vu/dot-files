@@ -6,7 +6,7 @@
 # Usage: format-session.sh <session_name>
 
 s="$1"
-max=10
+max=30
 
 truncate() {
   if [ ${#1} -gt $max ]; then

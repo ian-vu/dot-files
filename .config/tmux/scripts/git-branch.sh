@@ -4,7 +4,7 @@
 # Truncates to $max characters with '…' suffix if too long
 # Usage: git-branch.sh <pane_current_path>
 
-max=10
+max=6
 
 branch=$(cd "$1" && git rev-parse --abbrev-ref HEAD 2>/dev/null) || exit 0
 
