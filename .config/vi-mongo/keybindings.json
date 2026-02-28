@@ -134,7 +134,7 @@
       "description": "Add new"
     },
     "editDocument": {
-      "runes": ["M"],
+      "runes": ["E"],
       "description": "Edit"
     },
     "inlineEdit": {
