@@ -18,6 +18,16 @@
     }
   },
   "help": {
+    "moveUp": {
+      "keys": ["Up"],
+      "runes": ["e"],
+      "description": "Move up"
+    },
+    "moveDown": {
+      "keys": ["Down"],
+      "runes": ["n"],
+      "description": "Move down"
+    },
     "close": {
       "keys": ["Esc"],
       "description": "Close help"
@@ -49,6 +59,16 @@
       }
     },
     "connectionList": {
+      "moveUp": {
+        "keys": ["Up"],
+        "runes": ["e"],
+        "description": "Move up"
+      },
+      "moveDown": {
+        "keys": ["Down"],
+        "runes": ["n"],
+        "description": "Move down"
+      },
       "focusForm": {
         "keys": ["Ctrl+I", "Ctrl+Right"],
         "description": "Move focus to form"
@@ -90,6 +110,16 @@
     }
   },
   "databases": {
+    "moveUp": {
+      "keys": ["Up"],
+      "runes": ["e"],
+      "description": "Move up"
+    },
+    "moveDown": {
+      "keys": ["Down"],
+      "runes": ["n"],
+      "description": "Move down"
+    },
     "filterBar": {
       "runes": ["/"],
       "description": "Focus filter bar"
@@ -116,6 +146,26 @@
     }
   },
   "content": {
+    "moveUp": {
+      "keys": ["Up"],
+      "runes": ["e"],
+      "description": "Move up"
+    },
+    "moveDown": {
+      "keys": ["Down"],
+      "runes": ["n"],
+      "description": "Move down"
+    },
+    "moveLeft": {
+      "keys": ["Left"],
+      "runes": ["h"],
+      "description": "Move left"
+    },
+    "moveRight": {
+      "keys": ["Right"],
+      "runes": ["i"],
+      "description": "Move right"
+    },
     "switchView": {
       "runes": ["f"],
       "description": "Change view"
@@ -219,6 +269,16 @@
     }
   },
   "peeker": {
+    "moveUp": {
+      "keys": ["Up"],
+      "runes": ["e"],
+      "description": "Move up"
+    },
+    "moveDown": {
+      "keys": ["Down"],
+      "runes": ["n"],
+      "description": "Move down"
+    },
     "moveToTop": {
       "runes": ["g"],
       "description": "Move to top"
@@ -269,6 +329,16 @@
     }
   },
   "index": {
+    "moveUp": {
+      "keys": ["Up"],
+      "runes": ["e"],
+      "description": "Move up"
+    },
+    "moveDown": {
+      "keys": ["Down"],
+      "runes": ["n"],
+      "description": "Move down"
+    },
     "exitModal": {
       "keys": ["Esc"],
       "description": "Exit modal"
