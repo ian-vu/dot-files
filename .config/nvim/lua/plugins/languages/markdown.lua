@@ -77,5 +77,21 @@ return {
 				marksman = {},
 			},
 		},
+		init = function()
+			-- Marksman caches its file index at startup and doesn't detect new/moved/deleted
+			-- files until restarted. This restarts it automatically when oil modifies files.
+			vim.api.nvim_create_autocmd("User", {
+				pattern = { "OilCreate", "OilDelete", "OilMove" },
+				callback = function()
+					local clients = vim.lsp.get_clients({ name = "marksman" })
+					for _, client in ipairs(clients) do
+						client:stop()
+						vim.defer_fn(function()
+							vim.cmd("LspStart marksman")
+						end, 100)
+					end
+				end,
+			})
+		end,
 	},
 }
