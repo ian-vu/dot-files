@@ -8,7 +8,7 @@ session="$1"
 session_path="$2"
 
 # Skip float sessions
-case "$session" in float*) exit 0 ;; esac
+case "$session" in *float*) exit 0 ;; esac
 
 # Only act on git repos
 if git -C "$session_path" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
