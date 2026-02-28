@@ -49,4 +49,49 @@ return {
 			-- vim.cmd 'hi TreesitterContextLineNumberBottom gui=underline guisp=Grey'
 		end,
 	},
+	{ -- illuminate word under cursor
+		"RRethy/vim-illuminate",
+		enable = false,
+		event = "BufRead",
+		opts = {
+			delay = 50,
+			large_file_cutoff = 2000,
+			large_file_overrides = {
+				providers = { "lsp" },
+			},
+		},
+		config = function(_, opts)
+			require("illuminate").configure(opts)
+		end,
+	},
+	-- Highlight todo, notes, etc in comments
+	{
+		"folke/todo-comments.nvim",
+		event = "VimEnter",
+		dependencies = { "nvim-lua/plenary.nvim" },
+		opts = { signs = false },
+	},
+	{
+		"nvim-mini/mini.hipatterns",
+		version = "*",
+		opts = {
+			-- Table with highlighters (see |MiniHipatterns.config| for more details).
+			-- Nothing is defined by default. Add manually for visible effect.
+			highlighters = {},
+
+			-- Delays (in ms) defining asynchronous highlighting process
+			delay = {
+				-- How much to wait for update after every text change
+				text_change = 200,
+
+				-- How much to wait for update after window scroll
+				scroll = 50,
+			},
+		},
+	},
+	{
+		"norcalli/nvim-colorizer.lua",
+		event = "BufRead",
+		opts = {},
+	},
 }

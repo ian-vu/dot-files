@@ -1,40 +1,8 @@
 return {
-	{ -- illuminate word under cursor
-		"RRethy/vim-illuminate",
-		enable = false,
-		event = "BufRead",
-		opts = {
-			delay = 50,
-			large_file_cutoff = 2000,
-			large_file_overrides = {
-				providers = { "lsp" },
-			},
-		},
-		config = function(_, opts)
-			require("illuminate").configure(opts)
-		end,
-	},
-	{
-		"NMAC427/guess-indent.nvim", -- Detect tabstop and shiftwidth automatically
+	{ -- Detect tabstop and shiftwidth automatically
+		"NMAC427/guess-indent.nvim",
 		enabled = true,
 		event = "BufRead",
-	},
-	{ -- Navigate between tmux panes
-		"christoomey/vim-tmux-navigator",
-		cmd = {
-			"TmuxNavigateLeft",
-			"TmuxNavigateDown",
-			"TmuxNavigateUp",
-			"TmuxNavigateRight",
-			"TmuxNavigatePrevious",
-		},
-	},
-	-- Highlight todo, notes, etc in comments
-	{
-		"folke/todo-comments.nvim",
-		event = "VimEnter",
-		dependencies = { "nvim-lua/plenary.nvim" },
-		opts = { signs = false },
 	},
 	{ -- Easy commenting to be used with keymaps
 		"numToStr/Comment.nvim",
@@ -46,23 +14,11 @@ return {
 		opts = {},
 	},
 	{
-		"folke/flash.nvim",
-		enabled = true,
-		event = "VeryLazy",
-		opts = {
-			-- Show labels before the search word
-			label = {
-				before = true,
-				after = false,
-			},
-			modes = {
-				-- Disable flash for `/`
-				search = { enabled = false },
-
-				-- Disable flash when using `f`, `F`, `t`, `T`, `;` and `,` motions
-				char = { enabled = false },
-			},
-		},
+		"nvim-mini/mini.surround",
+		enabled = false,
+		event = "BufRead",
+		version = false,
+		opts = {},
 	},
 	{ -- undo history
 		"mbbill/undotree",
@@ -71,12 +27,13 @@ return {
 		config = function()
 			vim.g.undotree_WindowLayout = 3
 			vim.g.undotree_SetFocusWhenToggle = 1
-			vim.g.undotree_TreeNodeShape = ""
+			vim.g.undotree_TreeNodeShape = ""
 			vim.g.undotree_DiffpanelHeight = 20
 			vim.g.undotree_SplitWidth = 40
 		end,
 	},
-	{
+	{ -- newer undotree
+		-- disabled since there currently isn't support to show saved nodes
 		"XXiaoA/atone.nvim",
 		enabled = false,
 		event = "BufRead",
@@ -91,25 +48,6 @@ return {
 				},
 			},
 		},
-	},
-	{
-		"folke/trouble.nvim",
-		-- lazy = false,
-		-- optional = true,
-		opts = {
-			win = {
-				-- input = {
-				--   keys = {
-				--     ['<c-t>'] = {
-				--       'trouble_open',
-				--       mode = { 'n', 'i' },
-				--     },
-				--   },
-				-- },
-				size = 0.3,
-			},
-		},
-		cmd = "Trouble",
 	},
 	{ -- cycle through paste | yank history
 		"gbprod/yanky.nvim",
@@ -152,54 +90,6 @@ return {
 			-- { ">P", "<Plug>(YankyPutIndentBeforeShiftRight)", desc = "Put Before and Indent Right" },
 			-- { "<P", "<Plug>(YankyPutIndentBeforeShiftLeft)", desc = "Put Before and Indent Left" },
 			{ "=p", "<Plug>(YankyPutAfterFilter)", desc = "Put After Applying a Filter" },
-		},
-	},
-	{ -- better quick fix qflist
-		"stevearc/quicker.nvim",
-		event = "FileType qf",
-		---@module "quicker"
-		---@type quicker.SetupOptions
-		opts = {},
-	},
-	{
-		"nvim-mini/mini.hipatterns",
-		version = "*",
-		opts = {
-			-- Table with highlighters (see |MiniHipatterns.config| for more details).
-			-- Nothing is defined by default. Add manually for visible effect.
-			highlighters = {},
-
-			-- Delays (in ms) defining asynchronous highlighting process
-			delay = {
-				-- How much to wait for update after every text change
-				text_change = 200,
-
-				-- How much to wait for update after window scroll
-				scroll = 50,
-			},
-		},
-	},
-	{
-		"norcalli/nvim-colorizer.lua",
-		event = "BufRead",
-		opts = {},
-	},
-	{
-		-- Search and replace
-		"nvim-pack/nvim-spectre",
-		event = "VeryLazy",
-		dependencies = {
-			"nvim-lua/plenary.nvim",
-		},
-		opts = {},
-	},
-	{
-		{
-			"nvim-mini/mini.surround",
-			enabled = false,
-			event = "BufRead",
-			version = false,
-			opts = {},
 		},
 	},
 	{ -- sticky keymaps
@@ -279,23 +169,5 @@ return {
 				},
 			})
 		end,
-	},
-	{
-		-- Search and replace
-		"nvim-pack/nvim-spectre",
-		event = "VeryLazy",
-		dependencies = {
-			"nvim-lua/plenary.nvim",
-		},
-		opts = {},
-	},
-	{
-		{
-			"nvim-mini/mini.surround",
-			enabled = false,
-			event = "BufRead",
-			version = false,
-			opts = {},
-		},
 	},
 }

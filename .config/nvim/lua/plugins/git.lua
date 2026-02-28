@@ -93,7 +93,7 @@ return {
 			}
 		end,
 	},
-	{
+	{ -- bridging the gap between git and neovim
 		"trevorhauter/gitportal.nvim",
 		event = "VeryLazy",
 		opts = {},
