@@ -99,11 +99,9 @@ return {
 			})
 
 			-- Correct showtabline after bufferline renders on buffer events.
-			-- Deferred so it runs after bufferline's own BufEnter handler.
+			-- Created after bufferline.setup() so it runs after bufferline's handler.
 			vim.api.nvim_create_autocmd("BufEnter", {
-				callback = function()
-					vim.schedule(update_showtabline)
-				end,
+				callback = update_showtabline,
 			})
 		end,
 	},
