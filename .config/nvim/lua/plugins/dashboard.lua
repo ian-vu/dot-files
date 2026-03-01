@@ -1,13 +1,13 @@
 return {
 	{ -- Allow for session saving and restoring
-		"folke/persistence.nvim",
+		"folke/persistence.nvim", -- https://github.com/folke/persistence.nvim
 		event = "BufReadPre", -- this will only start session saving when an actual file was opened
 		opts = {
 			-- add any custom options here
 		},
 	},
 	{
-		"nvimdev/dashboard-nvim",
+		"nvimdev/dashboard-nvim", -- https://github.com/nvimdev/dashboard-nvim
 		event = "VimEnter",
 		opts = function()
 			-- local logo = [[

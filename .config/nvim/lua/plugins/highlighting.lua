@@ -1,6 +1,6 @@
 return {
 	{ -- Highlight, edit, and navigate code
-		"nvim-treesitter/nvim-treesitter",
+		"nvim-treesitter/nvim-treesitter", -- https://github.com/nvim-treesitter/nvim-treesitter
 		build = ":TSUpdate",
 		main = "nvim-treesitter.configs", -- Sets main module to use for opts
 		-- [[ Configure Treesitter ]] See `:help nvim-treesitter`
@@ -33,7 +33,7 @@ return {
 		--    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
 	},
 	{ -- Top of buffer showing context of current line
-		"nvim-treesitter/nvim-treesitter-context",
+		"nvim-treesitter/nvim-treesitter-context", -- https://github.com/nvim-treesitter/nvim-treesitter-context
 		event = "BufRead",
 		opts = {
 			multiwindow = true,
@@ -50,7 +50,7 @@ return {
 		end,
 	},
 	{ -- illuminate word under cursor
-		"RRethy/vim-illuminate",
+		"RRethy/vim-illuminate", -- https://github.com/RRethy/vim-illuminate
 		enable = false,
 		event = "BufRead",
 		opts = {
@@ -66,13 +66,13 @@ return {
 	},
 	-- Highlight todo, notes, etc in comments
 	{
-		"folke/todo-comments.nvim",
+		"folke/todo-comments.nvim", -- https://github.com/folke/todo-comments.nvim
 		event = "VimEnter",
 		dependencies = { "nvim-lua/plenary.nvim" },
 		opts = { signs = false },
 	},
 	{
-		"nvim-mini/mini.hipatterns",
+		"nvim-mini/mini.hipatterns", -- https://github.com/nvim-mini/mini.hipatterns
 		version = "*",
 		opts = {
 			-- Table with highlighters (see |MiniHipatterns.config| for more details).
@@ -90,7 +90,7 @@ return {
 		},
 	},
 	{
-		"norcalli/nvim-colorizer.lua",
+		"norcalli/nvim-colorizer.lua", -- https://github.com/norcalli/nvim-colorizer.lua
 		event = "BufRead",
 		opts = {},
 	},

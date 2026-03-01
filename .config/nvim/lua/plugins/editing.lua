@@ -1,27 +1,27 @@
 return {
 	{ -- Detect tabstop and shiftwidth automatically
-		"NMAC427/guess-indent.nvim",
+		"NMAC427/guess-indent.nvim", -- https://github.com/NMAC427/guess-indent.nvim
 		enabled = true,
 		event = "BufRead",
 	},
 	{ -- Easy commenting to be used with keymaps
-		"numToStr/Comment.nvim",
+		"numToStr/Comment.nvim", -- https://github.com/numToStr/Comment.nvim
 		event = "BufRead",
 	},
 	{
-		"windwp/nvim-autopairs",
+		"windwp/nvim-autopairs", -- https://github.com/windwp/nvim-autopairs
 		event = "InsertEnter",
 		opts = {},
 	},
 	{
-		"nvim-mini/mini.surround",
+		"nvim-mini/mini.surround", -- https://github.com/nvim-mini/mini.surround
 		enabled = false,
 		event = "BufRead",
 		version = false,
 		opts = {},
 	},
 	{ -- undo history
-		"mbbill/undotree",
+		"mbbill/undotree", -- https://github.com/mbbill/undotree
 		enabled = true,
 		event = "BufRead",
 		config = function()
@@ -34,7 +34,7 @@ return {
 	},
 	{ -- newer undotree
 		-- disabled since there currently isn't support to show saved nodes
-		"XXiaoA/atone.nvim",
+		"XXiaoA/atone.nvim", -- https://github.com/XXiaoA/atone.nvim
 		enabled = false,
 		event = "BufRead",
 		opts = {
@@ -50,7 +50,7 @@ return {
 		},
 	},
 	{ -- cycle through paste | yank history
-		"gbprod/yanky.nvim",
+		"gbprod/yanky.nvim", -- https://github.com/gbprod/yanky.nvim
 		event = "BufRead",
 		enabled = true,
 		dependencies = {
@@ -93,7 +93,7 @@ return {
 		},
 	},
 	{ -- sticky keymaps
-		"nvimtools/hydra.nvim",
+		"nvimtools/hydra.nvim", -- https://github.com/nvimtools/hydra.nvim
 		event = "VeryLazy",
 		config = function()
 			local Hydra = require("hydra")

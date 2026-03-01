@@ -1,6 +1,6 @@
 return {
 	{
-		"stevearc/conform.nvim",
+		"stevearc/conform.nvim", -- https://github.com/stevearc/conform.nvim
 		optional = true,
 		opts = {
 			formatters = {
@@ -30,7 +30,7 @@ return {
 	},
 	-- install with yarn or npm
 	{
-		"iamcco/markdown-preview.nvim",
+		"iamcco/markdown-preview.nvim", -- https://github.com/iamcco/markdown-preview.nvim
 		cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
 		build = "cd app && yarn install",
 		init = function()
@@ -39,7 +39,7 @@ return {
 		ft = { "markdown" },
 	},
 	{
-		"MeanderingProgrammer/render-markdown.nvim",
+		"MeanderingProgrammer/render-markdown.nvim", -- https://github.com/MeanderingProgrammer/render-markdown.nvim
 		opts = {
 			code = {
 				sign = false,
@@ -71,7 +71,7 @@ return {
 		end,
 	},
 	{
-		"neovim/nvim-lspconfig",
+		"neovim/nvim-lspconfig", -- https://github.com/neovim/nvim-lspconfig
 		opts = {
 			servers = {
 				marksman = {},

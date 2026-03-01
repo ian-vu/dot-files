@@ -1,6 +1,6 @@
 return {
 	{ -- Adds git related signs to the gutter, as well as utilities for managing changes
-		"lewis6991/gitsigns.nvim",
+		"lewis6991/gitsigns.nvim", -- https://github.com/lewis6991/gitsigns.nvim
 		event = "BufRead",
 		opts = {
 			-- centered char "│"
@@ -24,7 +24,7 @@ return {
 	},
 	{
 		-- Git diff view
-		"sindrets/diffview.nvim",
+		"sindrets/diffview.nvim", -- https://github.com/sindrets/diffview.nvim
 		event = "VeryLazy",
 		opts = function()
 			local actions = require("diffview.actions")
@@ -94,16 +94,16 @@ return {
 		end,
 	},
 	{ -- bridging the gap between git and neovim
-		"trevorhauter/gitportal.nvim",
+		"trevorhauter/gitportal.nvim", -- https://github.com/trevorhauter/gitportal.nvim
 		event = "VeryLazy",
 		opts = {},
 	},
 	{ -- github pull request pr
-		"pwntester/octo.nvim",
+		"pwntester/octo.nvim", -- https://github.com/pwntester/octo.nvim
 		requires = {
-			"nvim-lua/plenary.nvim",
-			"folke/snacks.nvim",
-			"nvim-tree/nvim-web-devicons",
+			"nvim-lua/plenary.nvim", -- https://github.com/nvim-lua/plenary.nvim
+			"folke/snacks.nvim", -- https://github.com/folke/snacks.nvim
+			"nvim-tree/nvim-web-devicons", -- https://github.com/nvim-tree/nvim-web-devicons
 		},
 		event = "VeryLazy",
 		opts = {

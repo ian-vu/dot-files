@@ -1,14 +1,13 @@
 return {
 	{
 		-- Fuzzy Finder (files, lsp, etc)
-		"nvim-telescope/telescope.nvim",
+		"nvim-telescope/telescope.nvim", -- https://github.com/nvim-telescope/telescope.nvim
 		event = "VimEnter",
 		enabled = false,
 		dependencies = {
-			"nvim-lua/plenary.nvim",
+			"nvim-lua/plenary.nvim", -- https://github.com/nvim-lua/plenary.nvim
 			{ -- If encountering errors, see telescope-fzf-native README for installation instructions
-				"nvim-telescope/telescope-fzf-native.nvim",
-
+				"nvim-telescope/telescope-fzf-native.nvim", -- https://github.com/nvim-telescope/telescope-fzf-native.nvim
 				-- `build` is used to run some command when the plugin is installed/updated.
 				-- This is only run then, not every time Neovim starts up.
 				build = "make",

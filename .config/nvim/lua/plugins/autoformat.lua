@@ -3,7 +3,7 @@ vim.g.autoformat_enabled = true
 
 return {
 	{ -- Autoformat
-		"stevearc/conform.nvim",
+		"stevearc/conform.nvim", -- https://github.com/stevearc/conform.nvim
 		event = { "BufWritePre" },
 		cmd = { "ConformInfo" },
 		keys = {

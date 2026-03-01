@@ -1,6 +1,6 @@
 return {
 	{
-		"supermaven-inc/supermaven-nvim",
+		"supermaven-inc/supermaven-nvim", -- https://github.com/supermaven-inc/supermaven-nvim
 		event = "InsertEnter",
 		enabled = true,
 		opts = {

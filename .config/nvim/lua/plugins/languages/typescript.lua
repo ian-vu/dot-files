@@ -1,6 +1,6 @@
 return {
 	{
-		"neovim/nvim-lspconfig",
+		"neovim/nvim-lspconfig", -- https://github.com/neovim/nvim-lspconfig
 		opts = {
 			-- make sure mason installs the server
 			servers = {

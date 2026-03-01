@@ -1,6 +1,6 @@
 return {
 	{
-		"neovim/nvim-lspconfig",
+		"neovim/nvim-lspconfig", -- https://github.com/neovim/nvim-lspconfig
 		opts = {
 			servers = {
 				lua_ls = {
@@ -21,7 +21,7 @@ return {
 		},
 	},
 	{ -- Autoformat
-		"stevearc/conform.nvim",
+		"stevearc/conform.nvim", -- https://github.com/stevearc/conform.nvim
 		opts = {
 			formatters_by_ft = {
 				lua = { "stylua" },

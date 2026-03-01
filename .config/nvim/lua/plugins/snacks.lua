@@ -1,6 +1,6 @@
 return {
 	{
-		"folke/snacks.nvim",
+		"folke/snacks.nvim", -- https://github.com/folke/snacks.nvim
 		priority = 1,
 		lazy = false,
 		---@type snacks.Config

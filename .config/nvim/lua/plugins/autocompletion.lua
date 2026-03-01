@@ -1,12 +1,12 @@
 return {
 	{ -- Autocompletion
-		"saghen/blink.cmp",
+		"saghen/blink.cmp", -- https://github.com/saghen/blink.cmp
 		event = "VimEnter",
 		version = "1.*",
 		dependencies = {
 			-- Snippet Engine
 			{
-				"L3MON4D3/LuaSnip",
+				"L3MON4D3/LuaSnip", -- https://github.com/L3MON4D3/LuaSnip
 				version = "2.*",
 				build = (function()
 					-- Build Step is needed for regex support in snippets.
@@ -30,7 +30,7 @@ return {
 				},
 				opts = {},
 			},
-			"folke/lazydev.nvim",
+			"folke/lazydev.nvim", -- https://github.com/folke/lazydev.nvim
 		},
 		--- @module 'blink.cmp'
 		--- @type blink.cmp.Config

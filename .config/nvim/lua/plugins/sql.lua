@@ -2,7 +2,7 @@ return {
 	{
 		-- UI for managing databases
 		-- Connection data is stored in ~/.local/share/db_ui
-		"kristijanhusak/vim-dadbod-ui",
+		"kristijanhusak/vim-dadbod-ui", -- https://github.com/kristijanhusak/vim-dadbod-ui
 		dependencies = {
 			{ "tpope/vim-dadbod", lazy = true },
 			{ "kristijanhusak/vim-dadbod-completion", ft = { "sql", "mysql", "plsql" }, lazy = true },
@@ -19,7 +19,7 @@ return {
 		end,
 	},
 	{ -- optional saghen/blink.cmp completion source
-		"saghen/blink.cmp",
+		"saghen/blink.cmp", -- https://github.com/saghen/blink.cmp
 		opts = {
 			sources = {
 				default = { "lsp", "path", "snippets", "buffer" },

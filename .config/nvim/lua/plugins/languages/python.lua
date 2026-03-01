@@ -16,7 +16,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
 
 return {
 	{
-		"neovim/nvim-lspconfig",
+		"neovim/nvim-lspconfig", -- https://github.com/neovim/nvim-lspconfig
 		opts = {
 			servers = {
 				pyright = {
@@ -56,7 +56,7 @@ return {
 									if client.config.root_dir == new_root_dir then
 										client.config.settings.python.pythonPath = python_path
 										client.notify(
-											"workspace/didChangeConfiguration",
+											"workspace/didChangeConfiguration", -- https://github.com/workspace/didChangeConfiguration
 											{ settings = client.config.settings }
 										)
 									end

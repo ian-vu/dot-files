@@ -1,6 +1,6 @@
 return {
 	{
-		"folke/which-key.nvim",
+		"folke/which-key.nvim", -- https://github.com/folke/which-key.nvim
 		event = "VeryLazy",
 		opts = {
 			preset = "helix",
@@ -18,7 +18,7 @@ return {
 		},
 	},
 	{
-		"folke/noice.nvim",
+		"folke/noice.nvim", -- https://github.com/folke/noice.nvim
 		event = "VeryLazy",
 		dependencies = { "MunifTanjim/nui.nvim" },
 		opts = {

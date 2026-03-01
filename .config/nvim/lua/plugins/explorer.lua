@@ -1,6 +1,6 @@
 return {
 	{
-		"nvim-neo-tree/neo-tree.nvim",
+		"nvim-neo-tree/neo-tree.nvim", -- https://github.com/nvim-neo-tree/neo-tree.nvim
 		enabled = false,
 		branch = "v3.x",
 		cmd = "Neotree",
@@ -92,7 +92,7 @@ return {
 		},
 	},
 	{
-		"stevearc/oil.nvim",
+		"stevearc/oil.nvim", -- https://github.com/stevearc/oil.nvim
 		-- Optional dependencies
 		dependencies = { "nvim-tree/nvim-web-devicons" },
 		lazy = false,
@@ -134,7 +134,7 @@ return {
 			-- Buffer-local options to use for oil buffers
 			buf_options = {
 				buflisted = true,
-				bufhidden = "",
+				bufhidden = "hide",
 			},
 			view_options = {
 				show_hidden = true,
@@ -169,7 +169,7 @@ return {
 		},
 	},
 	{
-		"ThePrimeagen/harpoon",
+		"ThePrimeagen/harpoon", -- https://github.com/ThePrimeagen/harpoon
 		branch = "harpoon2",
 		event = "VeryLazy",
 		dependencies = { "nvim-lua/plenary.nvim" },

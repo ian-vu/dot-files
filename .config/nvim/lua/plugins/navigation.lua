@@ -1,6 +1,6 @@
 return {
 	{ -- Navigate between tmux panes
-		"christoomey/vim-tmux-navigator",
+		"christoomey/vim-tmux-navigator", -- https://github.com/christoomey/vim-tmux-navigator
 		cmd = {
 			"TmuxNavigateLeft",
 			"TmuxNavigateDown",
@@ -10,7 +10,7 @@ return {
 		},
 	},
 	{
-		"folke/flash.nvim",
+		"folke/flash.nvim", -- https://github.com/folke/flash.nvim
 		enabled = true,
 		event = "VeryLazy",
 		opts = {
@@ -29,7 +29,7 @@ return {
 		},
 	},
 	{
-		"folke/trouble.nvim",
+		"folke/trouble.nvim", -- https://github.com/folke/trouble.nvim
 		opts = {
 			win = {
 				size = 0.3,
@@ -39,15 +39,15 @@ return {
 	},
 	{
 		-- Search and replace
-		"nvim-pack/nvim-spectre",
+		"nvim-pack/nvim-spectre", -- https://github.com/nvim-pack/nvim-spectre
 		event = "VeryLazy",
 		dependencies = {
-			"nvim-lua/plenary.nvim",
+			"nvim-lua/plenary.nvim", -- https://github.com/nvim-lua/plenary.nvim
 		},
 		opts = {},
 	},
 	{ -- better quick fix qflist
-		"stevearc/quicker.nvim",
+		"stevearc/quicker.nvim", -- https://github.com/stevearc/quicker.nvim
 		event = "FileType qf",
 		---@module "quicker"
 		---@type quicker.SetupOptions

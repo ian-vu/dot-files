@@ -1,6 +1,6 @@
 return {
 	{
-		"sainnhe/gruvbox-material",
+		"sainnhe/gruvbox-material", -- https://github.com/sainnhe/gruvbox-material
 		enabled = false,
 		priority = 1000,
 		config = function()
@@ -32,7 +32,7 @@ return {
 		-- change the command in the config to whatever the name of that colorscheme is.
 		--
 		-- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
-		"folke/tokyonight.nvim",
+		"folke/tokyonight.nvim", -- https://github.com/folke/tokyonight.nvim
 		enabled = true,
 		priority = 1000, -- Make sure to load this before all the other start plugins.
 		config = function()

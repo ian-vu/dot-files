@@ -1,6 +1,6 @@
 return {
 	{ -- Highlight, edit, and navigate code
-		"nvim-treesitter/nvim-treesitter",
+		"nvim-treesitter/nvim-treesitter", -- https://github.com/nvim-treesitter/nvim-treesitter
 		opts = {
 			highlight = {
 				-- Some languages depend on vim's regex highlighting system (such as Ruby) for indent rules.

@@ -1,6 +1,6 @@
 return {
 	{ -- statusline
-		"nvim-lualine/lualine.nvim",
+		"nvim-lualine/lualine.nvim", -- https://github.com/nvim-lualine/lualine.nvim
 		event = "VeryLazy",
 		init = function()
 			-- vim.g.lualine_laststatus = vim.o.laststatus
