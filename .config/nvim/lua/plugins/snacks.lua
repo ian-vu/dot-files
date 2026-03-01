@@ -132,7 +132,7 @@ return {
 				win = {
 					input = {
 						keys = {
-							-- ["<Esc>"] = { "close", mode = { "n", "i" } }, -- esc to close without going to normal mode first
+							["<Esc>"] = { "close", mode = { "n", "i" } }, -- esc to close without going to normal mode first
 							["n"] = { "list_down", mode = { "n" } },
 							["e"] = { "list_up", mode = { "n" } }, -- remap preview toggle from <a-p> to <c-p>
 							["<c-p>"] = { "toggle_preview", mode = { "i", "n" } }, -- remap preview toggle from <a-p> to <c-p>
