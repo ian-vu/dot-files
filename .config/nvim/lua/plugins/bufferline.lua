@@ -62,6 +62,12 @@ return {
 				return harpoon_lookup[rel]
 			end
 
+			-- Enforce showtabline based on harpoon state (non-deferred, for use in autocmds)
+			local function update_showtabline()
+				local items = harpoon:list().items
+				vim.o.showtabline = (#items > 0 or vim.fn.tabpagenr("$") > 1) and 2 or 0
+			end
+
 			bufferline.setup({
 				options = {
 					separator_style = "slope",
@@ -79,7 +85,8 @@ return {
 					},
 					show_buffer_icons = false,
 					show_buffer_close_icons = false,
-					always_show_bufferline = false,
+					-- sync() manages showtabline based on harpoon list; let bufferline stay out of it
+					always_show_bufferline = true,
 					custom_filter = function(buf_number)
 						return buf_harpoon_index(buf_number) ~= nil
 					end,
@@ -89,6 +96,14 @@ return {
 						return idx_a < idx_b
 					end,
 				},
+			})
+
+			-- Correct showtabline after bufferline renders on buffer events.
+			-- Deferred so it runs after bufferline's own BufEnter handler.
+			vim.api.nvim_create_autocmd("BufEnter", {
+				callback = function()
+					vim.schedule(update_showtabline)
+				end,
 			})
 		end,
 	},
