@@ -243,13 +243,14 @@ return {
 			})
 			require("mason-tool-installer").setup({ ensure_installed = ensure_installed })
 
-			-- Set up servers
+			-- Set default capabilities for all servers (blink.cmp completion support)
+			vim.lsp.config("*", { capabilities = capabilities })
+
+			-- Set up servers using vim.lsp.config (nvim 0.11+ API)
 			for server_name, server_config in pairs(servers) do
-				local server_capabilities =
-					vim.tbl_deep_extend("force", {}, capabilities, server_config.capabilities or {})
-				local config = vim.tbl_deep_extend("force", {}, server_config, { capabilities = server_capabilities })
-				require("lspconfig")[server_name].setup(config)
+				vim.lsp.config(server_name, server_config)
 			end
+			vim.lsp.enable(vim.tbl_keys(servers))
 		end,
 	},
 }
