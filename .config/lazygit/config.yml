@@ -5,20 +5,46 @@
 
 gui:
   sidePanelWidth: 0.35 # gives you more space to show things side-by-side
+
   theme:
     activeBorderColor:
-      # - "#C3E88D" # green
-      # - "#82AAFF" # blue
-      - "#ff966c" # orange
-      - bold
+      - "#ff966c"
+      - "bold"
+    inactiveBorderColor:
+      - "#589ed7"
+    searchingActiveBorderColor:
+      - "#ff966c"
+      - "bold"
+    optionsTextColor:
+      - "#82aaff"
     selectedLineBgColor:
-      # - "#ff966c" # orange
-      - "#2E3F76" # blue
-      # - "#556CA4" # darker blue
-      # - "#2F334D" # grey
-      # - "#8268AE" # purple
-  #  authorColors:
-  #    "*": white
+      - "#2d3f76"
+    cherryPickedCommitFgColor:
+      - "#82aaff"
+    cherryPickedCommitBgColor:
+      - "#c099ff"
+    markedBaseCommitFgColor:
+      - "#82aaff"
+    markedBaseCommitBgColor:
+      - "#ffc777"
+    unstagedChangesColor:
+      - "#c53b53"
+    defaultFgColor:
+      - "#c8d3f5"
+  # theme:
+  #   activeBorderColor:
+  #     # - "#C3E88D" # green
+  #     # - "#82AAFF" # blue
+  #     - "#ff966c" # orange
+  #     - bold
+  #   selectedLineBgColor:
+  #     # - "#ff966c" # orange
+  #     - "#2E3F76" # blue
+  #     # - "#556CA4" # darker blue
+  #     # - "#2F334D" # grey
+  #     # - "#8268AE" # purple
+  # #  authorColors:
+  # #    "*": white
   scrollHeight: 20
   nerdFontsVersion: "3"
   tabWidth: 2
