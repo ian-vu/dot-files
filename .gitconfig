@@ -26,7 +26,8 @@
 
 # Delta theme (swap file to change theme)
 [include]
-	path = ~/.config/delta/themes/tokyonight-moon.gitconfig
+	; path = ~/.config/delta/themes/tokyonight-moon.gitconfig
+  path = ~/.config/delta/themes/claude-code.gitconfig
 
 [merge]
 	conflictstyle = diff3
