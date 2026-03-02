@@ -1,15 +1,18 @@
 # vim: ft=gitconfig
 # https://github.com/folke/tokyonight.nvim/blob/main/extras/delta/tokyonight_moon.gitconfig
 [delta]
-	minus-style                   = syntax "#4b2a3d"
-	minus-non-emph-style          = syntax "#4b2a3d"
-	minus-emph-style              = syntax "#6b2e43"
-	minus-empty-line-marker-style = syntax "#4b2a3d"
+	minus-style                   = syntax "#3D0100"
+	minus-non-emph-style          = syntax "#3D0100"
+	minus-emph-style              = syntax "#5C0200"
+	minus-empty-line-marker-style = syntax "#3D0100"
 	line-numbers-minus-style      = "#e26a75"
-	plus-style                    = syntax "#2a4556"
-	plus-non-emph-style           = syntax "#2a4556"
-	plus-emph-style               = syntax "#305f6f"
-	plus-empty-line-marker-style  = syntax "#2a4556"
-	line-numbers-plus-style       = "#b8db87"
+	plus-style                    = syntax "#001B29"
+	plus-non-emph-style           = syntax "#001B29"
+	plus-emph-style               = syntax "#003047"
+	plus-empty-line-marker-style  = syntax "#001B29"
+	line-numbers-plus-style       = "#52A0C8"
+
+  # Grey
 	line-numbers-zero-style       = "#3b4261"
+	line-numbers-right-style      = "#3b4261"
 	hunk-header-decoration-style  = "#3b4261" box
