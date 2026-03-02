@@ -1,3 +1,4 @@
+# vim: ft=gitconfig
 [user]
 	name = Ian Vu
 	email = ianvu@heidihealth.com

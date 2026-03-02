@@ -413,6 +413,7 @@ export HOMEBREW_NO_AUTO_UPDATE=1
 # Start up
 export AWS_DEFAULT_REGION=ap-southeast-2
 export EDITOR='nvim'
+export BAT_THEME=tokyonight-moon
 
 # eval $(thefuck --alias)
 

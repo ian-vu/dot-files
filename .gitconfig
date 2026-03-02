@@ -14,7 +14,7 @@
 	diffFilter = delta --color-only
 
 [delta]
-	line-numbers-right-format = "{np:>4} "
+	line-numbers-right-format = "{np:>4}│ "
   ; Flags show line numbers and remove the left side line numbers since it is duplicated
 	line-numbers-left-format = ""
 	hunk-header-style = syntax

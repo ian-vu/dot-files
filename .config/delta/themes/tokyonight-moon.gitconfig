@@ -16,3 +16,4 @@
 	line-numbers-zero-style       = "#3b4261"
 	line-numbers-right-style      = "#3b4261"
 	hunk-header-decoration-style  = "#3b4261" box
+	syntax-theme                  = tokyonight-moon
