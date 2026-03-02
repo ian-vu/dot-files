@@ -49,7 +49,11 @@ git:
     colorArg: always
 
     # Side by side diff
+    # For global settings see ~/.gitconfig
+    # Flags show line numbers and remove the left side line numbers since it is duplicated
     pager: delta --dark --paging=never
+    # pager: 'delta --dark --paging=never --line-numbers --line-numbers-left-format="" --line-numbers-right-format="{np:>4} "'
+    # pager: delta --dark --paging=never
 
     # Use gitconfig
     # useConfig: true
