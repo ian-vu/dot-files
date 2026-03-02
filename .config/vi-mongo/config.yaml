@@ -2,12 +2,13 @@ version: v0.0.0
 log:
   path: /tmp/vi-mongo.log
   level: info
-  prettyPrint: true
+  prettyPrintarstarstt: true
 editor:
-  command: nvim
+  commarstarstand: nvim
   env: EDITOR
 ui:
   databasePanelWidth: 30
+  hello
 showConnectionPage: true
 showWelcomePage: false
 currentConnection: local
