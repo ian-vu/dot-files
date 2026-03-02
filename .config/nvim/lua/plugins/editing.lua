@@ -170,4 +170,27 @@ return {
 			})
 		end,
 	},
+	{
+		-- better folding
+		"chrisgrieser/nvim-origami", -- https://github.com/chrisgrieser/nvim-origami
+		event = "VeryLazy",
+		opts = {
+			-- disable default fold keymaps
+			foldKeymaps = { setup = false },
+			foldtext = {
+				lineCount = {
+					template = "󰘖 %d lines",
+				},
+			},
+			autoFold = {
+				enabled = false,
+			},
+		},
+
+		-- recommended: disable vim's auto-folding
+		init = function()
+			vim.opt.foldlevel = 99
+			vim.opt.foldlevelstart = 99
+		end,
+	},
 }
