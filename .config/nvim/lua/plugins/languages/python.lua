@@ -1,4 +1,18 @@
--- If you're using Ruff alongside another language server (like Pyright), you may want to defer to that language server for certain capabilities, like textDocument/hover:
+-- Module-level caches. Using local tables instead of vim.g because
+-- vim.g returns copies on read, so vim.g.tbl[key] = val silently fails.
+local poetry_venv_cache = {}
+local ruff_cmd_cache = {}
+
+--- Re-trigger FileType on loaded Python buffers to restart LSP servers
+local function retrigger_python_ft()
+	for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+		if vim.api.nvim_buf_is_loaded(buf) and vim.bo[buf].filetype == "python" then
+			vim.api.nvim_exec_autocmds("FileType", { buffer = buf, modeline = false })
+		end
+	end
+end
+
+-- Disable ruff hover in favor of Pyright
 vim.api.nvim_create_autocmd("LspAttach", {
 	group = vim.api.nvim_create_augroup("lsp_attach_disable_ruff_hover", { clear = true }),
 	callback = function(args)
@@ -7,7 +21,6 @@ vim.api.nvim_create_autocmd("LspAttach", {
 			return
 		end
 		if client.name == "ruff" then
-			-- Disable hover in favor of Pyright
 			client.server_capabilities.hoverProvider = false
 		end
 	end,
@@ -21,21 +34,31 @@ return {
 			servers = {
 				pyright = {
 					single_file_support = true,
-					on_new_config = function(new_config, new_root_dir)
-						-- Initialize cache for poetry virtual environment paths
-						vim.g.poetry_venv_cache = vim.g.poetry_venv_cache or {}
-
-						-- Use cached python path if available to avoid shell call
-						local cached_path = vim.g.poetry_venv_cache[new_root_dir]
-						if cached_path then
-							new_config.settings.python.pythonPath = cached_path
+					-- on_new_config is not supported by vim.lsp.config() (nvim 0.11+).
+					-- Use on_init instead: it fires after the server initializes but
+					-- before settings are sent via automatic didChangeConfiguration.
+					on_init = function(client)
+						local root_dir = client.config.root_dir
+						if not root_dir then
 							return
 						end
 
-						-- Asynchronously detect poetry virtual environment (non-blocking)
+						-- Use cached path (applies before automatic didChangeConfiguration)
+						local cached_path = poetry_venv_cache[root_dir]
+						if cached_path then
+							client.config.settings.python.pythonPath = cached_path
+							return
+						end
+
+						-- Only detect poetry environments (pyright auto-detects .venv and venv)
+						if not vim.uv.fs_stat(root_dir .. "/poetry.lock") then
+							return
+						end
+
+						-- Async poetry venv detection (non-blocking)
 						vim.system({ "poetry", "env", "info", "--path" }, {
-							cwd = new_root_dir,
-							timeout = 2000, -- Prevent hanging
+							cwd = root_dir,
+							timeout = 2000,
 						}, function(result)
 							if result.code ~= 0 or not result.stdout then
 								return
@@ -47,17 +70,16 @@ return {
 							end
 
 							local python_path = venv_path .. "/bin/python"
-							-- Cache the result for future file opens in this project
-							vim.g.poetry_venv_cache[new_root_dir] = python_path
+							poetry_venv_cache[root_dir] = python_path
 
-							-- Update running pyright client with new python path
+							-- Update running pyright with the detected path
 							vim.schedule(function()
-								for _, client in pairs(vim.lsp.get_clients({ name = "pyright" })) do
-									if client.config.root_dir == new_root_dir then
-										client.config.settings.python.pythonPath = python_path
-										client.notify(
-											"workspace/didChangeConfiguration", -- https://github.com/workspace/didChangeConfiguration
-											{ settings = client.config.settings }
+								for _, c in pairs(vim.lsp.get_clients({ name = "pyright" })) do
+									if c.config.root_dir == root_dir then
+										c.config.settings.python.pythonPath = python_path
+										c:notify(
+											"workspace/didChangeConfiguration",
+											{ settings = c.config.settings }
 										)
 									end
 								end
@@ -70,12 +92,9 @@ return {
 						},
 						python = {
 							analysis = {
-								-- typeCheckingMode = 'basic', -- 'basic' or 'strict' or 'off'
-								-- typeCheckingMode = "strict",
 								autoImportCompletions = true,
 								autoSearchPaths = true,
 								diagnosticMode = "openFilesOnly", -- 'workspace' or 'openFilesOnly'
-								-- diagnosticMode = "workspace", -- 'workspace' or 'openFilesOnly'
 								useLibraryCodeForTypes = true,
 								reportUnusedImport = true,
 								reportUnusedVariable = true,
@@ -88,34 +107,43 @@ return {
 					},
 				},
 				ruff = {
-					on_new_config = function(config, root_dir)
-						-- Use cached ruff cmd if available
-						vim.g.ruff_cmd_cache = vim.g.ruff_cmd_cache or {}
-						local cached_cmd = vim.g.ruff_cmd_cache[root_dir]
-						if cached_cmd then
-							config.cmd = cached_cmd
+					-- on_new_config is not supported by vim.lsp.config() (nvim 0.11+).
+					-- Use on_init to detect a project-local ruff binary and restart
+					-- with it if the current instance is using the wrong one.
+					on_init = function(client)
+						local root_dir = client.config.root_dir
+						if not root_dir then
 							return
 						end
 
-						-- Try to find ruff in local virtual environment first
+						local cached_cmd = ruff_cmd_cache[root_dir]
+						if cached_cmd then
+							if vim.deep_equal(client.config.cmd, cached_cmd) then
+								return -- Already running the correct binary
+							end
+							-- Wrong binary, update global config and restart
+							vim.lsp.config("ruff", { cmd = cached_cmd })
+							vim.defer_fn(retrigger_python_ft, 100)
+							return false
+						end
+
+						-- Check local venv paths (synchronous, fast)
 						local local_ruff_paths = {
 							root_dir .. "/.venv/bin/ruff",
 							root_dir .. "/venv/bin/ruff",
 						}
-
-						-- Use the first local ruff binary that exists (non-blocking)
 						for _, ruff_path in ipairs(local_ruff_paths) do
 							if vim.fn.executable(ruff_path) == 1 then
 								local cmd = { ruff_path, "server", "--preview" }
-								vim.g.ruff_cmd_cache[root_dir] = cmd
-								config.cmd = cmd
-								return
+								ruff_cmd_cache[root_dir] = cmd
+								vim.lsp.config("ruff", { cmd = cmd })
+								vim.defer_fn(retrigger_python_ft, 100)
+								return false -- Kill this instance, restart with local ruff
 							end
 						end
 
-						-- Check if poetry is used in this project (async, non-blocking)
-						local poetry_lock = root_dir .. "/poetry.lock"
-						if vim.fn.filereadable(poetry_lock) == 1 then
+						-- Check poetry (async, non-blocking)
+						if vim.uv.fs_stat(root_dir .. "/poetry.lock") then
 							vim.system({ "poetry", "env", "info", "--path" }, {
 								cwd = root_dir,
 								timeout = 2000,
@@ -133,24 +161,23 @@ return {
 								if vim.uv.fs_stat(ruff_path) then
 									local cmd = { ruff_path, "server", "--preview" }
 									vim.schedule(function()
-										vim.g.ruff_cmd_cache[root_dir] = cmd
-										for _, client in pairs(vim.lsp.get_clients({ name = "ruff" })) do
-											if client.config.root_dir == root_dir then
-												client.config.cmd = cmd
-												client.stop()
+										ruff_cmd_cache[root_dir] = cmd
+										vim.lsp.config("ruff", { cmd = cmd })
+										for _, c in pairs(vim.lsp.get_clients({ name = "ruff" })) do
+											if c.config.root_dir == root_dir then
+												c:stop()
 											end
 										end
-										vim.defer_fn(function()
-											vim.cmd("LspStart ruff")
-										end, 100)
+										vim.defer_fn(retrigger_python_ft, 100)
 									end)
 								end
 							end)
 						end
 
-						-- Start with ruff from PATH immediately, poetry override will restart if needed
-						config.cmd = { "ruff", "server", "--preview" }
+						-- Cache default cmd so we don't re-check on next start
+						ruff_cmd_cache[root_dir] = client.config.cmd
 					end,
+					cmd = { "ruff", "server", "--preview" },
 					cmd_env = { RUFF_TRACE = "messages" },
 					init_options = {
 						settings = {
@@ -161,23 +188,4 @@ return {
 			},
 		},
 	},
-	-- {
-	--   'linux-cultist/venv-selector.nvim',
-	--   lazy = false,
-	--   dependencies = { 'neovim/nvim-lspconfig' },
-	--   branch = 'main',
-	--   cmd = 'VenvSelect',
-	--   opts = {
-	--     debug = true,
-	--     name = { 'venv', '.venv', 'Env' },
-	--     settings = {
-	--       options = {
-	--         notify_user_on_venv_activation = true,
-	--       },
-	--     },
-	--   },
-	--   --  Call config for python files and load the cached venv automatically
-	--   ft = 'python',
-	--   keys = { { '<leader>cv', '<cmd>:VenvSelect<cr>', desc = 'Select VirtualEnv', ft = 'python' } },
-	-- },
 }
