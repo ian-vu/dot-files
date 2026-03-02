@@ -153,14 +153,14 @@ return {
 					{
 						"+",
 						function()
-							move_divider("down", 4)
+							move_divider("down", 2)
 						end,
 						{ desc = "Divider down" },
 					},
 					{
 						"-",
 						function()
-							move_divider("up", 4)
+							move_divider("up", 2)
 						end,
 						{ desc = "Divider up" },
 					},
