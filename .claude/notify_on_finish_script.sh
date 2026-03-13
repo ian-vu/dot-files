@@ -70,6 +70,20 @@ if [ -n "$TMUX" ] && [ -f "/tmp/claude_code_session_${SESSION_ID}_window" ]; the
   fi
 fi
 
+# Debounce: skip if a notification was sent within the last 10 seconds.
+# Both Stop and Notification hooks call this script, and they can fire
+# close together for the same turn, causing duplicate notifications.
+LOCK_FILE="/tmp/claude_code_notify_${SESSION_ID}_last"
+NOW=$(date +%s)
+if [ -f "$LOCK_FILE" ]; then
+  LAST=$(cat "$LOCK_FILE")
+  if [ $((NOW - LAST)) -lt 10 ]; then
+    exit 0
+  fi
+fi
+echo "$NOW" > "$LOCK_FILE"
+
 # Send the notification
 terminal-notifier -title "$TITLE" \
-  -message "$MESSAGE"
+  -message "$MESSAGE" \
+  -sound Pong
