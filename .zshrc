@@ -337,6 +337,7 @@ export PATH="$PATH:$HOME/.bin"
 export PATH="$PATH:$HOME/.config/tmux/bin"
 export PATH="$PATH:/usr/local/bin"
 export PATH="$PATH:/opt/homebrew/opt/libpq/bin"
+export PATH="$PATH:$HOME/.local/bin" # pipx, mise, and other user-installed binaries
 
 # Case insensitive tab completion for zsh
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
