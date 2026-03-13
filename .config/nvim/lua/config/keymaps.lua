@@ -237,6 +237,13 @@ local function get_filepath_prefix()
 	return "@"
 end
 
+-- Normalize buffer paths (e.g. strip plugin prefixes like oil://)
+local function transform_path(path)
+	-- Strip Oil.nvim buffer prefix (oil:///path/to/dir -> /path/to/dir)
+	path = path:gsub("^oil://", "")
+	return path
+end
+
 local function get_relative_file()
 	local git_root = vim.fn.system("git rev-parse --show-toplevel 2>/dev/null"):gsub("\n", "")
 	local current_file = vim.fn.expand("%:p")
@@ -248,7 +255,7 @@ local function get_relative_file()
 		relative_path = vim.fn.expand("%")
 	end
 
-	return relative_path
+	return transform_path(relative_path)
 end
 local function get_file_line()
 	local relative_path = get_relative_file()
@@ -284,7 +291,7 @@ end, { desc = "Copy file path" })
 
 -- Copy full file path to clipboard
 vim.keymap.set("n", "<leader>cyF", function()
-	local full_path = get_filepath_prefix() .. vim.fn.expand("%:p")
+	local full_path = get_filepath_prefix() .. transform_path(vim.fn.expand("%:p"))
 	vim.fn.setreg("+", full_path)
 	print("Copied: " .. full_path)
 end, { desc = "Copy full file path" })
@@ -382,7 +389,7 @@ vim.keymap.set("n", "<leader>gy", function()
 	end
 
 	local current_file = vim.fn.expand("%:p")
-	local relative_path = get_filepath_prefix() .. vim.fn.fnamemodify(current_file, ":~:.")
+	local relative_path = get_filepath_prefix() .. transform_path(vim.fn.fnamemodify(current_file, ":~:."))
 
 	-- Copy to default register
 	vim.fn.setreg('"', relative_path)
