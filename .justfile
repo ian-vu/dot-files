@@ -1,4 +1,4 @@
-mod homebrew '.homebrew'
+mod brew '.homebrew'
 
 # List available recipes
 default:
