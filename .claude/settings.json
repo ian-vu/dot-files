@@ -1,6 +1,5 @@
 {
   "includeCoAuthoredBy": false,
-  "model": "opus",
   "hooks": {
     "Stop": [
       {
@@ -68,5 +67,6 @@
   "alwaysThinkingEnabled": false,
   "feedbackSurveyState": {
     "lastShownTime": 1753940027251
-  }
+  },
+  "model": "opus"
 }
