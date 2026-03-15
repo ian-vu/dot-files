@@ -102,6 +102,15 @@ if ! command -v poetry &>/dev/null; then
   fi
 fi
 
+# Install Claude Code
+# Check the binary directly since `claude` is aliased in .zshrc
+if [ -f "$HOME/.local/bin/claude" ]; then
+  echo "Claude Code is already installed."
+else
+  echo "Installing Claude Code..."
+  curl -fsSL https://claude.ai/install.sh | bash
+fi
+
 # Configure auto hide/appear dock settings
 defaults write com.apple.dock autohide-time-modifier -float 0.7
 defaults write com.apple.dock autohide-delay -float 0
