@@ -1,5 +1,6 @@
 {
   "includeCoAuthoredBy": false,
+  "model": "sonnet",
   "hooks": {
     "Stop": [
       {
@@ -59,14 +60,13 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "bash ~/.claude/statusline.sh"
+    "command": "cship"
   },
   "enabledPlugins": {
-    "planning-with-files@planning-with-files": true
+    "planning-with-files@planning-with-files": false
   },
   "alwaysThinkingEnabled": false,
   "feedbackSurveyState": {
     "lastShownTime": 1753940027251
-  },
-  "model": "opus"
+  }
 }
