@@ -1,6 +1,32 @@
 {
   "includeCoAuthoredBy": false,
   "model": "sonnet",
+  "permissions": {
+    "allow": [
+      "Bash(sed:*)",
+      "Bash(tmux list-keys:*)",
+      "Read(//Users/ivu/dev/**)",
+      "Bash(git config:*)",
+      "Bash(git --version)",
+      "Read(//Users/ivu/**)",
+      "Bash(cat:*)",
+      "Skill(planning-with-files:planning-with-files)",
+      "WebFetch(domain:github.com)",
+      "Bash(printf:*)",
+      "Bash(chmod:*)",
+      "Bash(tmux show-hooks:*)",
+      "Bash(tmux display-message:*)",
+      "Bash(tmux set-hook:*)",
+      "Bash(python3:*)",
+      "WebSearch",
+      "Bash(git show:*)",
+      "Bash(tmux:*)",
+      "Bash(git stash:*)",
+      "WebFetch(domain:neovim.io)"
+    ],
+    "deny": [],
+    "ask": ["Bash(git commit:*)", "Bash(git push:*)"]
+  },
   "hooks": {
     "Stop": [
       {
