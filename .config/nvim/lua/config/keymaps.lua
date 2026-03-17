@@ -234,7 +234,9 @@ vim.keymap.set(
 )
 
 local function get_filepath_prefix()
-	return "@"
+	-- Previously used `@` but claude starts up an auto complete which is annoying
+	-- return "@"
+	return ""
 end
 
 -- Normalize buffer paths (e.g. strip plugin prefixes like oil://)
