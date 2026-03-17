@@ -2,6 +2,7 @@ default:
     @just --list
 
 # Merge global Brewfile with local machine-specific Brewfile (if it exists)
+# NOTE: This merge logic is duplicated in mac/setup.sh — keep both in sync.
 _merge_brew_files:
     #!/usr/bin/env bash
     BREWFILE_DIR="{{ source_directory() }}"
