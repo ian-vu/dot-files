@@ -162,6 +162,8 @@ brew "yazi"
 brew 'terminal-notifier'
 # markdown slideshow
 brew 'marp-cli'
+# task runner
+brew 'go-task'
 
 #########################################################################################
 # Casks
