@@ -6,86 +6,75 @@ return {
 			-- add any custom options here
 		},
 	},
-	{
-		"nvimdev/dashboard-nvim", -- https://github.com/nvimdev/dashboard-nvim
-		event = "VimEnter",
-		opts = function()
-			-- local logo = [[
-			--      ██╗      █████╗ ███████╗██╗   ██╗██╗   ██╗██╗███╗   ███╗          Z
-			--      ██║     ██╔══██╗╚══███╔╝╚██╗ ██╔╝██║   ██║██║████╗ ████║      Z
-			--      ██║     ███████║  ███╔╝  ╚████╔╝ ██║   ██║██║██╔████╔██║   z
-			--      ██║     ██╔══██║ ███╔╝    ╚██╔╝  ╚██╗ ██╔╝██║██║╚██╔╝██║ z
-			--      ███████╗██║  ██║███████╗   ██║    ╚████╔╝ ██║██║ ╚═╝ ██║
-			--      ╚══════╝╚═╝  ╚═╝╚══════╝   ╚═╝     ╚═══╝  ╚═╝╚═╝     ╚═╝
-			-- ]]
-			local logo = [[
+	{ -- Dashboard is now provided by snacks.nvim
+		"folke/snacks.nvim",
+		---@type snacks.Config
+		opts = {
+			dashboard = {
+				enabled = true,
+				preset = {
+					-- 					header = [[
+					-- ███╗   ██╗███████╗ ██████╗ ██╗   ██╗██╗███╗   ███╗
+					-- ████╗  ██║██╔════╝██╔═══██╗██║   ██║██║████╗ ████║
+					-- ██╔██╗ ██║█████╗  ██║   ██║██║   ██║██║██╔████╔██║
+					-- ██║╚██╗██║██╔══╝  ██║   ██║╚██╗ ██╔╝██║██║╚██╔╝██║
+					-- ██║ ╚████║███████╗╚██████╔╝ ╚████╔╝ ██║██║ ╚═╝ ██║
+					-- ╚═╝  ╚═══╝╚══════╝ ╚═════╝   ╚═══╝  ╚═╝╚═╝     ╚═╝]],
+					header = [[
  ███▄    █ ▓█████  ▒█████   ██▒   █▓ ██▓ ███▄ ▄███▓
  ██ ▀█   █ ▓█   ▀ ▒██▒  ██▒▓██░   █▒▓██▒▓██▒▀█▀ ██▒
 ▓██  ▀█ ██▒▒███   ▒██░  ██▒ ▓██  █▒░▒██▒▓██    ▓██░
-▓██▒  ▐▌██▒▒▓█  ▄ ▒██   ██░  ▒██ █░░░██░▒██    ▒██ 
+▓██▒  ▐▌██▒▒▓█  ▄ ▒██   ██░  ▒██ █░░░██░▒██    ▒██
 ▒██░   ▓██░░▒████▒░ ████▓▒░   ▒▀█░  ░██░▒██▒   ░██▒
 ░ ▒░   ▒ ▒ ░░ ▒░ ░░ ▒░▒░▒░    ░ ▐░  ░▓  ░ ▒░   ░  ░
 ░ ░░   ░ ▒░ ░ ░  ░  ░ ▒ ▒░    ░ ░░   ▒ ░░  ░      ░
-   ░   ░ ░    ░   ░ ░ ░ ▒       ░░   ▒ ░░      ░   
-         ░    ░  ░    ░ ░        ░   ░         ░   
-                                ░                  
-      ]]
-			--      local logo = [[
-			-- ███╗   ██╗███████╗ ██████╗ ██╗   ██╗██╗███╗   ███╗
-			-- ████╗  ██║██╔════╝██╔═══██╗██║   ██║██║████╗ ████║
-			-- ██╔██╗ ██║█████╗  ██║   ██║██║   ██║██║██╔████╔██║
-			-- ██║╚██╗██║██╔══╝  ██║   ██║╚██╗ ██╔╝██║██║╚██╔╝██║
-			-- ██║ ╚████║███████╗╚██████╔╝ ╚████╔╝ ██║██║ ╚═╝ ██║
-			-- ╚═╝  ╚═══╝╚══════╝ ╚═════╝   ╚═══╝  ╚═╝╚═╝     ╚═╝
-			--      ]]
-
-			logo = string.rep("\n", 8) .. logo .. string.rep("\n", 3)
-			local opts = {
-				theme = "doom",
-				hide = {
-					-- this is taken care of by lualine
-					-- enabling this messes up the actual laststatus setting after loading a file
-					statusline = false,
+   ░   ░ ░    ░   ░ ░ ░ ▒       ░░   ▒ ░░      ░
+         ░    ░  ░    ░ ░        ░   ░         ░
+                                ░                  ]],
+					keys = {
+						{ icon = "󰦛", key = "s", desc = "Restore Session", section = "session" },
+						{
+							icon = "󱏒 ",
+							key = "e",
+							desc = "Explorer",
+							action = function()
+								require("oil").open()
+							end,
+						},
+						{ icon = "", key = "n", desc = "New file", action = ":ene | startinsert" },
+						{ icon = "󰇈 ", key = "t", desc = "Today's note", action = ":ObsidianToday" },
+						{ icon = "󰇈 ", key = "T", desc = "Tomorrow's note", action = ":ObsidianTomorrow" },
+						{ icon = "󰈆", key = "q", desc = "Quit", action = ":qa" },
+					},
 				},
-				config = {
-					header = vim.split(logo, "\n"),
-          -- stylua: ignore
-          center = {
-            { action = 'lua require("persistence").load()', desc = " Restore Session", icon = " ", key = "s"},
-            { action = 'lua require("oil").open()',         desc = " Explorer",        icon = "󱏒 ", key = "e"},
-            { action = "ene | startinsert",                 desc = " New file",        icon = " ", key = "n"},
-            { action = "ObsidianToday",                     desc = " Today's note",    icon = "󰇈 ", key = "t"},
-            { action = "ObsidianTomorrow",                  desc = " Tomorrow's note", icon = "󰇈 ", key = "T"},
-            { action = "qa",                                desc = " Quit",            icon = " ", key = "q"},
-          },
-					footer = {},
-					-- Show Neovim metadata
-					-- footer = function()
-					--   local stats = require("lazy").stats()
-					--   local ms = (math.floor(stats.startuptime * 100 + 0.5) / 100)
-					--   return { "⚡ Neovim loaded " .. stats.loaded .. "/" .. stats.count .. " plugins in " .. ms .. "ms" }
-					-- end,
+				sections = {
+					{ section = "header" },
+					{
+						pane = 2,
+						icon = "",
+						title = "Recent Files",
+						section = "recent_files",
+						indent = 2,
+						padding = 1,
+					},
+					{
+						pane = 2,
+						icon = "",
+						title = "Git Status",
+						section = "terminal",
+						enabled = function()
+							return Snacks.git.get_root() ~= nil
+						end,
+						cmd = "git status --short --branch --renames",
+						height = 5,
+						padding = 1,
+						ttl = 5 * 60,
+						indent = 3,
+					},
+					{ section = "keys", gap = 1, padding = 1 },
+					{ section = "startup" },
 				},
-			}
-
-			-- Set format
-			for _, button in ipairs(opts.config.center) do
-				button.desc = button.desc .. string.rep(" ", 41 - #button.desc)
-				button.key_format = "{ %s }"
-			end
-
-			-- close Lazy and re-open when the dashboard is ready
-			if vim.o.filetype == "lazy" then
-				vim.cmd.close()
-				vim.api.nvim_create_autocmd("User", {
-					pattern = "DashboardLoaded",
-					callback = function()
-						require("lazy").show()
-					end,
-				})
-			end
-
-			return opts
-		end,
+			},
+		},
 	},
 }
