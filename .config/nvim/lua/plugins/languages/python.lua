@@ -1,7 +1,56 @@
 -- Module-level caches. Using local tables instead of vim.g because
 -- vim.g returns copies on read, so vim.g.tbl[key] = val silently fails.
-local poetry_venv_cache = {}
+local venv_cache = {}
 local ruff_cmd_cache = {}
+
+--- Detect the project's package manager by checking for lockfiles.
+--- Returns "uv", "poetry", or nil.
+local function detect_pkg_manager(root_dir)
+	if vim.uv.fs_stat(root_dir .. "/uv.lock") then
+		return "uv"
+	elseif vim.uv.fs_stat(root_dir .. "/poetry.lock") then
+		return "poetry"
+	end
+end
+
+--- Return the command to get the venv path for a given package manager.
+local function venv_path_cmd(pkg_manager)
+	if pkg_manager == "uv" then
+		-- uv always puts the venv in .venv, but `uv python find` returns the
+		-- interpreter path directly, handling custom toolchain configs.
+		return { "uv", "python", "find" }
+	elseif pkg_manager == "poetry" then
+		return { "poetry", "env", "info", "--path" }
+	end
+end
+
+--- Normalize venv command output into a python path.
+--- uv python find returns a full interpreter path; poetry returns the venv dir.
+local function normalize_python_path(pkg_manager, stdout)
+	local trimmed = vim.trim(stdout)
+	if trimmed == "" then
+		return nil
+	end
+	if pkg_manager == "uv" then
+		return trimmed -- already the full interpreter path
+	else
+		return trimmed .. "/bin/python"
+	end
+end
+
+--- Normalize venv command output into a venv directory for binary lookups.
+local function normalize_venv_dir(pkg_manager, stdout)
+	local trimmed = vim.trim(stdout)
+	if trimmed == "" then
+		return nil
+	end
+	if pkg_manager == "uv" then
+		-- uv python find returns e.g. /path/.venv/bin/python; walk up to venv root
+		return vim.fn.fnamemodify(trimmed, ":h:h")
+	else
+		return trimmed
+	end
+end
 
 --- Re-trigger FileType on loaded Python buffers to restart LSP servers
 local function retrigger_python_ft()
@@ -44,19 +93,20 @@ return {
 						end
 
 						-- Use cached path (applies before automatic didChangeConfiguration)
-						local cached_path = poetry_venv_cache[root_dir]
+						local cached_path = venv_cache[root_dir]
 						if cached_path then
 							client.config.settings.python.pythonPath = cached_path
 							return
 						end
 
-						-- Only detect poetry environments (pyright auto-detects .venv and venv)
-						if not vim.uv.fs_stat(root_dir .. "/poetry.lock") then
+						-- Only detect managed environments (pyright auto-detects .venv and venv)
+						local pkg_manager = detect_pkg_manager(root_dir)
+						if not pkg_manager then
 							return
 						end
 
-						-- Async poetry venv detection (non-blocking)
-						vim.system({ "poetry", "env", "info", "--path" }, {
+						-- Async venv detection (non-blocking)
+						vim.system(venv_path_cmd(pkg_manager), {
 							cwd = root_dir,
 							timeout = 2000,
 						}, function(result)
@@ -64,13 +114,12 @@ return {
 								return
 							end
 
-							local venv_path = vim.trim(result.stdout)
-							if venv_path == "" then
+							local python_path = normalize_python_path(pkg_manager, result.stdout)
+							if not python_path then
 								return
 							end
 
-							local python_path = venv_path .. "/bin/python"
-							poetry_venv_cache[root_dir] = python_path
+							venv_cache[root_dir] = python_path
 
 							-- Update running pyright with the detected path
 							vim.schedule(function()
@@ -142,9 +191,10 @@ return {
 							end
 						end
 
-						-- Check poetry (async, non-blocking)
-						if vim.uv.fs_stat(root_dir .. "/poetry.lock") then
-							vim.system({ "poetry", "env", "info", "--path" }, {
+						-- Check managed environments (uv/poetry) async, non-blocking
+						local pkg_manager = detect_pkg_manager(root_dir)
+						if pkg_manager then
+							vim.system(venv_path_cmd(pkg_manager), {
 								cwd = root_dir,
 								timeout = 2000,
 							}, function(result)
@@ -152,12 +202,12 @@ return {
 									return
 								end
 
-								local venv_path = vim.trim(result.stdout)
-								if venv_path == "" then
+								local venv_dir = normalize_venv_dir(pkg_manager, result.stdout)
+								if not venv_dir then
 									return
 								end
 
-								local ruff_path = venv_path .. "/bin/ruff"
+								local ruff_path = venv_dir .. "/bin/ruff"
 								if vim.uv.fs_stat(ruff_path) then
 									local cmd = { ruff_path, "server", "--preview" }
 									vim.schedule(function()
