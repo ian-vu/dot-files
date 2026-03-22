@@ -50,7 +50,12 @@ return {
 				sections = {
 					{ section = "header" },
 					{
-						pane = 2,
+						-- pane = 2,
+						section = "keys",
+						padding = 1,
+					},
+					{
+						-- pane = 2,
 						icon = "",
 						title = "Recent Files",
 						section = "recent_files",
@@ -58,7 +63,7 @@ return {
 						padding = 1,
 					},
 					{
-						pane = 2,
+						-- pane = 2,
 						icon = "",
 						title = "Git Status",
 						section = "terminal",
@@ -71,7 +76,14 @@ return {
 						ttl = 5 * 60,
 						indent = 3,
 					},
-					{ section = "keys", gap = 1, padding = 1 },
+					{
+						section = "terminal",
+						cmd = "neofetch --disable title --color_blocks off --off --color_blocks off --colors 0 0 0 111 7 7",
+						height = 15,
+						padding = 1,
+						ttl = 0,
+						indent = 3,
+					},
 					{ section = "startup" },
 				},
 			},
