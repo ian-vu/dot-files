@@ -42,9 +42,17 @@ if [ -n "$TMUX" ]; then
   WINDOW_ID=$(tmux display-message -p '#{window_id}' 2>/dev/null)
   echo "$WINDOW_ID" >"/tmp/claude_code_session_${SESSION_ID}_window"
 
-  # Clear status symbols and add hourglass to show Claude is working
+  # Clear status symbols and add ⚡ to window to show Claude is working
   CURRENT_NAME=$(tmux display-message -t "$WINDOW_ID" -p '#W' 2>/dev/null)
-  CLEAN_NAME="${CURRENT_NAME% 🔔}"
-  CLEAN_NAME="${CLEAN_NAME% ⚡}"
+  CLEAN_NAME="${CURRENT_NAME% ⚡}"
   tmux rename-window -t "$WINDOW_ID" "$CLEAN_NAME ⚡"
+
+  # Strip 🔔 from session name when a new prompt starts
+  CURRENT_SESSION=$(tmux display-message -p '#S' 2>/dev/null)
+  case "$CURRENT_SESSION" in
+  *🔔)
+    CLEAN_SESSION="${CURRENT_SESSION% 🔔}"
+    tmux rename-session "$CLEAN_SESSION"
+    ;;
+  esac
 fi

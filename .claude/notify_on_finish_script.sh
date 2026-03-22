@@ -39,9 +39,9 @@ TITLE="⟫"
 if [ -n "$TMUX" ]; then
   TMUX_SESSION=$(tmux display-message -p '#S' 2>/dev/null)
   TMUX_WINDOW=$(tmux display-message -p '#W' 2>/dev/null)
-  # Window name may contain ⚡ or 🔔 from hooks; strip before using in title
+  # Names may contain ⚡ or 🔔 from hooks; strip before using in title
   TMUX_WINDOW="${TMUX_WINDOW% ⚡}"
-  TMUX_WINDOW="${TMUX_WINDOW% 🔔}"
+  TMUX_SESSION="${TMUX_SESSION% 🔔}"
   if [ -n "$TMUX_SESSION" ]; then
     TITLE="$TMUX_SESSION"
     if [ -n "$TMUX_WINDOW" ]; then
@@ -50,22 +50,25 @@ if [ -n "$TMUX" ]; then
   fi
 fi
 
-# Update tmux window name: remove ⚡ (in-progress) and add 🔔 (done)
-# Only add 🔔 if the user is not currently in that window
+# Update tmux window name: remove ⚡ (in-progress)
 if [ -n "$TMUX" ] && [ -f "/tmp/claude_code_session_${SESSION_ID}_window" ]; then
   WINDOW_ID=$(cat "/tmp/claude_code_session_${SESSION_ID}_window")
-  ACTIVE_WINDOW=$(tmux display-message -p '#{window_id}' 2>/dev/null)
   CURRENT_NAME=$(tmux display-message -t "$WINDOW_ID" -p '#W' 2>/dev/null)
   # Strip in-progress symbol (⚡) from window name
   CLEAN_NAME="${CURRENT_NAME% ⚡}"
-  if [ "$WINDOW_ID" = "$ACTIVE_WINDOW" ]; then
-    # User is in this window, just remove hourglass
-    tmux rename-window -t "$WINDOW_ID" "$CLEAN_NAME"
-  else
-    # User is elsewhere, add bell if not already present
-    case "$CLEAN_NAME" in
-    *🔔) ;;
-    *) tmux rename-window -t "$WINDOW_ID" "$CLEAN_NAME 🔔" ;;
+  tmux rename-window -t "$WINDOW_ID" "$CLEAN_NAME"
+fi
+
+# Update tmux session name: add 🔔 (done) suffix
+# Only add if the user is not currently in the window where Claude ran
+if [ -n "$TMUX" ] && [ -f "/tmp/claude_code_session_${SESSION_ID}_window" ]; then
+  WINDOW_ID=$(cat "/tmp/claude_code_session_${SESSION_ID}_window")
+  ACTIVE_WINDOW=$(tmux display-message -p '#{window_id}' 2>/dev/null)
+  if [ "$WINDOW_ID" != "$ACTIVE_WINDOW" ]; then
+    CURRENT_SESSION=$(tmux display-message -p '#S' 2>/dev/null)
+    case "$CURRENT_SESSION" in
+    *🔔) ;; # already has bell
+    *) tmux rename-session "$CURRENT_SESSION 🔔" ;;
     esac
   fi
 fi
