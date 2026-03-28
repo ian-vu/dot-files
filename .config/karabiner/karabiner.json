@@ -67,7 +67,7 @@
                         ]
                     },
                     {
-                        "description": "right_command to right_option and alone produces f16",
+                        "description": "right_command to right_option and alone produces ctrl+space",
                         "manipulators": [
                             {
                                 "from": {
@@ -75,7 +75,7 @@
                                     "modifiers": { "optional": ["any"] }
                                 },
                                 "to": [{ "key_code": "right_option" }],
-                                "to_if_alone": [{ "key_code": "f16" }],
+                                "to_if_alone": [{ "key_code": "spacebar", "modifiers": ["left_control"] }],
                                 "type": "basic"
                             }
                         ]
