@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+# Open the URL closest to the cursor in tmux copy mode.
+# Captures the current line from the copy-mode pane and finds the URL
+# nearest to the cursor position, then opens it with `open`.
+
+pane_id="$1"
+
+# Get cursor x position and the current line content
+cursor_x=$(tmux display-message -t "$pane_id" -p "#{copy_cursor_x}")
+line=$(tmux display-message -t "$pane_id" -p "#{copy_cursor_line}")
+
+# Extract all URLs from the line with their positions
+urls=()
+positions=()
+while IFS= read -r match; do
+  [ -z "$match" ] && continue
+  urls+=("$match")
+  # Find the byte offset of this URL in the line
+  pos="${line%%"$match"*}"
+  positions+=("${#pos}")
+done < <(echo "$line" | grep -oE '(https?://[^ )"'"'"'>]+|[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z]{2,})+(/[^ )"'"'"'>]*)*)')
+
+if [ ${#urls[@]} -eq 0 ]; then
+  tmux display-message "No URL found on current line"
+  exit 0
+fi
+
+# Find the URL closest to the cursor
+best=0
+best_dist=$(( ${positions[0]} > cursor_x ? ${positions[0]} - cursor_x : cursor_x - ${positions[0]} ))
+for idx in "${!urls[@]}"; do
+  dist=$(( ${positions[$idx]} > cursor_x ? ${positions[$idx]} - cursor_x : cursor_x - ${positions[$idx]} ))
+  if [ "$dist" -lt "$best_dist" ]; then
+    best=$idx
+    best_dist=$dist
+  fi
+done
+
+url="${urls[$best]}"
+# Trim trailing punctuation that's likely not part of the URL
+url="${url%,}"
+url="${url%.}"
+url="${url%;}"
+
+# Ensure URL has a scheme so `open` treats it as a URL
+if [[ "$url" != http://* && "$url" != https://* ]]; then
+  url="https://$url"
+fi
+
+open "$url"
+tmux display-message "Opened: $url"
