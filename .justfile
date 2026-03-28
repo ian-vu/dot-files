@@ -8,6 +8,10 @@ default:
 [group: 'stow']
 link:
     stow .
+unlink:
+    stow -D .
+relink: unlink link
+
 
 # Dry run to see what would be symlinked
 [group: 'stow']
