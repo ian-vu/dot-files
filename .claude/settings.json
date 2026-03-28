@@ -1,6 +1,5 @@
 {
   "includeCoAuthoredBy": false,
-  "model": "sonnet",
   "permissions": {
     "allow": [
       "Bash(sed:*)",
@@ -31,6 +30,7 @@
       "Bash(git push:*)"
     ]
   },
+  "model": "opus[1m]",
   "hooks": {
     "Stop": [
       {
@@ -93,10 +93,20 @@
     "command": "cship"
   },
   "enabledPlugins": {
-    "planning-with-files@planning-with-files": false
+    "planning-with-files@planning-with-files": false,
+    "code-review-graph@code-review-graph": true
+  },
+  "extraKnownMarketplaces": {
+    "code-review-graph": {
+      "source": {
+        "source": "github",
+        "repo": "tirth8205/code-review-graph"
+      }
+    }
   },
   "alwaysThinkingEnabled": false,
   "feedbackSurveyState": {
     "lastShownTime": 1753940027251
-  }
+  },
+  "skipDangerousModePermissionPrompt": true
 }
