@@ -45,3 +45,5 @@ debian
 .homebrew
 \.git-blame-ignore-revs
 docs
+CLAUDE.md
+AGENTS.md
