@@ -31,7 +31,7 @@ return {
 			return {
 				options = {
 					theme = "auto",
-					-- globalstatus = true,
+					globalstatus = true, -- single statusline across all splits
 					disabled_filetypes = { statusline = { "dashboard", "alpha", "starter" } },
 				},
 				sections = {
