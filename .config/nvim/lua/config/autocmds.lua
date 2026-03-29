@@ -26,6 +26,12 @@ vim.api.nvim_create_autocmd("FileType", {
 	end,
 })
 
+-- Check for external file changes on these events
+vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter", "CursorHold", "CursorHoldI" }, {
+	pattern = "*",
+	command = "checktime",
+})
+
 -- Prevent auto-inserting comment leaders when opening a new line with o/O in normal mode.
 -- By default, Neovim's built-in filetype plugins (ftplugins) add the 'o' flag to
 -- formatoptions for most languages. This causes o/O to auto-continue comments, which

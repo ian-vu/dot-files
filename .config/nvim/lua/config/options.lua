@@ -135,12 +135,6 @@ vim.opt.foldlevel = 99
 -- Automatically reload files when changed outside of Neovim
 vim.o.autoread = true
 
--- Check for external file changes on these events
-vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter", "CursorHold", "CursorHoldI" }, {
-	pattern = "*",
-	command = "checktime",
-})
-
 -- disable swap files
 -- what are swap files?
 --  swap files are files that are used to store the changes made to a file as crash recovery
