@@ -1,0 +1,33 @@
+# Neovim Configuration
+
+## Structure
+
+```
+init.lua              — Entry point. Loads config/ modules, bootstraps lazy.nvim, and sets up plugin loading.
+lua/
+  config/             — Core editor settings (loaded before plugins)
+    init.lua          — Requires options, keymaps, and autocmds in order
+    options.lua       — vim.o / vim.opt settings (static values only, no autocmds)
+    keymaps.lua       — Key mappings
+    autocmds.lua      — Autocommands (FileType overrides, event handlers, etc.)
+    icons.lua         — Shared icon definitions
+    idle_mode.lua     — Idle/screensaver mode logic
+    neovide.lua       — Neovide GUI-specific settings
+  plugins/            — Plugin specs for lazy.nvim (one file per concern)
+    languages/        — Per-language plugin configuration (LSP, formatters, treesitter)
+  utils/              — Shared utility functions
+```
+
+## Where to put things
+
+- **Static vim options** (`vim.o`, `vim.opt`): `config/options.lua`
+- **Autocommands** (`nvim_create_autocmd`): `config/autocmds.lua` — even if an autocmd overrides a vim option (e.g. `formatoptions`), it belongs here, not in options.lua.
+- **Key mappings** (non-plugin): `config/keymaps.lua`
+- **Plugin configuration**: `plugins/<concern>.lua` — one file per logical concern (e.g. `lsp.lua`, `git.lua`, `autoformat.lua`).
+- **Language-specific plugins**: `plugins/languages/<language>.lua` — see `plugins/languages/AGENTS.md` for conventions.
+
+## Conventions
+
+- Config modules in `config/` are loaded by `config/init.lua` in a fixed order: options → keymaps → autocmds. Do not add `require` calls elsewhere for these.
+- Plugin specs use [lazy.nvim](https://github.com/folke/lazy.nvim) format. Extend existing plugins via `opts` merging rather than duplicating full specs.
+- Comments should explain _why_, not _what_ — especially for workarounds or non-obvious overrides of default behaviour.
