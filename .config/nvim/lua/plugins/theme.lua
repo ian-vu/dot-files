@@ -49,6 +49,7 @@ return {
 			-- Like many other themes, this one has different styles, and you could load
 			-- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
 			vim.cmd.colorscheme("tokyonight-moon")
+			-- vim.cmd.colorscheme("tokyonight-day")
 
 			-- -- Italic path in Snacks picker (matches gruvbox-material behavior)
 			-- vim.api.nvim_set_hl(0, "SnacksPickerDir", { link = "Comment" })
