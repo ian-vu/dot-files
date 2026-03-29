@@ -26,3 +26,15 @@ vim.api.nvim_create_autocmd("FileType", {
 	end,
 })
 
+-- Prevent auto-inserting comment leaders when opening a new line with o/O in normal mode.
+-- By default, Neovim's built-in filetype plugins (ftplugins) add the 'o' flag to
+-- formatoptions for most languages. This causes o/O to auto-continue comments, which
+-- is unwanted — comment continuation should only happen when pressing Enter in insert
+-- mode (controlled by the 'r' flag, which we keep).
+-- This must be an autocmd because ftplugins run after options.lua and would re-add 'o'.
+vim.api.nvim_create_autocmd("FileType", {
+	pattern = "*",
+	callback = function()
+		vim.opt_local.formatoptions:remove("o")
+	end,
+})
