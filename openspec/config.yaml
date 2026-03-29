@@ -1,0 +1,41 @@
+schema: spec-driven
+
+context: |
+  # Dotfiles Repository (GNU stow)
+
+  A dotfiles repo at ~/dot-files managed with GNU stow. Running `stow .` from the
+  repo root symlinks configs into ~. Files must mirror their ~ path.
+
+  ## Core tools configured
+  - Shell: Zsh + oh-my-zsh (starship prompt, atuin history, fzf-tab)
+  - Editor: Neovim (Lua config, lazy.nvim, LSP, autoformat)
+  - Multiplexer: Tmux (tpm, catppuccin, resurrect, custom scripts)
+  - Terminal: Kitty, Ghostty
+  - Git: delta diffs, lazygit, per-workspace identity switching
+  - Task runner: Just (stow commands, Homebrew management)
+  - Version manager: Mise (Python, Go, Node.js, Ruby)
+  - File manager: Yazi
+  - macOS: Karabiner, Amethyst, SketchyBar, BetterTouchTool, Raycast
+  - AI: Claude Code with hooks, permissions, and custom statusline (cship)
+
+  ## Key conventions
+  - Theme: Tokyo Night Moon across all tools (alternatives: Gruvbox)
+  - Secrets: encrypted with age — never commit plaintext
+  - AI context: all agent instructions go in AGENTS.md; CLAUDE.md just references it
+  - Stow ignore: repo-only files added to .stow-local-ignore
+  - Multi-layout: Colemak and QWERTY keyboard support via col()/qwe() functions
+  - Custom scripts live in .bin/
+  - Platform support: macOS primary, Debian secondary
+
+rules:
+  proposal:
+    - Keep proposals concise — this is a personal dotfiles repo, not a team project
+    - Focus on the user-facing benefit (workflow improvement, consistency, etc.)
+  design:
+    - Reference existing config patterns in the repo when possible
+    - Note which tools/files are affected
+    - Consider stow implications for new files
+  tasks:
+    - Each task should be a single, testable unit of work
+    - Include "re-run stow" step when new files are created
+    - Note if age encryption is needed for sensitive data
