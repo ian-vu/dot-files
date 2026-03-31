@@ -99,7 +99,17 @@ return {
 							return
 						end
 
-						-- Only detect managed environments (pyright auto-detects .venv and venv)
+						-- Fast path: set pythonPath from local venv (no subprocess needed)
+						for _, venv_name in ipairs({ ".venv", "venv" }) do
+							local python = root_dir .. "/" .. venv_name .. "/bin/python"
+							if vim.uv.fs_stat(python) then
+								venv_cache[root_dir] = python
+								client.config.settings.python.pythonPath = python
+								return
+							end
+						end
+
+						-- Fallback: detect managed environments where venv lives elsewhere
 						local pkg_manager = detect_pkg_manager(root_dir)
 						if not pkg_manager then
 							return
