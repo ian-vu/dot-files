@@ -4,6 +4,33 @@
     "allow": [
       "Bash(sed:*)",
       "Bash(tmux list-keys:*)",
+      "Bash(git config:*)",
+      "Bash(git --version)",
+      "Read(//Users/ivu/**)",
+      "Bash(cat:*)",
+      "Skill(planning-with-files:planning-with-files)",
+      "WebFetch(domain:github.com)",
+      "Bash(printf:*)",
+      "Bash(chmod:*)",
+      "Bash(tmux show-hooks:*)",
+      "Bash(tmux display-message:*)",
+      "Bash(tmux set-hook:*)",
+      "Bash(git show:*)",
+      "Bash(tmux:*)",
+      "Bash(git stash:*)",
+      "Bash(gh api:*)",
+      "WebFetch(domain:neovim.io)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(brew info:*)",
+      "Bash(gh release:*)",
+      "Bash(brew cat:*)",
+      "Bash(mkdir:*)",
+      "Bash(openspec --help)",
+      "Bash(openspec schemas:*)",
+      "Bash(openspec schema:*)",
+      "Bash(sed:*)",
+      "Bash(tmux list-keys:*)",
       "Read(//Users/ivu/dev/**)",
       "Bash(git config:*)",
       "Bash(git --version)",
@@ -25,10 +52,7 @@
       "Bash(shellcheck:*)"
     ],
     "deny": [],
-    "ask": [
-      "Bash(git commit:*)",
-      "Bash(git push:*)"
-    ]
+    "ask": ["Bash(git commit:*)", "Bash(git push:*)"]
   },
   "model": "opus[1m]",
   "hooks": {
