@@ -187,6 +187,8 @@ alias npr='npm run --silent $*'
 alias chrome="open -a 'Google Chrome'"
 alias arst='asdf'
 alias claude='[ -n "$TMUX" ] && [ "$(tmux show-window-option -v automatic-rename 2>/dev/null)" != "off" ] && tmux rename-window "claude"; ~/.local/bin/claude'
+alias cl=claude
+alias cld='claude --allow-dangerously-skip-permissions'
 alias gitstats="onefetch"
 
 # Locally gitignore a file (adds to .git/info/exclude)
