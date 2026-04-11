@@ -120,19 +120,21 @@ return {
 								return not item.file or not item.file:find("/.worktrees/", 1, true)
 							end,
 						},
+						-- pre-fill input with !test to exclude test files (user still can delete during search)
+						pattern = "!'test ",
 					},
-					-- exclude test files/dirs by default
+					-- pre-fill input with !test to exclude test files (user still can delete during search)
 					files = {
-						exclude = { "*test*", "*tests*" },
-					},
-					smart = {
-						exclude = { "*test*", "*tests*" },
+						pattern = "!'test ",
 					},
 					grep = {
-						glob = { "!*test*", "!*tests*" },
+						pattern = "!'test ",
 					},
 					grep_word = {
-						glob = { "!*test*", "!*tests*" },
+						pattern = "!'test ",
+					},
+					lsp_references = {
+						pattern = "!'test ",
 					},
 				},
 				formatters = {
