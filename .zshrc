@@ -137,6 +137,7 @@ alias vim='nvim'
 alias v='vim'
 
 alias neo='neovide --no-tabs --frame transparent'
+alias nr='nvim -c "Octo review"'
 
 # Tmux things
 alias ta='tmux attach'
@@ -186,9 +187,8 @@ alias zshrca='atom ~/.zshrc'
 alias npr='npm run --silent $*'
 alias chrome="open -a 'Google Chrome'"
 alias arst='asdf'
-alias claude='[ -n "$TMUX" ] && [ "$(tmux show-window-option -v automatic-rename 2>/dev/null)" != "off" ] && tmux rename-window "claude"; ~/.local/bin/claude'
-alias cl=claude
-alias cld='claude --allow-dangerously-skip-permissions'
+alias claude='[ -n "$TMUX" ] && [ "$(tmux show-window-option -v automatic-rename 2>/dev/null)" != "off" ] && tmux rename-window "claude"; ~/.local/bin/claude --allow-dangerously-skip-permissions'
+alias cc='claude'
 alias gitstats="onefetch"
 
 # Locally gitignore a file (adds to .git/info/exclude)
