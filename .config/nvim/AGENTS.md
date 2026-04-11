@@ -24,9 +24,7 @@ lua/
 - **Static vim options** (`vim.o`, `vim.opt`): `config/options.lua`
 - **Autocommands** (`nvim_create_autocmd`): `config/autocmds.lua` — even if an autocmd overrides a vim option (e.g. `formatoptions`), it belongs here, not in options.lua.
 - **Key mappings** (non-plugin): `config/keymaps.lua`
-- **Plugin configuration**: `plugins/<concern>.lua` — one file per logical concern (e.g. `lsp.lua`, `git.lua`, `autoformat.lua`).
-- **Snacks features**: `plugins/snacks/<feature>.lua` — see `plugins/snacks/AGENTS.md` for conventions.
-- **Language-specific plugins**: `plugins/languages/<language>.lua` — see `plugins/languages/AGENTS.md` for conventions.
+- **Plugin configuration**: `plugins/` — see `plugins/AGENTS.md` for file layout and conventions.
 
 ## Notifications
 
@@ -40,4 +38,5 @@ Three notification styles are available, each suited to different contexts:
 
 - Config modules in `config/` are loaded by `config/init.lua` in a fixed order: options → keymaps → autocmds. Do not add `require` calls elsewhere for these.
 - Plugin specs use [lazy.nvim](https://github.com/folke/lazy.nvim) format. Extend existing plugins via `opts` merging rather than duplicating full specs.
+- One plugin file per logical concern (e.g. `lsp.lua`, `git.lua`, `autoformat.lua`).
 - Comments should explain _why_, not _what_ — especially for workarounds or non-obvious overrides of default behaviour.
