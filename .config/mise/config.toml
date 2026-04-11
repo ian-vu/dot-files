@@ -4,6 +4,7 @@ golang = "1.22"
 nodejs = "22"
 ruby = "3.3.4"
 node = "latest"
+"npm:@tokscale/cli" = "latest"
 
 [settings]
 # Add support for files like .python-version, .node-version, etc.
