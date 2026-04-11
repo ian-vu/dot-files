@@ -1,7 +1,27 @@
+-- Python LSP configuration: Pyright (type checking) + Ruff (linting/formatting).
+--
+-- Virtual environment resolution strategy (applies to both servers):
+--   1. Synchronous local check: look for .venv/bin or venv/bin under the project
+--      root. This is the fast path and covers the common case.
+--   2. Async package-manager fallback: if no local venv is found, detect uv or
+--      poetry via lockfiles and shell out to resolve the venv path. This handles
+--      managed environments that live outside the project (e.g. poetry in ~/.cache).
+--
+-- Pyright and ruff differ in how they consume the resolved path:
+--   - Pyright accepts a pythonPath *setting* and can be updated on a running
+--     server via workspace/didChangeConfiguration.
+--   - Ruff runs analysis in-process, so the correct binary must be the one
+--     spawned. A FileType autocmd (registered before vim.lsp.enable) resolves
+--     the binary synchronously before the server starts. The async fallback in
+--     on_init covers the rare non-local case by stopping and restarting the server.
+
 -- Module-level caches. Using local tables instead of vim.g because
 -- vim.g returns copies on read, so vim.g.tbl[key] = val silently fails.
 local venv_cache = {}
 local ruff_cmd_cache = {}
+
+local VENV_NAMES = { ".venv", "venv" }
+local RUFF_DEFAULT_CMD = { "ruff", "server", "--preview" }
 
 --- Detect the project's package manager by checking for lockfiles.
 --- Returns "uv", "poetry", or nil.
@@ -52,6 +72,44 @@ local function normalize_venv_dir(pkg_manager, stdout)
 	end
 end
 
+--- Find a binary in a local virtual environment under root_dir.
+--- Checks .venv and venv in order, returning the first match.
+local function find_local_venv_binary(root_dir, binary)
+	for _, name in ipairs(VENV_NAMES) do
+		local path = root_dir .. "/" .. name .. "/bin/" .. binary
+		if vim.uv.fs_stat(path) then
+			return path
+		end
+	end
+end
+
+--- Asynchronously resolve venv paths via package manager (uv/poetry).
+--- For managed environments where the venv lives outside the project directory.
+--- Calls callback(python_path, venv_dir) on success via vim.schedule.
+local function resolve_venv_async(root_dir, callback)
+	local pkg_manager = detect_pkg_manager(root_dir)
+	if not pkg_manager then
+		return
+	end
+
+	vim.system(venv_path_cmd(pkg_manager), {
+		cwd = root_dir,
+		timeout = 2000,
+	}, function(result)
+		if result.code ~= 0 or not result.stdout then
+			return
+		end
+
+		local python_path = normalize_python_path(pkg_manager, result.stdout)
+		local venv_dir = normalize_venv_dir(pkg_manager, result.stdout)
+		if python_path and venv_dir then
+			vim.schedule(function()
+				callback(python_path, venv_dir)
+			end)
+		end
+	end)
+end
+
 --- Re-trigger FileType on loaded Python buffers to restart LSP servers
 local function retrigger_python_ft()
 	for _, buf in ipairs(vim.api.nvim_list_bufs()) do
@@ -60,8 +118,6 @@ local function retrigger_python_ft()
 		end
 	end
 end
-
-local RUFF_DEFAULT_CMD = { "ruff", "server", "--preview" }
 
 -- Resolve the project-local ruff binary before vim.lsp.enable() starts the
 -- server. Unlike pyright (which only needs a pythonPath *setting* and can update
@@ -87,16 +143,12 @@ vim.api.nvim_create_autocmd("FileType", {
 		end
 
 		-- Check local venv (synchronous, fast)
-		for _, ruff_path in ipairs({
-			root_dir .. "/.venv/bin/ruff",
-			root_dir .. "/venv/bin/ruff",
-		}) do
-			if vim.uv.fs_stat(ruff_path) then
-				local cmd = { ruff_path, "server", "--preview" }
-				ruff_cmd_cache[root_dir] = cmd
-				vim.lsp.config("ruff", { cmd = cmd })
-				return
-			end
+		local ruff_path = find_local_venv_binary(root_dir, "ruff")
+		if ruff_path then
+			local cmd = { ruff_path, "server", "--preview" }
+			ruff_cmd_cache[root_dir] = cmd
+			vim.lsp.config("ruff", { cmd = cmd })
+			return
 		end
 
 		-- No local ruff; reset to default to avoid leaking another project's binary
@@ -144,49 +196,25 @@ return {
 						end
 
 						-- Fast path: set pythonPath from local venv (no subprocess needed)
-						for _, venv_name in ipairs({ ".venv", "venv" }) do
-							local python = root_dir .. "/" .. venv_name .. "/bin/python"
-							if vim.uv.fs_stat(python) then
-								venv_cache[root_dir] = python
-								client.config.settings.python.pythonPath = python
-								return
-							end
-						end
-
-						-- Fallback: detect managed environments where venv lives elsewhere
-						local pkg_manager = detect_pkg_manager(root_dir)
-						if not pkg_manager then
+						local python = find_local_venv_binary(root_dir, "python")
+						if python then
+							venv_cache[root_dir] = python
+							client.config.settings.python.pythonPath = python
 							return
 						end
 
-						-- Async venv detection (non-blocking)
-						vim.system(venv_path_cmd(pkg_manager), {
-							cwd = root_dir,
-							timeout = 2000,
-						}, function(result)
-							if result.code ~= 0 or not result.stdout then
-								return
-							end
-
-							local python_path = normalize_python_path(pkg_manager, result.stdout)
-							if not python_path then
-								return
-							end
-
+						-- Fallback: detect managed environments where venv lives elsewhere
+						resolve_venv_async(root_dir, function(python_path)
 							venv_cache[root_dir] = python_path
-
-							-- Update running pyright with the detected path
-							vim.schedule(function()
-								for _, c in pairs(vim.lsp.get_clients({ name = "pyright" })) do
-									if c.config.root_dir == root_dir then
-										c.config.settings.python.pythonPath = python_path
-										c:notify(
-											"workspace/didChangeConfiguration",
-											{ settings = c.config.settings }
-										)
-									end
+							for _, c in pairs(vim.lsp.get_clients({ name = "pyright" })) do
+								if c.config.root_dir == root_dir then
+									c.config.settings.python.pythonPath = python_path
+									c:notify(
+										"workspace/didChangeConfiguration",
+										{ settings = c.config.settings }
+									)
 								end
-							end)
+							end
 						end)
 					end,
 					settings = {
@@ -232,32 +260,18 @@ return {
 							return
 						end
 
-						vim.system(venv_path_cmd(pkg_manager), {
-							cwd = root_dir,
-							timeout = 2000,
-						}, function(result)
-							if result.code ~= 0 or not result.stdout then
-								return
-							end
-
-							local venv_dir = normalize_venv_dir(pkg_manager, result.stdout)
-							if not venv_dir then
-								return
-							end
-
+						resolve_venv_async(root_dir, function(_, venv_dir)
 							local ruff_path = venv_dir .. "/bin/ruff"
 							if vim.uv.fs_stat(ruff_path) then
 								local cmd = { ruff_path, "server", "--preview" }
-								vim.schedule(function()
-									ruff_cmd_cache[root_dir] = cmd
-									vim.lsp.config("ruff", { cmd = cmd })
-									for _, c in pairs(vim.lsp.get_clients({ name = "ruff" })) do
-										if c.config.root_dir == root_dir then
-											c:stop()
-										end
+								ruff_cmd_cache[root_dir] = cmd
+								vim.lsp.config("ruff", { cmd = cmd })
+								for _, c in pairs(vim.lsp.get_clients({ name = "ruff" })) do
+									if c.config.root_dir == root_dir then
+										c:stop()
 									end
-									vim.defer_fn(retrigger_python_ft, 100)
-								end)
+								end
+								vim.defer_fn(retrigger_python_ft, 100)
 							else
 								ruff_cmd_cache[root_dir] = client.config.cmd
 							end
