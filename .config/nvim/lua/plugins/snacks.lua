@@ -197,6 +197,15 @@ return {
 					end
 					vim.print = _G.dd -- Override print to use snacks for `:=` command
 
+					-- Strip "Snacks" branding from notification titles — keep the icon, lose the text
+					local orig_snacks_notify = Snacks.notify.notify
+					Snacks.notify.notify = function(msg, opts)
+						if opts and type(opts.title) == "string" then
+							opts.title = opts.title:gsub("^Snacks%s*Picker%s*", "")
+						end
+						return orig_snacks_notify(msg, opts)
+					end
+
 					-- Create some toggle mappings
 					Snacks.toggle.option("spell", { name = "Spelling" }):map("<leader>us")
 					Snacks.toggle.option("wrap", { name = "Wrap" }):map("<leader>uw")
