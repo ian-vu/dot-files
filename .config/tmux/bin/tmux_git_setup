@@ -10,6 +10,11 @@ session_path="$2"
 # Skip float sessions
 case "$session" in *float*) exit 0 ;; esac
 
+# Allow callers to suppress this hook by setting TMUX_NO_STARTUP_HOOK=1.
+# Useful when programmatically creating sessions with custom setup
+# (e.g. running nvim with different flags).
+[ "$TMUX_NO_STARTUP_HOOK" = 1 ] && exit 0
+
 # Only act on git repos
 if git -C "$session_path" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   # Rename the default window and run nvim in it
