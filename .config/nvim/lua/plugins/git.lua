@@ -162,10 +162,30 @@ return {
 			"folke/snacks.nvim", -- https://github.com/folke/snacks.nvim
 			"nvim-tree/nvim-web-devicons", -- https://github.com/nvim-tree/nvim-web-devicons
 		},
-		event = "VeryLazy",
+		cmd = { "Octo" },
+		config = function(_, opts)
+			require("octo").setup(opts)
+
+			-- gf in review diff buffers: open the file in the first tab
+			vim.api.nvim_create_autocmd("BufEnter", {
+				callback = function(args)
+					local props = vim.b[args.buf].octo_diff_props
+					if not props then
+						return
+					end
+					vim.keymap.set("n", "gf", function()
+						local line = vim.api.nvim_win_get_cursor(0)[1]
+						vim.cmd("1tabnext")
+						vim.cmd("edit " .. vim.fn.fnameescape(props.path))
+						pcall(vim.api.nvim_win_set_cursor, 0, { line, 0 })
+					end, { buffer = args.buf, desc = "Open file in first tab" })
+				end,
+			})
+		end,
 		opts = {
 			picker = "snacks",
-			use_local_fs = true,
+			-- use_local_fs = true,
+			mappings_disable_default = true,
 			mappings = {
 				review_thread = {
 					close_review_tab = { lhs = "<C-q>", desc = "close review tab" },
@@ -175,8 +195,8 @@ return {
 				},
 				review_diff = {
 					close_review_tab = { lhs = "<C-q>", desc = "close review tab" },
-					-- select_next_entry = { lhs = "<tab>", desc = "move to next changed file" },
-					-- select_prev_entry = { lhs = "<s-tab>", desc = "move to previous changed file" },
+					select_next_entry = { lhs = "<tab>", desc = "move to next changed file" },
+					select_prev_entry = { lhs = "<s-tab>", desc = "move to previous changed file" },
 					add_review_comment = { lhs = "<leader>gpc", desc = "add a new review comment", mode = { "n", "x" } },
 					add_review_suggestion = {
 						lhs = "<leader>gps",
@@ -186,6 +206,8 @@ return {
 				},
 				file_panel = {
 					close_review_tab = { lhs = "<C-q>", desc = "close review tab" },
+					select_next_entry = { lhs = "<tab>", desc = "move to next changed file" },
+					select_prev_entry = { lhs = "<s-tab>", desc = "move to previous changed file" },
 				},
 			},
 		},
