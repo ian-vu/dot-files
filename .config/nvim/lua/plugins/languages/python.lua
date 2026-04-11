@@ -242,6 +242,12 @@ return {
 					init_options = {
 						settings = {
 							logLevel = "error",
+							lint = {
+								-- Suppress editor-only; these rules are enforced by project CI/tooling instead.
+								-- I001: import sorting — avoid noisy diagnostics for side-effect imports and module order
+								-- RUF100: unused noqa directives — projects may ignore rules globally making inline noqa redundant
+								ignore = { "I001", "RUF100" },
+							},
 						},
 					},
 				},
