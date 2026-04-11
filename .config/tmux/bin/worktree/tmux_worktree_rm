@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+# =============================================================================
+# tmux_worktree_rm — Remove a git worktree and its tmux session
+# =============================================================================
+# Tears down a worktree by killing its tmux session and removing the directory.
+# Called by fzf's ctrl-x binding in tmux_worktree_add, or directly from CLI.
+#
+# Usage: tmux_worktree_rm <repo_root> <worktree_dir>
+#
+# The worktree_dir is the directory name (not the branch name), since branch
+# slashes are already converted to dashes (e.g., "feat-auth" not "feat/auth").
+
+set -e
+
+REPO_ROOT="$1"
+WORKTREE_DIR="$2"
+
+if [ -z "$REPO_ROOT" ] || [ -z "$WORKTREE_DIR" ]; then
+  echo "Usage: tmux_worktree_rm <repo_root> <worktree_dir>" >&2
+  exit 1
+fi
+
+REPO_NAME=$(basename "$REPO_ROOT")
+# tmux session names cannot contain . or : characters
+REPO_NAME="${REPO_NAME//./-}"
+REPO_NAME="${REPO_NAME//:/-}"
+
+# Session naming convention: <repo>/wt/<worktree_dir>
+# This matches what tmux_worktree_add creates, and what format-session.sh
+# parses to display as "repo 🌳 [branch]" in the status bar.
+SESSION="$REPO_NAME/wt/$WORKTREE_DIR"
+
+# Read the worktree directory name from .ivu.yml (defaults to .worktrees).
+# This must match what tmux_worktree_add used when creating the worktree.
+CONFIG="$REPO_ROOT/.ivu.yml"
+if [ -f "$CONFIG" ] && command -v yq >/dev/null 2>&1; then
+  WT_DIR=$(yq -r '.worktree.dir // ".worktrees"' "$CONFIG")
+else
+  WT_DIR=".worktrees"
+fi
+
+WORKTREE_PATH="$REPO_ROOT/$WT_DIR/$WORKTREE_DIR"
+
+# Kill the tmux session first (before removing the directory it's rooted in).
+# Uses "=" prefix for exact session name matching — without it, tmux does
+# prefix matching which could accidentally match "ml-scribe/wt/feat" when
+# targeting "ml-scribe/wt/feat-auth".
+if tmux has-session -t "=$SESSION" 2>/dev/null; then
+  tmux kill-session -t "=$SESSION"
+fi
+
+# Remove the worktree directory. git worktree remove --force handles unlinking
+# from git's worktree tracking. Falls back to rm -rf if git removal fails
+# (e.g., if the worktree was already partially cleaned up).
+if [ -d "$WORKTREE_PATH" ]; then
+  git -C "$REPO_ROOT" worktree remove --force "$WORKTREE_PATH" 2>/dev/null || rm -rf "$WORKTREE_PATH"
+  # Prune removes stale worktree tracking entries from .git/worktrees/
+  git -C "$REPO_ROOT" worktree prune
+fi

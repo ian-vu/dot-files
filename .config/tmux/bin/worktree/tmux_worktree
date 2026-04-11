@@ -1,0 +1,40 @@
+#!/usr/bin/env sh
+# =============================================================================
+# tmux_worktree — Git worktree picker popup
+# =============================================================================
+# Entry point for the worktree workflow, bound to: prefix + w
+#
+# Opens a tmux floating popup that wraps the entire lifecycle:
+#   1. fzf branch picker (inside the popup)
+#   2. Progress spinner while creating worktree + session
+#   3. Auto-switches to the new session, then popup closes
+#
+# The popup uses display-popup -E which keeps it open until the inner command
+# exits. This is what makes the "fzf → spinner → switch" flow seamless in a
+# single popup, rather than fzf-tmux which closes the popup after selection.
+
+# Resolve this script's directory so we can call sibling scripts by absolute
+# path. Needed because this directory is NOT on $PATH — it's a subdirectory
+# of ~/.config/tmux/bin/ that only contains worktree-related scripts.
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+# Get the git repo root from whichever directory the user's active pane is in.
+pane_path=$(tmux display-message -p -F "#{pane_current_path}")
+repo_root=$(git -C "$pane_path" rev-parse --show-toplevel 2>/dev/null)
+
+if [ -z "$repo_root" ]; then
+  tmux display-message "Not a git repository"
+  exit 0
+fi
+
+# Open the popup:
+#   -b rounded -S fg=#ff966c  Orange rounded border (matches tmux_float style)
+#   -T ' Git Worktree '       Title rendered in the border
+#   -d "$repo_root"           Set CWD to repo root for git commands
+#   -E                        Close popup when the inner command exits
+#   -w 100 -h 40%             Fixed 100 columns wide, 40% of terminal height
+tmux display-popup \
+  -b rounded -S fg=#ff966c -T ' Git Worktree ' \
+  -d "$repo_root" \
+  -E -w 100 -h 40% \
+  "'$SCRIPT_DIR/tmux_worktree_add' '$repo_root'"

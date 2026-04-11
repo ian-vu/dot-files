@@ -1,0 +1,55 @@
+# .ivu.yml — Per-repo configuration for ivu development workflows.
+# Place this file at the root of your git repository.
+# Tools read specific sections as needed; unused sections are ignored.
+
+# ============================================================================
+# WORKTREE — Git worktree creation and tmux session setup
+# ============================================================================
+# Used by: tmux_worktree_add (prefix + w)
+# Creates git worktrees with automatic file setup and tmux sessions.
+#
+# Flow:
+#   1. Select a branch (fzf picker or paste directly)
+#   2. Create worktree at <dir>/<branch> (slashes in branch name become dashes)
+#   3. Copy/symlink configured files into the worktree
+#   4. Start a tmux session named <repo>/wt/<branch>
+#   5. Run startup_cmd in the session
+
+worktree:
+  # Directory where worktrees are stored (relative to repo root).
+  # Each worktree gets a subdirectory named after the branch (slashes → dashes).
+  # Example: branch "feat/auth" creates .worktrees/feat-auth/
+  dir: .worktrees
+
+  # Base branch for creating new branches.
+  # When the requested branch doesn't exist locally or on origin,
+  # a new branch is created from origin/<base_branch>.
+  # Auto-detected from the remote HEAD (e.g., main, master, develop) when empty.
+  # Set a value to override (e.g., base_branch: develop).
+  base_branch:
+
+  # Files to copy into each new worktree.
+  # Copies are independent — changes in the worktree don't affect the main repo.
+  # Use for files that may be modified per-worktree (e.g., environment files).
+  # Paths are relative to the repo root.
+  copy_paths:
+    # - .env
+
+  # Files to symlink from the main repo into each worktree.
+  # Symlinks stay in sync — editing in the worktree edits the original.
+  # Use for config files shared across all worktrees.
+  # Nested paths (e.g., .claude/settings.local.json) auto-create parent directories.
+  symlinks:
+    # - .justfile
+    # - .ignore
+    # - .claude/settings.local.json
+
+  # Command to run in the tmux session after worktree setup.
+  # Executes via `tmux send-keys`, so it runs in the worktree's shell.
+  # Example: "set -a && source .env && set +a && uv sync"
+  startup_cmd: ""
+
+  # Whether to suppress the default tmux git session setup (nvim + lazygit + shell).
+  # Set to true when you define your own startup_cmd.
+  # Set to false to get the standard session layout AND run startup_cmd.
+  suppress_tmux_startup_hook: true

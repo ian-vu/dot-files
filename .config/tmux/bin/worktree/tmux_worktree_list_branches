@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+# =============================================================================
+# tmux_worktree_list_branches — List git branches for fzf
+# =============================================================================
+# Lists local and remote branches (deduplicated) for use by fzf reload bindings
+# in tmux_worktree_add.
+#
+# Usage:
+#   tmux_worktree_list_branches [repo_root]            # instant cached list
+#   tmux_worktree_list_branches --fetch [repo_root]    # cached first, fetch, then new
+#
+# The --fetch mode is used by fzf's start:reload binding. It outputs branches
+# in a streaming fashion so fzf shows results immediately while fetch runs:
+#   1. Output cached branches (instant — fzf displays these right away)
+#   2. Run git fetch (takes seconds — fzf stays interactive)
+#   3. Output all branches again (awk dedup filters out ones already shown)
+
+FETCH=false
+if [ "$1" = "--fetch" ]; then
+  FETCH=true
+  shift
+fi
+
+if [ -n "$1" ]; then
+  cd "$1" || exit 1
+fi
+
+# Combine local and remote branches into a single deduplicated list.
+# Remote branches have the "origin/" prefix stripped so they display
+# the same as local branches (user doesn't care about the distinction here).
+list_branches() {
+  {
+    git branch --format='%(refname:short)'
+    git branch -r --format='%(refname:short)' | sed 's|^origin/||' | grep -v '^HEAD$'
+  } | sort -u
+}
+
+if [ "$FETCH" = true ]; then
+  # Streaming dedup using awk: first list_branches outputs go through immediately,
+  # then after fetch completes, second list_branches outputs only pass through if
+  # they're new (not yet seen by awk). This means fzf shows cached branches instantly
+  # and silently appends any newly discovered remote branches after fetch.
+  { list_branches; git fetch --all --quiet >/dev/null 2>&1; list_branches; } | awk '!seen[$0]++'
+else
+  list_branches
+fi

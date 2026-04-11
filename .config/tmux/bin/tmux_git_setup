@@ -7,8 +7,8 @@
 session="$1"
 session_path="$2"
 
-# Skip float sessions
-case "$session" in *float*) exit 0 ;; esac
+# Skip float sessions and worktree sessions (worktrees have their own setup via .ivu.yml)
+case "$session" in *float*|*/wt/*) exit 0 ;; esac
 
 # Allow callers to suppress this hook by setting TMUX_NO_STARTUP_HOOK=1.
 # Useful when programmatically creating sessions with custom setup
