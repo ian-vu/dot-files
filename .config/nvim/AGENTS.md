@@ -26,6 +26,14 @@ lua/
 - **Plugin configuration**: `plugins/<concern>.lua` — one file per logical concern (e.g. `lsp.lua`, `git.lua`, `autoformat.lua`).
 - **Language-specific plugins**: `plugins/languages/<language>.lua` — see `plugins/languages/AGENTS.md` for conventions.
 
+## Notifications
+
+Three notification styles are available, each suited to different contexts:
+
+1. **Big popup** (`Snacks.notify` / `vim.notify`): Full notification popup via Snacks notifier (`plugins/snacks.lua`). Use for important alerts that need attention.
+2. **Small inline** (noice "mini" view): Subtle text at the bottom of the screen — same style as the "written" message on save. Requires two changes: (a) emit the message via `vim.cmd.echo("'message'")`, and (b) add a `{ find = "message" }` entry to the noice `routes` filter in `plugins/ui.lua` so it renders with `view = "mini"` instead of a big popup.
+3. **LSP progress** (fidget.nvim): Automatic spinner for LSP progress events (`plugins/lsp.lua`). No manual setup needed — LSP servers emit these automatically.
+
 ## Conventions
 
 - Config modules in `config/` are loaded by `config/init.lua` in a fixed order: options → keymaps → autocmds. Do not add `require` calls elsewhere for these.

@@ -298,7 +298,6 @@ vim.keymap.set("n", "<leader>cyF", function()
 	print("Copied: " .. full_path)
 end, { desc = "Copy full file path" })
 
-
 -- Copy range of lines in visual mode with full file path and line range
 vim.keymap.set("v", "<leader>cyL", function()
 	vim.cmd('normal! "vy')
@@ -510,6 +509,8 @@ vim.keymap.set("n", "gD", function()
 	Snacks.picker.lsp_declarations()
 end, { desc = "Goto Declaration" })
 vim.keymap.set("n", "gr", function()
+	-- Immediate feedback since finding all references can be slow
+	vim.cmd.echo("'🔍 Finding references…'")
 	Snacks.picker.lsp_references()
 end, { nowait = true, desc = "References" })
 vim.keymap.set("n", "gI", function()

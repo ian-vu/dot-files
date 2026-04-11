@@ -41,6 +41,7 @@ return {
 							{ find = "; before #%d+" },
 							{ find = "; before #%d+" },
 							{ find = "No Information Available" },
+							{ find = "Finding references" }, -- gr keymap feedback
 						},
 					},
 					view = "mini",
