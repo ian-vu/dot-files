@@ -5,6 +5,7 @@ nodejs = "22"
 ruby = "3.3.4"
 node = "latest"
 "npm:@tokscale/cli" = "latest"
+"npm:t3" = "latest"
 
 [settings]
 # Add support for files like .python-version, .node-version, etc.
