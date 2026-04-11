@@ -298,27 +298,34 @@ vim.keymap.set("n", "<leader>cyF", function()
 	print("Copied: " .. full_path)
 end, { desc = "Copy full file path" })
 
--- Copy range of lines in visual mode with full file path and line range
-vim.keymap.set("v", "<leader>cyL", function()
-	vim.cmd('normal! "vy')
-	local start_line = vim.fn.line("'<")
-	local end_line = vim.fn.line("'>")
+-- Copy file path with line(s) — single line in normal mode, range in visual mode
+vim.keymap.set({ "n", "v" }, "<leader>cyL", function()
 	local file_path = transform_path(vim.fn.expand("%:p"))
-	local result = get_filepath_prefix() .. file_path .. ":" .. start_line .. "-" .. end_line
+	local line_ref
+	if vim.fn.mode():match("[vV]") or vim.fn.mode() == "\22" then
+		vim.cmd('normal! "vy')
+		line_ref = vim.fn.line("'<") .. "-" .. vim.fn.line("'>")
+	else
+		line_ref = tostring(vim.fn.line("."))
+	end
+	local result = get_filepath_prefix() .. file_path .. ":" .. line_ref
 	vim.fn.setreg("+", result)
 	print("Copied " .. result)
-end, { desc = "Copy range of lines with full path" })
+end, { desc = "Copy full path with line(s)" })
 
--- Copy range of lines in visual mode with file path and line range
-vim.keymap.set("v", "<leader>cyl", function()
-	vim.cmd('normal! "vy')
-	local start_line = vim.fn.line("'<")
-	local end_line = vim.fn.line("'>")
+vim.keymap.set({ "n", "v" }, "<leader>cyl", function()
 	local file_path = get_relative_file()
-	local result = get_filepath_prefix() .. file_path .. ":" .. start_line .. "-" .. end_line
+	local line_ref
+	if vim.fn.mode():match("[vV]") or vim.fn.mode() == "\22" then
+		vim.cmd('normal! "vy')
+		line_ref = vim.fn.line("'<") .. "-" .. vim.fn.line("'>")
+	else
+		line_ref = tostring(vim.fn.line("."))
+	end
+	local result = get_filepath_prefix() .. file_path .. ":" .. line_ref
 	vim.fn.setreg("+", result)
 	print("Copied " .. result)
-end, { desc = "Copy range of lines with path" })
+end, { desc = "Copy path with line(s)" })
 
 -- Copy current line number and diagnostic message to clipboard
 vim.keymap.set("n", "<leader>cyD", function()
