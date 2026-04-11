@@ -121,6 +121,19 @@ return {
 							end,
 						},
 					},
+					-- exclude test files/dirs by default
+					files = {
+						exclude = { "*test*", "*tests*" },
+					},
+					smart = {
+						exclude = { "*test*", "*tests*" },
+					},
+					grep = {
+						glob = { "!*test*", "!*tests*" },
+					},
+					grep_word = {
+						glob = { "!*test*", "!*tests*" },
+					},
 				},
 				formatters = {
 					file = {

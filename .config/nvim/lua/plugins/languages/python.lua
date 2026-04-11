@@ -61,6 +61,50 @@ local function retrigger_python_ft()
 	end
 end
 
+local RUFF_DEFAULT_CMD = { "ruff", "server", "--preview" }
+
+-- Resolve the project-local ruff binary before vim.lsp.enable() starts the
+-- server. Unlike pyright (which only needs a pythonPath *setting* and can update
+-- it on a running server via on_init + didChangeConfiguration), ruff requires
+-- swapping the actual binary — the built-in `ruff server` runs analysis
+-- in-process, so the correct version must be the one spawned. This autocmd is
+-- registered at module load time (before vim.lsp.enable), so it fires first on
+-- each FileType event, letting us update vim.lsp.config() with the correct cmd
+-- before the server process is spawned.
+vim.api.nvim_create_autocmd("FileType", {
+	pattern = "python",
+	group = vim.api.nvim_create_augroup("ruff_binary_resolve", { clear = true }),
+	callback = function(args)
+		local root_dir = vim.fs.root(args.buf, { "pyproject.toml", "setup.py", "setup.cfg", ".git" })
+		if not root_dir then
+			return
+		end
+
+		-- Already resolved for this project
+		if ruff_cmd_cache[root_dir] then
+			vim.lsp.config("ruff", { cmd = ruff_cmd_cache[root_dir] })
+			return
+		end
+
+		-- Check local venv (synchronous, fast)
+		for _, ruff_path in ipairs({
+			root_dir .. "/.venv/bin/ruff",
+			root_dir .. "/venv/bin/ruff",
+		}) do
+			if vim.uv.fs_stat(ruff_path) then
+				local cmd = { ruff_path, "server", "--preview" }
+				ruff_cmd_cache[root_dir] = cmd
+				vim.lsp.config("ruff", { cmd = cmd })
+				return
+			end
+		end
+
+		-- No local ruff; reset to default to avoid leaking another project's binary
+		vim.lsp.config("ruff", { cmd = RUFF_DEFAULT_CMD })
+	end,
+	desc = "Resolve project-local ruff binary before LSP server starts",
+})
+
 -- Disable ruff hover in favor of Pyright
 vim.api.nvim_create_autocmd("LspAttach", {
 	group = vim.api.nvim_create_augroup("lsp_attach_disable_ruff_hover", { clear = true }),
@@ -166,78 +210,60 @@ return {
 					},
 				},
 				ruff = {
-					-- on_new_config is not supported by vim.lsp.config() (nvim 0.11+).
-					-- Use on_init to detect a project-local ruff binary and restart
-					-- with it if the current instance is using the wrong one.
+					-- Async fallback for non-local venvs (e.g. poetry stores venvs
+					-- in ~/.cache). Local .venv/venv detection is handled by the
+					-- ruff_binary_resolve FileType autocmd above, which runs before
+					-- the server spawns. This on_init only covers the rare case where
+					-- the venv lives outside the project directory.
 					on_init = function(client)
 						local root_dir = client.config.root_dir
 						if not root_dir then
 							return
 						end
 
-						local cached_cmd = ruff_cmd_cache[root_dir]
-						if cached_cmd then
-							if vim.deep_equal(client.config.cmd, cached_cmd) then
-								return -- Already running the correct binary
-							end
-							-- Wrong binary, update global config and restart
-							vim.lsp.config("ruff", { cmd = cached_cmd })
-							vim.defer_fn(retrigger_python_ft, 100)
-							return false
+						-- Already resolved by FileType autocmd or a previous on_init
+						if ruff_cmd_cache[root_dir] then
+							return
 						end
 
-						-- Check local venv paths (synchronous, fast)
-						local local_ruff_paths = {
-							root_dir .. "/.venv/bin/ruff",
-							root_dir .. "/venv/bin/ruff",
-						}
-						for _, ruff_path in ipairs(local_ruff_paths) do
-							if vim.fn.executable(ruff_path) == 1 then
-								local cmd = { ruff_path, "server", "--preview" }
-								ruff_cmd_cache[root_dir] = cmd
-								vim.lsp.config("ruff", { cmd = cmd })
-								vim.defer_fn(retrigger_python_ft, 100)
-								return false -- Kill this instance, restart with local ruff
-							end
-						end
-
-						-- Check managed environments (uv/poetry) async, non-blocking
 						local pkg_manager = detect_pkg_manager(root_dir)
-						if pkg_manager then
-							vim.system(venv_path_cmd(pkg_manager), {
-								cwd = root_dir,
-								timeout = 2000,
-							}, function(result)
-								if result.code ~= 0 or not result.stdout then
-									return
-								end
-
-								local venv_dir = normalize_venv_dir(pkg_manager, result.stdout)
-								if not venv_dir then
-									return
-								end
-
-								local ruff_path = venv_dir .. "/bin/ruff"
-								if vim.uv.fs_stat(ruff_path) then
-									local cmd = { ruff_path, "server", "--preview" }
-									vim.schedule(function()
-										ruff_cmd_cache[root_dir] = cmd
-										vim.lsp.config("ruff", { cmd = cmd })
-										for _, c in pairs(vim.lsp.get_clients({ name = "ruff" })) do
-											if c.config.root_dir == root_dir then
-												c:stop()
-											end
-										end
-										vim.defer_fn(retrigger_python_ft, 100)
-									end)
-								end
-							end)
+						if not pkg_manager then
+							ruff_cmd_cache[root_dir] = client.config.cmd
+							return
 						end
 
-						-- Cache default cmd so we don't re-check on next start
-						ruff_cmd_cache[root_dir] = client.config.cmd
+						vim.system(venv_path_cmd(pkg_manager), {
+							cwd = root_dir,
+							timeout = 2000,
+						}, function(result)
+							if result.code ~= 0 or not result.stdout then
+								return
+							end
+
+							local venv_dir = normalize_venv_dir(pkg_manager, result.stdout)
+							if not venv_dir then
+								return
+							end
+
+							local ruff_path = venv_dir .. "/bin/ruff"
+							if vim.uv.fs_stat(ruff_path) then
+								local cmd = { ruff_path, "server", "--preview" }
+								vim.schedule(function()
+									ruff_cmd_cache[root_dir] = cmd
+									vim.lsp.config("ruff", { cmd = cmd })
+									for _, c in pairs(vim.lsp.get_clients({ name = "ruff" })) do
+										if c.config.root_dir == root_dir then
+											c:stop()
+										end
+									end
+									vim.defer_fn(retrigger_python_ft, 100)
+								end)
+							else
+								ruff_cmd_cache[root_dir] = client.config.cmd
+							end
+						end)
 					end,
-					cmd = { "ruff", "server", "--preview" },
+					cmd = RUFF_DEFAULT_CMD,
 					cmd_env = { RUFF_TRACE = "messages" },
 					init_options = {
 						settings = {
