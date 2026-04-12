@@ -18,23 +18,27 @@
 # of ~/.config/tmux/bin/ that only contains worktree-related scripts.
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-# Get the git repo root from whichever directory the user's active pane is in.
+# Resolve the git repo root from whichever directory the user's active pane is in.
+# Uses --git-common-dir instead of --show-toplevel so that being inside a worktree
+# resolves to the main repo root (preventing nested worktrees).
 pane_path=$(tmux display-message -p -F "#{pane_current_path}")
-repo_root=$(git -C "$pane_path" rev-parse --show-toplevel 2>/dev/null)
-
-if [ -z "$repo_root" ]; then
-  tmux display-message "Not a git repository"
-  exit 0
+repo_root=""
+if git -C "$pane_path" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  git_common_dir=$(git -C "$pane_path" rev-parse --path-format=absolute --git-common-dir 2>/dev/null)
+  repo_root="${git_common_dir%/.git}"
 fi
 
 # Open the popup:
 #   -b rounded -S fg=#ff966c  Orange rounded border (matches tmux_float style)
 #   -T ' Git Worktree '       Title rendered in the border
-#   -d "$repo_root"           Set CWD to repo root for git commands
+#   -d "$repo_root"           Set CWD to repo root for git commands (omitted when empty)
 #   -E                        Close popup when the inner command exits
 #   -w 100 -h 40%             Fixed 100 columns wide, 40% of terminal height
+#
+# When repo_root is empty (not in a git repo), tmux_worktree_add receives an
+# empty first argument and goes straight to the repo picker.
 tmux display-popup \
   -b rounded -S fg=#ff966c -T ' Git Worktree ' \
-  -d "$repo_root" \
+  ${repo_root:+-d "$repo_root"} \
   -E -w 100 -h 40% \
   "'$SCRIPT_DIR/tmux_worktree_add' '$repo_root'"

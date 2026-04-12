@@ -20,21 +20,15 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 REPO_ROOT="$1"
 BRANCH="$2"
+DEV_DIR="$HOME/dev"
 
-if [ -z "$REPO_ROOT" ]; then
+# When a branch is passed directly, repo_root is required.
+# When interactive (no branch), empty repo_root is OK — triggers repo picker.
+if [ -n "$BRANCH" ] && [ -z "$REPO_ROOT" ]; then
   echo "Usage: tmux_worktree_add <repo_root> [branch]" >&2
   exit 1
 fi
 
-cd "$REPO_ROOT"
-
-REPO_NAME=$(basename "$REPO_ROOT")
-# tmux session names cannot contain . or : characters, so replace them.
-# e.g., "my.project" becomes "my-project" in session names.
-REPO_NAME="${REPO_NAME//./-}"
-REPO_NAME="${REPO_NAME//:/-}"
-
-CONFIG="$REPO_ROOT/.ivu.yml"
 TEMPLATE="$HOME/.config/ivu/template.yml"
 
 # =============================================================================
@@ -120,37 +114,77 @@ cfg_array() {
 # The popup border and title are handled by the outer display-popup,
 # so fzf uses --no-border to avoid a nested border.
 if [ -z "$BRANCH" ]; then
-  # Read worktree dir early for the ctrl-w binding (list existing worktrees).
-  # This is separate from the main config read below because we need it before
-  # the user has selected a branch.
-  WT_DIR_FOR_FZF=$(cfg dir .worktrees)
+  # If no repo provided (not in a git repo), go straight to repo picker.
+  if [ -z "$REPO_ROOT" ]; then
+    REPO_ROOT=$("$SCRIPT_DIR/tmux_worktree_pick_repo" "$DEV_DIR")
+    [ -z "$REPO_ROOT" ] && exit 0
+  fi
 
-  FZF_OUTPUT=$(
-    "$SCRIPT_DIR/tmux_worktree_list_branches" "$REPO_ROOT" | fzf \
-      --layout reverse --info right --keep-right --no-sort \
-      --no-border \
-      --prompt '  branch: ' \
-      --pointer ' ➜' --color "gutter:#222436,border:#ff966c,label:#ff966c" \
-      --print-query \
-      --bind 'tab:down,btab:up' \
-      --bind "start:reload:'$SCRIPT_DIR/tmux_worktree_list_branches' --fetch '$REPO_ROOT'" \
-      --bind "ctrl-w:change-prompt(🌳 worktree: )+reload(ls '$REPO_ROOT/$WT_DIR_FOR_FZF' 2>/dev/null || true)" \
-      --bind "ctrl-b:change-prompt(  branch: )+reload:'$SCRIPT_DIR/tmux_worktree_list_branches' '$REPO_ROOT'" \
-      --bind "ctrl-x:execute-silent('$SCRIPT_DIR/tmux_worktree_rm' '$REPO_ROOT' {})+reload(ls '$REPO_ROOT/$WT_DIR_FOR_FZF' 2>/dev/null || true)" \
-      --header 'C-b Branches | C-w Worktrees | C-x Remove'
-  ) || true
-  # ^^ || true: fzf returns exit code 1 when the user presses Enter with no
-  # match selected (typed a custom branch name). We still want that input.
+  # Main loop: branch picker with repo switching via ctrl-p.
+  # Re-derives all repo-dependent state at the top of each iteration so that
+  # switching repos via ctrl-p correctly updates fzf bindings and context.
+  while true; do
+    cd "$REPO_ROOT"
+    REPO_NAME=$(basename "$REPO_ROOT")
+    REPO_NAME="${REPO_NAME//./-}"
+    REPO_NAME="${REPO_NAME//:/-}"
+    CONFIG="$REPO_ROOT/.ivu.yml"
+    WT_DIR_FOR_FZF=$(cfg dir .worktrees)
 
-  # --print-query makes fzf output two lines:
-  #   Line 1: the query text (what the user typed)
-  #   Line 2: the selected item (if the user picked from the list)
-  # If the user typed a custom branch and pressed Enter (no match), only line 1
-  # is output. We prefer the selected item, falling back to the query text.
-  QUERY=$(echo "$FZF_OUTPUT" | head -1)
-  SELECTED=$(echo "$FZF_OUTPUT" | sed -n '2p')
-  BRANCH="${SELECTED:-$QUERY}"
+    # Color the repo name orange (matching the popup border theme) to
+    # visually distinguish it from the mode label (branch/worktree).
+    REPO_LABEL=$'\033[38;2;255;150;108m'"[$REPO_NAME]"$'\033[0m'
+
+    FZF_OUTPUT=$(
+      "$SCRIPT_DIR/tmux_worktree_list_branches" "$REPO_ROOT" | fzf \
+        --layout reverse --info right --keep-right --no-sort \
+        --no-border \
+        --prompt "  $REPO_LABEL branch: " \
+        --pointer ' ➜' --color "gutter:#222436,border:#ff966c,label:#ff966c" \
+        --print-query \
+        --expect=ctrl-p \
+        --bind 'tab:down,btab:up' \
+        --bind "start:reload:'$SCRIPT_DIR/tmux_worktree_list_branches' --fetch '$REPO_ROOT'" \
+        --bind "ctrl-w:change-prompt(🌳 $REPO_LABEL worktree: )+reload(ls '$REPO_ROOT/$WT_DIR_FOR_FZF' 2>/dev/null || true)" \
+        --bind "ctrl-b:change-prompt(  $REPO_LABEL branch: )+reload:'$SCRIPT_DIR/tmux_worktree_list_branches' '$REPO_ROOT'" \
+        --bind "ctrl-x:execute-silent('$SCRIPT_DIR/tmux_worktree_rm' '$REPO_ROOT' {})+reload(ls '$REPO_ROOT/$WT_DIR_FOR_FZF' 2>/dev/null || true)" \
+        --header 'C-p Repos | C-b Branches | C-w Worktrees | C-x Remove'
+    ) || true
+    # ^^ || true: fzf returns exit code 1 when the user presses Enter with no
+    # match selected (typed a custom branch name). We still want that input.
+
+    # --print-query + --expect makes fzf output three lines:
+    #   Line 1: the query text (what the user typed)
+    #   Line 2: the expected key pressed ("ctrl-p" or empty for Enter)
+    #   Line 3: the selected item (if the user picked from the list)
+    QUERY=$(echo "$FZF_OUTPUT" | sed -n '1p')
+    KEY=$(echo "$FZF_OUTPUT" | sed -n '2p')
+    SELECTED=$(echo "$FZF_OUTPUT" | sed -n '3p')
+
+    if [ "$KEY" = "ctrl-p" ]; then
+      # Switch repos: show picker, update REPO_ROOT if a repo was selected.
+      # If the user presses Escape in the picker, REPO_ROOT stays the same
+      # and the loop redisplays the branch picker for the current repo.
+      NEW_REPO=$("$SCRIPT_DIR/tmux_worktree_pick_repo" "$DEV_DIR")
+      if [ -n "$NEW_REPO" ]; then
+        REPO_ROOT="$NEW_REPO"
+      fi
+      continue
+    fi
+
+    BRANCH="${SELECTED:-$QUERY}"
+    break
+  done
 fi
+
+# Derive repo-dependent state for the rest of the script. Redundant after the
+# loop (already set inside it) but needed for the direct-branch path (when $2
+# was provided, skipping fzf entirely).
+cd "$REPO_ROOT"
+REPO_NAME=$(basename "$REPO_ROOT")
+REPO_NAME="${REPO_NAME//./-}"
+REPO_NAME="${REPO_NAME//:/-}"
+CONFIG="$REPO_ROOT/.ivu.yml"
 
 # Empty branch means the user cancelled (Escape). Exit cleanly — the popup closes.
 [ -z "$BRANCH" ] && exit 0

@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+# =============================================================================
+# tmux_worktree_pick_repo — Pick a repository from a dev directory
+# =============================================================================
+# Displays an fzf picker listing git repos under the dev directory.
+# Outputs the absolute path of the selected directory to stdout.
+# Called by tmux_worktree_add when the user presses ctrl-p or when no repo
+# context is available.
+#
+# Caches the repo list to avoid re-scanning on every invocation. The cache is
+# built synchronously on first run, then refreshed in the background so
+# subsequent opens are instant. New repos appear on the next invocation.
+#
+# Usage: tmux_worktree_pick_repo [dev_dir]
+#
+# Arguments:
+#   dev_dir    Directory to list repos from (default: $HOME/dev)
+#
+# Exit behavior:
+#   - Selection: prints absolute path to stdout, exits 0
+#   - Escape:    prints nothing, exits 0
+
+DEV_DIR="${1:-$HOME/dev}"
+CACHE_FILE="${XDG_CACHE_HOME:-$HOME/.cache}/tmux_worktree_repos"
+
+# List git repos up to 5 levels deep (e.g., ~/dev/org/repo).
+# Stops descending into directories that contain .git — avoids listing
+# subdirectories of repos (src/, .worktrees/, etc.).
+list_repos() {
+  find -L "$DEV_DIR" -mindepth 2 -maxdepth 5 -type d -exec test -e '{}/.git' \; -print -prune \
+    | sed "s|^$DEV_DIR/||" | sort
+}
+
+# Build cache on first run (synchronous — has to wait once).
+if [ ! -f "$CACHE_FILE" ]; then
+  mkdir -p "$(dirname "$CACHE_FILE")"
+  list_repos > "$CACHE_FILE"
+fi
+
+# Refresh cache in background for next invocation.
+( list_repos > "$CACHE_FILE.tmp" 2>/dev/null && mv "$CACHE_FILE.tmp" "$CACHE_FILE" ) &
+
+SELECTED=$(
+  fzf < "$CACHE_FILE" \
+    --layout reverse --info right \
+    --no-border \
+    --prompt '  repo: ' \
+    --pointer ' ➜' --color "gutter:#222436,border:#ff966c,label:#ff966c" \
+    --bind 'tab:down,btab:up'
+) || true
+
+if [ -n "$SELECTED" ]; then
+  echo "$DEV_DIR/$SELECTED"
+fi
