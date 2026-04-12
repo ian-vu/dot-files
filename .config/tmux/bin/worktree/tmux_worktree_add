@@ -139,6 +139,7 @@ if [ -z "$BRANCH" ]; then
 
     FZF_OUTPUT=$(
       fzf < /dev/null \
+        --height 100% \
         --layout reverse --info right --keep-right --no-sort \
         --no-border \
         --prompt "  $REPO_LABEL New branch: " \

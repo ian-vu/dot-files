@@ -40,5 +40,5 @@ fi
 tmux display-popup \
   -b rounded -S fg=#ff966c -T '#[align=centre] Git Worktree ' \
   ${repo_root:+-d "$repo_root"} \
-  -E -w 100 -h 40% \
+  -E -w 80 -h 40% \
   "'$SCRIPT_DIR/tmux_worktree_add' '$repo_root'"
