@@ -11,17 +11,37 @@
 # built synchronously on first run, then refreshed in the background so
 # subsequent opens are instant. New repos appear on the next invocation.
 #
-# Usage: tmux_worktree_pick_repo [dev_dir]
+# Pinned repos are stored in a separate file and shown at the top of the list
+# with an icon. Press ctrl-m to toggle pinning.
 #
-# Arguments:
-#   dev_dir    Directory to list repos from (default: $HOME/dev)
+# Usage:
+#   tmux_worktree_pick_repo [dev_dir]                  # interactive picker
+#   tmux_worktree_pick_repo --list [dev_dir]            # output formatted list
+#   tmux_worktree_pick_repo --toggle <repo> [dev_dir]   # toggle pin for a repo
 #
 # Exit behavior:
 #   - Selection: prints absolute path to stdout, exits 0
 #   - Escape:    prints nothing, exits 0
 
-DEV_DIR="${1:-$HOME/dev}"
+SCRIPT_PATH="$0"
+DEV_DIR="$HOME/dev"
+ACTION="pick"
+TOGGLE_REPO=""
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --list) ACTION="list"; shift ;;
+    --toggle) ACTION="toggle"; TOGGLE_REPO="$2"; shift 2 ;;
+    *) DEV_DIR="$1"; shift ;;
+  esac
+done
+
 CACHE_FILE="${XDG_CACHE_HOME:-$HOME/.cache}/tmux_worktree_repos"
+PINS_FILE="${XDG_CACHE_HOME:-$HOME/.cache}/tmux_worktree_pinned_repos"
+
+# Pin icon shown next to pinned repos. Non-pinned repos get a two-space
+# prefix to keep alignment.
+PIN_ICON="📌"
 
 # List git repos up to 5 levels deep (e.g., ~/dev/org/repo).
 # Stops descending into directories that contain .git — avoids listing
@@ -30,6 +50,55 @@ list_repos() {
   find -L "$DEV_DIR" -mindepth 2 -maxdepth 5 -type d -exec test -e '{}/.git' \; -print -prune \
     | sed "s|^$DEV_DIR/||" | sort
 }
+
+# Output formatted list: pinned repos first with icon, then the rest.
+build_list() {
+  # Pinned repos at the top
+  if [ -f "$PINS_FILE" ]; then
+    while IFS= read -r repo; do
+      [ -z "$repo" ] && continue
+      # Only show if repo still exists in cache
+      if grep -qxF "$repo" "$CACHE_FILE" 2>/dev/null; then
+        echo "$PIN_ICON $repo"
+      fi
+    done < "$PINS_FILE"
+  fi
+  # Remaining repos (skip pinned ones)
+  while IFS= read -r repo; do
+    if [ -f "$PINS_FILE" ] && grep -qxF "$repo" "$PINS_FILE" 2>/dev/null; then
+      continue
+    fi
+    echo "  $repo"
+  done < "$CACHE_FILE"
+}
+
+# Add or remove a repo from the pins file.
+toggle_pin() {
+  local repo="$1"
+  mkdir -p "$(dirname "$PINS_FILE")"
+  if grep -qxF "$repo" "$PINS_FILE" 2>/dev/null; then
+    # || true: when removing the last pin, grep -v produces no output and exits 1.
+    # Without this, && would skip the mv and the pin file would never update.
+    grep -vxF "$repo" "$PINS_FILE" > "$PINS_FILE.tmp" || true
+    mv "$PINS_FILE.tmp" "$PINS_FILE"
+  else
+    echo "$repo" >> "$PINS_FILE"
+  fi
+}
+
+# --- Sub-command dispatch ---
+case "$ACTION" in
+  list)
+    build_list
+    exit 0
+    ;;
+  toggle)
+    toggle_pin "$TOGGLE_REPO"
+    exit 0
+    ;;
+esac
+
+# --- Interactive picker ---
 
 # Build cache on first run (synchronous — has to wait once).
 if [ ! -f "$CACHE_FILE" ]; then
@@ -41,14 +110,19 @@ fi
 ( list_repos > "$CACHE_FILE.tmp" 2>/dev/null && mv "$CACHE_FILE.tmp" "$CACHE_FILE" ) &
 
 SELECTED=$(
-  fzf < "$CACHE_FILE" \
+  build_list | fzf \
     --layout reverse --info right \
     --no-border \
     --prompt '  repo: ' \
     --pointer ' ➜' --color "gutter:#222436,border:#ff966c,label:#ff966c" \
-    --bind 'tab:down,btab:up'
+    --bind 'tab:down,btab:up' \
+    --bind "ctrl-m:execute-silent('$SCRIPT_PATH' --toggle {-1} '$DEV_DIR')+reload('$SCRIPT_PATH' --list '$DEV_DIR')" \
+    --header 'C-m Pin'
 ) || true
 
 if [ -n "$SELECTED" ]; then
+  # Strip pin icon or leading whitespace prefix.
+  SELECTED="${SELECTED#$PIN_ICON }"
+  SELECTED="${SELECTED#  }"
   echo "$DEV_DIR/$SELECTED"
 fi
