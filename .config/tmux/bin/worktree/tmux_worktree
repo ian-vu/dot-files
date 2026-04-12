@@ -1,44 +1,183 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 # =============================================================================
 # tmux_worktree — Git worktree picker popup
 # =============================================================================
 # Entry point for the worktree workflow, bound to: prefix + w
 #
 # Opens a tmux floating popup that wraps the entire lifecycle:
-#   1. fzf branch picker (inside the popup)
-#   2. Progress spinner while creating worktree + session
-#   3. Auto-switches to the new session, then popup closes
+#   1. Mode-switching fzf picker (branch or worktree view)
+#   2. Dispatches to tmux_worktree_add (create) or tmux_worktree_rm (remove)
 #
 # The popup uses display-popup -E which keeps it open until the inner command
-# exits. This is what makes the "fzf → spinner → switch" flow seamless in a
-# single popup, rather than fzf-tmux which closes the popup after selection.
+# exits. When called with --inner, runs the picker loop directly (inside the
+# popup). Without --inner, opens the popup calling itself.
 
 # Resolve this script's directory so we can call sibling scripts by absolute
 # path. Needed because this directory is NOT on $PATH — it's a subdirectory
 # of ~/.config/tmux/bin/ that only contains worktree-related scripts.
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-# Resolve the git repo root from whichever directory the user's active pane is in.
-# Uses --git-common-dir instead of --show-toplevel so that being inside a worktree
-# resolves to the main repo root (preventing nested worktrees).
-pane_path=$(tmux display-message -p -F "#{pane_current_path}")
-repo_root=""
-if git -C "$pane_path" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-  git_common_dir=$(git -C "$pane_path" rev-parse --path-format=absolute --git-common-dir 2>/dev/null)
-  repo_root="${git_common_dir%/.git}"
+# =============================================================================
+# Popup launcher (outer mode)
+# =============================================================================
+# When called without --inner, resolve the repo root and open the popup.
+if [ "${1:-}" != "--inner" ]; then
+  # Resolve the git repo root from whichever directory the user's active pane is in.
+  # Uses --git-common-dir instead of --show-toplevel so that being inside a worktree
+  # resolves to the main repo root (preventing nested worktrees).
+  pane_path=$(tmux display-message -p -F "#{pane_current_path}")
+  repo_root=""
+  if git -C "$pane_path" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    git_common_dir=$(git -C "$pane_path" rev-parse --path-format=absolute --git-common-dir 2>/dev/null)
+    repo_root="${git_common_dir%/.git}"
+  fi
+
+  # Open the popup:
+  #   -b rounded -S fg=#ff966c  Orange rounded border (matches tmux_float style)
+  #   -T ' Git Worktree '       Title rendered in the border
+  #   -d "$repo_root"           Set CWD to repo root for git commands (omitted when empty)
+  #   -E                        Close popup when the inner command exits
+  #   -w 80 -h 40%              Fixed 80 columns wide, 40% of terminal height
+  #
+  # Calls itself with --inner to run the picker loop inside the popup.
+  tmux display-popup \
+    -b rounded -S fg=#ff966c -T '#[align=centre] Git Worktree ' \
+    ${repo_root:+-d "$repo_root"} \
+    -E -w 80 -h 40% \
+    "'$SCRIPT_DIR/tmux_worktree' --inner '$repo_root'"
+  exit 0
 fi
 
-# Open the popup:
-#   -b rounded -S fg=#ff966c  Orange rounded border (matches tmux_float style)
-#   -T ' Git Worktree '       Title rendered in the border
-#   -d "$repo_root"           Set CWD to repo root for git commands (omitted when empty)
-#   -E                        Close popup when the inner command exits
-#   -w 100 -h 40%             Fixed 100 columns wide, 40% of terminal height
-#
-# When repo_root is empty (not in a git repo), tmux_worktree_add receives an
-# empty first argument and goes straight to the repo picker.
-tmux display-popup \
-  -b rounded -S fg=#ff966c -T '#[align=centre] Git Worktree ' \
-  ${repo_root:+-d "$repo_root"} \
-  -E -w 80 -h 40% \
-  "'$SCRIPT_DIR/tmux_worktree_add' '$repo_root'"
+# =============================================================================
+# Picker loop (inner mode — runs inside the popup)
+# =============================================================================
+shift  # consume --inner
+REPO_ROOT="$1"
+DEV_DIR="$HOME/dev"
+
+# Colors matching the popup's orange border theme
+GREEN='\033[1;32m'
+RESET='\033[0m'
+
+# Read a single value from .ivu.yml worktree config.
+# Usage: cfg <key> <default>
+cfg() {
+  local key="$1" default="$2"
+  if [ -f "$CONFIG" ]; then
+    yq -r ".worktree.$key // \"$default\"" "$CONFIG"
+  else
+    echo "$default"
+  fi
+}
+
+# Determine initial mode: branch picker if in a repo, repo picker if not.
+if [ -z "$REPO_ROOT" ]; then
+  MODE="repo"
+else
+  MODE="branch"
+fi
+
+while true; do
+  # -----------------------------------------------------------------
+  # Mode: repo — pick a repository from ~/dev
+  # -----------------------------------------------------------------
+  if [ "$MODE" = "repo" ]; then
+    REPO_ROOT=$("$SCRIPT_DIR/tmux_worktree_pick_repo" "$DEV_DIR")
+    [ -z "$REPO_ROOT" ] && exit 0
+    MODE="branch"
+    continue
+  fi
+
+  # Derive repo-dependent state at the top of each iteration so that
+  # switching repos via ctrl-p correctly updates fzf context.
+  cd "$REPO_ROOT"
+  REPO_NAME=$(basename "$REPO_ROOT")
+  REPO_NAME="${REPO_NAME//./-}"
+  REPO_NAME="${REPO_NAME//:/-}"
+  CONFIG="$REPO_ROOT/.ivu.yml"
+  WT_DIR=$(cfg dir .worktrees)
+
+  # Auto-detect the default branch from the remote HEAD.
+  # The .ivu.yml base_branch setting overrides this if explicitly set.
+  DEFAULT_BASE=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's|^refs/remotes/origin/||')
+  BASE_BRANCH=$(cfg base_branch "${DEFAULT_BASE:-main}")
+
+  # Color the repo name orange (matching the popup border theme) to
+  # visually distinguish it from the mode label (branch/worktree).
+  REPO_LABEL=$'\033[38;2;255;150;108m'"[$REPO_NAME]"$'\033[0m'
+
+  # -----------------------------------------------------------------
+  # Mode: branch — pick or type a branch name to create a worktree
+  # -----------------------------------------------------------------
+  if [ "$MODE" = "branch" ]; then
+    FZF_OUTPUT=$(
+      fzf < /dev/null \
+        --height 100% \
+        --layout reverse --info right --keep-right --no-sort \
+        --no-border \
+        --prompt "  $REPO_LABEL New branch: " \
+        --pointer ' ➜' --color "gutter:#222436,border:#ff966c,label:#ff966c" \
+        --print-query \
+        --expect=ctrl-p,ctrl-w \
+        --bind "ctrl-b:change-prompt(  $REPO_LABEL Existing branch: )+reload:'$SCRIPT_DIR/tmux_worktree_list_branches' --fetch '$REPO_ROOT'" \
+        --header 'C-p Repos | C-b Branches | C-w Worktrees'
+    ) || true
+
+    QUERY=$(sed -n '1p' <<< "$FZF_OUTPUT")
+    KEY=$(sed -n '2p' <<< "$FZF_OUTPUT")
+    SELECTED=$(sed -n '3p' <<< "$FZF_OUTPUT")
+
+    case "$KEY" in
+      ctrl-p) MODE="repo"; continue ;;
+      ctrl-w) MODE="worktree"; continue ;;
+    esac
+
+    BRANCH="${SELECTED:-$QUERY}"
+    [ -z "$BRANCH" ] && exit 0
+
+    # Hand off to tmux_worktree_add for creation + session + switch.
+    # exec replaces this process so the popup stays open for the spinner
+    # and closes when tmux_worktree_add exits.
+    exec "$SCRIPT_DIR/tmux_worktree_add" "$REPO_ROOT" "$BRANCH"
+  fi
+
+  # -----------------------------------------------------------------
+  # Mode: worktree — select worktrees to remove
+  # -----------------------------------------------------------------
+  if [ "$MODE" = "worktree" ]; then
+    FZF_OUTPUT=$(
+      "$SCRIPT_DIR/tmux_worktree_list_worktrees" "$BASE_BRANCH" "$WT_DIR" "$REPO_ROOT" \
+      | fzf \
+        --height 100% \
+        --layout reverse --info right --keep-right --no-sort \
+        --no-border \
+        --prompt "🌳 $REPO_LABEL worktree: " \
+        --pointer ' ➜' --color "gutter:#222436,border:#ff966c,label:#ff966c" \
+        --multi --marker ' ' \
+        --print-query \
+        --expect=ctrl-p,ctrl-b \
+        --bind 'tab:toggle+down,btab:toggle+up' \
+        --bind "ctrl-x:execute-silent(for d in {+-1}; do '$SCRIPT_DIR/tmux_worktree_rm' '$REPO_ROOT' \"\$d\"; done)+reload:'$SCRIPT_DIR/tmux_worktree_list_worktrees' '$BASE_BRANCH' '$WT_DIR' '$REPO_ROOT'" \
+        --header 'C-p Repos | C-b Branches | Enter Remove | C-x Remove+stay'
+    ) || true
+
+    KEY=$(sed -n '2p' <<< "$FZF_OUTPUT")
+
+    case "$KEY" in
+      ctrl-p) MODE="repo"; continue ;;
+      ctrl-b) MODE="branch"; continue ;;
+    esac
+
+    # Enter — remove all selected worktrees and close the popup.
+    echo ""
+    tail -n +3 <<< "$FZF_OUTPUT" | while IFS= read -r item; do
+      item="${item#⎇ }"
+      item="${item#  }"
+      [ -z "$item" ] && continue
+      "$SCRIPT_DIR/tmux_worktree_rm" "$REPO_ROOT" "$item"
+      printf "${GREEN}✓${RESET} Removed %s\n" "$item"
+    done
+    sleep 0.5
+    exit 0
+  fi
+done

@@ -2,30 +2,23 @@
 # =============================================================================
 # tmux_worktree_add — Create a git worktree and tmux session
 # =============================================================================
-# Runs inside the display-popup opened by tmux_worktree. The popup stays open
-# for the full lifecycle: fzf branch selection → progress spinner → session switch.
+# Called by tmux_worktree with repo_root and branch already resolved.
+# Handles the full creation lifecycle: worktree → file setup → session → switch.
 #
 # Usage:
-#   tmux_worktree_add <repo_root>            # interactive fzf picker
-#   tmux_worktree_add <repo_root> <branch>   # skip fzf, use branch directly
+#   tmux_worktree_add <repo_root> <branch>
 #
 # Reads .ivu.yml from the repo root for per-repo configuration (worktree dir,
 # files to copy/symlink, startup command). See ~/.config/ivu/template.yml for
 # the full schema and documentation.
 #
-# Dependencies: fzf, yq (mikefarah), git, tmux
-
-# Resolve sibling scripts directory (not on PATH — see tmux_worktree header).
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# Dependencies: yq (mikefarah), git, tmux
 
 REPO_ROOT="$1"
 BRANCH="$2"
-DEV_DIR="$HOME/dev"
 
-# When a branch is passed directly, repo_root is required.
-# When interactive (no branch), empty repo_root is OK — triggers repo picker.
-if [ -n "$BRANCH" ] && [ -z "$REPO_ROOT" ]; then
-  echo "Usage: tmux_worktree_add <repo_root> [branch]" >&2
+if [ -z "$REPO_ROOT" ] || [ -z "$BRANCH" ]; then
+  echo "Usage: tmux_worktree_add <repo_root> <branch>" >&2
   exit 1
 fi
 
@@ -108,97 +101,14 @@ cfg_array() {
 }
 
 # =============================================================================
-# Branch selection via fzf
+# Derive repo-dependent state
 # =============================================================================
-# Only shown when no branch argument was passed (interactive mode).
-# Default mode starts with an empty list — user types a branch name directly.
-# Press ctrl-b to load the full branch list for selection.
-# The popup border and title are handled by the outer display-popup,
-# so fzf uses --no-border to avoid a nested border.
-if [ -z "$BRANCH" ]; then
-  # If no repo provided (not in a git repo), go straight to repo picker.
-  if [ -z "$REPO_ROOT" ]; then
-    REPO_ROOT=$("$SCRIPT_DIR/tmux_worktree_pick_repo" "$DEV_DIR")
-    [ -z "$REPO_ROOT" ] && exit 0
-  fi
-
-  # Main loop: branch picker with repo switching via ctrl-p.
-  # Re-derives all repo-dependent state at the top of each iteration so that
-  # switching repos via ctrl-p correctly updates fzf bindings and context.
-  while true; do
-    cd "$REPO_ROOT"
-    REPO_NAME=$(basename "$REPO_ROOT")
-    REPO_NAME="${REPO_NAME//./-}"
-    REPO_NAME="${REPO_NAME//:/-}"
-    CONFIG="$REPO_ROOT/.ivu.yml"
-    WT_DIR_FOR_FZF=$(cfg dir .worktrees)
-
-    # Pre-compute base branch so ctrl-w can annotate worktrees with merge status.
-    DEFAULT_BASE_FOR_FZF=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's|^refs/remotes/origin/||')
-    BASE_BRANCH_FOR_FZF=$(cfg base_branch "${DEFAULT_BASE_FOR_FZF:-main}")
-
-    # Color the repo name orange (matching the popup border theme) to
-    # visually distinguish it from the mode label (branch/worktree).
-    REPO_LABEL=$'\033[38;2;255;150;108m'"[$REPO_NAME]"$'\033[0m'
-
-    FZF_OUTPUT=$(
-      fzf < /dev/null \
-        --height 100% \
-        --layout reverse --info right --keep-right --no-sort \
-        --no-border \
-        --prompt "  $REPO_LABEL New branch: " \
-        --pointer ' ➜' --color "gutter:#222436,border:#ff966c,label:#ff966c" \
-        --multi --marker ' ' \
-        --print-query \
-        --expect=ctrl-p \
-        --bind 'tab:toggle+down,btab:toggle+up' \
-        --bind "ctrl-w:change-prompt(🌳 $REPO_LABEL worktree: )+reload:'$SCRIPT_DIR/tmux_worktree_list_worktrees' '$BASE_BRANCH_FOR_FZF' '$WT_DIR_FOR_FZF' '$REPO_ROOT'" \
-        --bind "ctrl-b:change-prompt(  $REPO_LABEL Existing branch: )+reload:'$SCRIPT_DIR/tmux_worktree_list_branches' --fetch '$REPO_ROOT'" \
-        --bind "ctrl-x:execute-silent(for d in {+-1}; do '$SCRIPT_DIR/tmux_worktree_rm' '$REPO_ROOT' \"\$d\"; done)+reload:'$SCRIPT_DIR/tmux_worktree_list_worktrees' '$BASE_BRANCH_FOR_FZF' '$WT_DIR_FOR_FZF' '$REPO_ROOT'" \
-        --header 'C-p Repos | C-b Branches | C-w Worktrees | C-x Remove'
-    ) || true
-    # ^^ || true: fzf returns exit code 1 when the user presses Enter with no
-    # match selected (typed a custom branch name). We still want that input.
-
-    # --print-query + --expect makes fzf output three lines:
-    #   Line 1: the query text (what the user typed)
-    #   Line 2: the expected key pressed ("ctrl-p" or empty for Enter)
-    #   Line 3: the selected item (if the user picked from the list)
-    QUERY=$(echo "$FZF_OUTPUT" | sed -n '1p')
-    KEY=$(echo "$FZF_OUTPUT" | sed -n '2p')
-    SELECTED=$(echo "$FZF_OUTPUT" | sed -n '3p')
-
-    # Strip merge indicator prefix ("⎇ " or "  ") added by worktree view.
-    SELECTED="${SELECTED#⎇ }"
-    SELECTED="${SELECTED#  }"
-
-    if [ "$KEY" = "ctrl-p" ]; then
-      # Switch repos: show picker, update REPO_ROOT if a repo was selected.
-      # If the user presses Escape in the picker, REPO_ROOT stays the same
-      # and the loop redisplays the branch picker for the current repo.
-      NEW_REPO=$("$SCRIPT_DIR/tmux_worktree_pick_repo" "$DEV_DIR")
-      if [ -n "$NEW_REPO" ]; then
-        REPO_ROOT="$NEW_REPO"
-      fi
-      continue
-    fi
-
-    BRANCH="${SELECTED:-$QUERY}"
-    break
-  done
-fi
-
-# Derive repo-dependent state for the rest of the script. Redundant after the
-# loop (already set inside it) but needed for the direct-branch path (when $2
-# was provided, skipping fzf entirely).
 cd "$REPO_ROOT"
 REPO_NAME=$(basename "$REPO_ROOT")
+# tmux session names cannot contain . or : characters
 REPO_NAME="${REPO_NAME//./-}"
 REPO_NAME="${REPO_NAME//:/-}"
 CONFIG="$REPO_ROOT/.ivu.yml"
-
-# Empty branch means the user cancelled (Escape). Exit cleanly — the popup closes.
-[ -z "$BRANCH" ] && exit 0
 
 # Visual separator between fzf and the progress output below
 echo ""

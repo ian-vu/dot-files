@@ -116,8 +116,8 @@ SELECTED=$(
     --prompt '  repo: ' \
     --pointer ' ➜' --color "gutter:#222436,border:#ff966c,label:#ff966c" \
     --bind 'tab:down,btab:up' \
-    --bind "ctrl-m:execute-silent('$SCRIPT_PATH' --toggle {-1} '$DEV_DIR')+reload('$SCRIPT_PATH' --list '$DEV_DIR')" \
-    --header 'C-m Pin'
+    --bind "ctrl-g:execute-silent('$SCRIPT_PATH' --toggle {-1} '$DEV_DIR')+reload('$SCRIPT_PATH' --list '$DEV_DIR')" \
+    --header 'C-g Pin'
 ) || true
 
 if [ -n "$SELECTED" ]; then
