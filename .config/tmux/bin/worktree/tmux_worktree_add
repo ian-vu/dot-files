@@ -111,6 +111,8 @@ cfg_array() {
 # Branch selection via fzf
 # =============================================================================
 # Only shown when no branch argument was passed (interactive mode).
+# Default mode starts with an empty list — user types a branch name directly.
+# Press ctrl-b to load the full branch list for selection.
 # The popup border and title are handled by the outer display-popup,
 # so fzf uses --no-border to avoid a nested border.
 if [ -z "$BRANCH" ]; then
@@ -136,17 +138,16 @@ if [ -z "$BRANCH" ]; then
     REPO_LABEL=$'\033[38;2;255;150;108m'"[$REPO_NAME]"$'\033[0m'
 
     FZF_OUTPUT=$(
-      "$SCRIPT_DIR/tmux_worktree_list_branches" "$REPO_ROOT" | fzf \
+      fzf < /dev/null \
         --layout reverse --info right --keep-right --no-sort \
         --no-border \
-        --prompt "  $REPO_LABEL branch: " \
+        --prompt "  $REPO_LABEL New branch: " \
         --pointer ' ➜' --color "gutter:#222436,border:#ff966c,label:#ff966c" \
         --print-query \
         --expect=ctrl-p \
         --bind 'tab:down,btab:up' \
-        --bind "start:reload:'$SCRIPT_DIR/tmux_worktree_list_branches' --fetch '$REPO_ROOT'" \
         --bind "ctrl-w:change-prompt(🌳 $REPO_LABEL worktree: )+reload(ls '$REPO_ROOT/$WT_DIR_FOR_FZF' 2>/dev/null || true)" \
-        --bind "ctrl-b:change-prompt(  $REPO_LABEL branch: )+reload:'$SCRIPT_DIR/tmux_worktree_list_branches' '$REPO_ROOT'" \
+        --bind "ctrl-b:change-prompt(  $REPO_LABEL Existing branch: )+reload:'$SCRIPT_DIR/tmux_worktree_list_branches' --fetch '$REPO_ROOT'" \
         --bind "ctrl-x:execute-silent('$SCRIPT_DIR/tmux_worktree_rm' '$REPO_ROOT' {})+reload(ls '$REPO_ROOT/$WT_DIR_FOR_FZF' 2>/dev/null || true)" \
         --header 'C-p Repos | C-b Branches | C-w Worktrees | C-x Remove'
     ) || true
