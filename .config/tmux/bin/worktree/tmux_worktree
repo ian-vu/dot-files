@@ -38,7 +38,7 @@ fi
 # When repo_root is empty (not in a git repo), tmux_worktree_add receives an
 # empty first argument and goes straight to the repo picker.
 tmux display-popup \
-  -b rounded -S fg=#ff966c -T ' Git Worktree ' \
+  -b rounded -S fg=#ff966c -T '#[align=centre] Git Worktree ' \
   ${repo_root:+-d "$repo_root"} \
   -E -w 100 -h 40% \
   "'$SCRIPT_DIR/tmux_worktree_add' '$repo_root'"
