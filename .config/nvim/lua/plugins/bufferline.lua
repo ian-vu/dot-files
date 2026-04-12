@@ -70,7 +70,8 @@ return {
 
 			bufferline.setup({
 				options = {
-					separator_style = "slope",
+					-- Disable separators between tabs
+separator_style = { "", "" },
 					style_preset = bufferline.style_preset.no_italic,
 					numbers = function(opts)
 						local idx = buf_harpoon_index(opts.id)
