@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# =============================================================================
+# tmux_worktree_list_worktrees — List worktree directories with merge status
+# =============================================================================
+# Lists worktree directories for use by fzf reload bindings in tmux_worktree_add.
+# Each directory is annotated with "⎇" if its branch has been merged into the
+# base branch, helping identify worktrees that are safe to clean up.
+#
+# Usage:
+#   tmux_worktree_list_worktrees <base_branch> <wt_dir> [repo_root]
+#
+# Arguments:
+#   base_branch  Branch to check merge status against (e.g., main)
+#   wt_dir       Worktree directory name relative to repo root (e.g., .worktrees)
+#   repo_root    Optional repo root to cd into first
+
+BASE="$1"
+WT_DIR="$2"
+shift 2
+
+if [ -n "$1" ]; then
+  cd "$1" || exit 1
+fi
+
+# Check if a branch's changes are already in the base branch.
+# Uses three-dot diff which compares the branch against the merge base.
+# This catches both regular merges AND squash merges (where commit ancestry
+# is lost because the commits are rewritten into a single new commit on main).
+# A fresh branch with no commits will have an empty diff too, so we also
+# check that the branch tip differs from the base to exclude those.
+is_merged() {
+  local branch="$1"
+  local branch_sha base_sha
+  branch_sha=$(git rev-parse "$branch" 2>/dev/null)
+  base_sha=$(git rev-parse "origin/$BASE" 2>/dev/null)
+  # Fresh branch off base — not merged, just hasn't diverged yet.
+  [ "$branch_sha" = "$base_sha" ] && return 1
+  # If the diff is empty, all changes from this branch are already in base.
+  git diff --quiet "origin/$BASE...$branch" >/dev/null 2>&1
+}
+
+ls "$WT_DIR" 2>/dev/null | while IFS= read -r dir; do
+  # Resolve the actual branch for this worktree directory.
+  branch=$(git -C "$WT_DIR/$dir" rev-parse --abbrev-ref HEAD 2>/dev/null)
+  if [ -n "$branch" ] && is_merged "$branch"; then
+    echo " $dir"
+  else
+    echo "  $dir"
+  fi
+done

@@ -133,6 +133,10 @@ if [ -z "$BRANCH" ]; then
     CONFIG="$REPO_ROOT/.ivu.yml"
     WT_DIR_FOR_FZF=$(cfg dir .worktrees)
 
+    # Pre-compute base branch so ctrl-w can annotate worktrees with merge status.
+    DEFAULT_BASE_FOR_FZF=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's|^refs/remotes/origin/||')
+    BASE_BRANCH_FOR_FZF=$(cfg base_branch "${DEFAULT_BASE_FOR_FZF:-main}")
+
     # Color the repo name orange (matching the popup border theme) to
     # visually distinguish it from the mode label (branch/worktree).
     REPO_LABEL=$'\033[38;2;255;150;108m'"[$REPO_NAME]"$'\033[0m'
@@ -144,12 +148,13 @@ if [ -z "$BRANCH" ]; then
         --no-border \
         --prompt "  $REPO_LABEL New branch: " \
         --pointer ' ➜' --color "gutter:#222436,border:#ff966c,label:#ff966c" \
+        --multi --marker ' ' \
         --print-query \
         --expect=ctrl-p \
-        --bind 'tab:down,btab:up' \
-        --bind "ctrl-w:change-prompt(🌳 $REPO_LABEL worktree: )+reload(ls '$REPO_ROOT/$WT_DIR_FOR_FZF' 2>/dev/null || true)" \
+        --bind 'tab:toggle+down,btab:toggle+up' \
+        --bind "ctrl-w:change-prompt(🌳 $REPO_LABEL worktree: )+reload:'$SCRIPT_DIR/tmux_worktree_list_worktrees' '$BASE_BRANCH_FOR_FZF' '$WT_DIR_FOR_FZF' '$REPO_ROOT'" \
         --bind "ctrl-b:change-prompt(  $REPO_LABEL Existing branch: )+reload:'$SCRIPT_DIR/tmux_worktree_list_branches' --fetch '$REPO_ROOT'" \
-        --bind "ctrl-x:execute-silent('$SCRIPT_DIR/tmux_worktree_rm' '$REPO_ROOT' {})+reload(ls '$REPO_ROOT/$WT_DIR_FOR_FZF' 2>/dev/null || true)" \
+        --bind "ctrl-x:execute-silent(for d in {+-1}; do '$SCRIPT_DIR/tmux_worktree_rm' '$REPO_ROOT' \"\$d\"; done)+reload:'$SCRIPT_DIR/tmux_worktree_list_worktrees' '$BASE_BRANCH_FOR_FZF' '$WT_DIR_FOR_FZF' '$REPO_ROOT'" \
         --header 'C-p Repos | C-b Branches | C-w Worktrees | C-x Remove'
     ) || true
     # ^^ || true: fzf returns exit code 1 when the user presses Enter with no
@@ -162,6 +167,10 @@ if [ -z "$BRANCH" ]; then
     QUERY=$(echo "$FZF_OUTPUT" | sed -n '1p')
     KEY=$(echo "$FZF_OUTPUT" | sed -n '2p')
     SELECTED=$(echo "$FZF_OUTPUT" | sed -n '3p')
+
+    # Strip merge indicator prefix ("⎇ " or "  ") added by worktree view.
+    SELECTED="${SELECTED#⎇ }"
+    SELECTED="${SELECTED#  }"
 
     if [ "$KEY" = "ctrl-p" ]; then
       # Switch repos: show picker, update REPO_ROOT if a repo was selected.
