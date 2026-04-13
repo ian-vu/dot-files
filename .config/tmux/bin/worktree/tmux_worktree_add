@@ -179,12 +179,19 @@ if [ ! -d "$WORKTREE_PATH" ]; then
 
   create_worktree() {
     if git show-ref --verify --quiet "refs/heads/$BRANCH"; then
-      # Strategy 1: local branch exists — create worktree pointing at it
+      # Strategy 1: local branch exists — create worktree pointing at it.
+      # If the branch also exists on origin, fetch latest and fast-forward
+      # so the worktree starts with up-to-date commits and has tracking set.
+      if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
+        git fetch origin "$BRANCH" --quiet 2>/dev/null || true
+        git branch --set-upstream-to="origin/$BRANCH" "$BRANCH" 2>/dev/null || true
+        git branch -f "$BRANCH" "origin/$BRANCH" 2>/dev/null || true
+      fi
       git worktree add "$WORKTREE_PATH" "$BRANCH" --quiet 2>/dev/null
-    elif git show-ref --verify --quiet "refs/remotes/origin/$BRANCH"; then
+    elif git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
       # Strategy 2: remote branch exists — fetch latest and track it.
-      # Fetch may fail if the branch was deleted from origin but the local
-      # remote-tracking ref is stale. That's OK — the cached ref still works.
+      # Uses ls-remote to check the actual remote, not just local refs,
+      # so this works even if the branch was never fetched before.
       git fetch origin "$BRANCH" --quiet 2>/dev/null || true
       git worktree add "$WORKTREE_PATH" -b "$BRANCH" --track "origin/$BRANCH" --quiet 2>/dev/null
     else
