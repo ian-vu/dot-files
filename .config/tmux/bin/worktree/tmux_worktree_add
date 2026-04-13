@@ -42,8 +42,10 @@ spin() {
   local chars='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
   local i=0
 
-  # Run the command in background so we can animate the spinner
-  "$@" &
+  # Run the command in background so we can animate the spinner.
+  # Suppress all output — any stdout/stderr from the command would
+  # inject newlines and break the \r carriage-return overwrite.
+  "$@" >/dev/null 2>&1 &
   local pid=$!
 
   # Animate spinner until the background process exits
