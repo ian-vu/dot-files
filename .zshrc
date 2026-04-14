@@ -190,6 +190,9 @@ alias arst='asdf'
 alias claude='[ -n "$TMUX" ] && [ "$(tmux show-window-option -v automatic-rename 2>/dev/null)" != "off" ] && tmux rename-window "claude"; ~/.local/bin/claude --allow-dangerously-skip-permissions'
 alias cc='claude'
 alias gitstats="onefetch"
+alias fabric='fabric-ai'
+alias fb='fabric'
+
 
 # Locally gitignore a file (adds to .git/info/exclude)
 gitignore-local() {
@@ -465,3 +468,13 @@ if [[ -f ~/.zshrc_local ]]; then
   source ~/.zshrc_local
 fi
 
+
+# bun completions
+[ -s "/Users/ivu/.bun/_bun" ] && source "/Users/ivu/.bun/_bun"
+
+# bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
+
+# PAI alias
+alias pai='bun /Users/ivu/.claude/PAI/Tools/pai.ts'
