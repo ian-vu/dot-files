@@ -59,6 +59,13 @@ DEV_DIR="$HOME/dev"
 GREEN='\033[1;32m'
 RESET='\033[0m'
 
+# Build an fzf header with a horizontal rule sized to the text.
+# Usage: header_with_rule "text"
+header_with_rule() {
+  local text="$1"
+  printf '%s\n%s' "$text" "$(printf '─%.0s' $(seq 1 ${#text}))"
+}
+
 # Read a single value from .ivu.yml worktree config.
 # Usage: cfg <key> <default>
 cfg() {
@@ -120,7 +127,7 @@ while true; do
         --print-query \
         --expect=ctrl-p,ctrl-w \
         --bind "ctrl-b:change-prompt(  $REPO_LABEL Existing branch: )+reload:'$SCRIPT_DIR/tmux_worktree_list_branches' --fetch '$REPO_ROOT'" \
-        --header 'C-p Repos | C-b Branches | C-w Worktrees'
+        --header "$(header_with_rule '⌨ <c-p> Repos | <c-b> Branches | <c-w> Worktrees')"
     ) || true
 
     QUERY=$(sed -n '1p' <<< "$FZF_OUTPUT")
@@ -158,7 +165,7 @@ while true; do
         --expect=ctrl-p,ctrl-b \
         --bind 'tab:toggle+down,btab:toggle+up' \
         --bind "ctrl-x:execute-silent(for d in {+-1}; do '$SCRIPT_DIR/tmux_worktree_rm' '$REPO_ROOT' \"\$d\"; done)+reload:'$SCRIPT_DIR/tmux_worktree_list_worktrees' '$BASE_BRANCH' '$WT_DIR' '$REPO_ROOT'" \
-        --header 'C-p Repos | C-b Branches | Enter Remove | C-x Remove+stay'
+        --header "$(header_with_rule '⌨ <c-p> Repos | <c-b> Branches | <enter> Remove | <c-x> Remove+stay')"
     ) || true
 
     KEY=$(sed -n '2p' <<< "$FZF_OUTPUT")
