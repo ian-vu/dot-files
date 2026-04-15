@@ -20,7 +20,12 @@ return {
 				vim.schedule(function()
 					sync_pending = false
 					harpoon_lookup = {}
-					local items = harpoon:list().items
+					-- pcall guards against corrupted harpoon data files (e.g. after OS upgrades)
+					local ok, list = pcall(harpoon.list, harpoon)
+					if not ok then
+						return
+					end
+					local items = list.items
 					for i, item in ipairs(items) do
 						harpoon_lookup[item.value] = i
 						-- Register buffer so bufferline can show it before it's visited
@@ -45,11 +50,13 @@ return {
 
 			-- Harpoon's clear() doesn't emit any extension event, so wrap it
 			-- to trigger a sync and update the tabline.
-			local list = harpoon:list()
-			local orig_clear = list.clear
-			list.clear = function(self, ...)
-				orig_clear(self, ...)
-				sync()
+			local ok_list, list = pcall(harpoon.list, harpoon)
+			if ok_list then
+				local orig_clear = list.clear
+				list.clear = function(self, ...)
+					orig_clear(self, ...)
+					sync()
+				end
 			end
 
 			-- Re-sync on tab events that affect tabline visibility
@@ -64,7 +71,11 @@ return {
 
 			-- Enforce showtabline based on harpoon state (non-deferred, for use in autocmds)
 			local function update_showtabline()
-				local items = harpoon:list().items
+				local ok_hl, hl = pcall(harpoon.list, harpoon)
+				if not ok_hl then
+					return
+				end
+				local items = hl.items
 				vim.o.showtabline = (#items > 0 or vim.fn.tabpagenr("$") > 1) and 2 or 0
 			end
 
