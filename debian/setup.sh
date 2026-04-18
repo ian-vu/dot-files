@@ -49,7 +49,6 @@ mise install
 #########################################################################################
 go_packages=(
   "github.com/jesseduffield/lazygit@latest"
-  "github.com/joshmedeski/sesh@latest"
 )
 
 # Install go packagese

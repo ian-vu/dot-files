@@ -1,13 +1,19 @@
 #!/usr/bin/env sh
-
-# This script will use `sesh` to open or attach to tmux sessions.
+# ============================================================================
+# t — shell entry point for the session system
+# ============================================================================
+# Thin wrapper that exposes the picker and connect logic as a shell command,
+# so reaching a session via `prefix + t` and via `t <name>` go through the
+# exact same code paths.
 #
-# If no arguments are provided, it will list all tmux sessions and prompt
-#
-# If arguments are provided, it will attempt to attach to the session using zoxide
+# Usage:
+#   t              -> open the fzf session picker
+#   t <selection>  -> connect by name, saved entry, or filesystem path
+#                     (connect.sh decides which)
+# ============================================================================
 
 if [ -z "$1" ]; then
-	sesh connect $(sesh list | fzf)
+  exec "$HOME/.config/tmux/scripts/sessions/picker.sh"
 else
-	sesh connect $1
+  exec "$HOME/.config/tmux/scripts/sessions/connect.sh" "$1"
 fi
