@@ -19,6 +19,26 @@ vim.api.nvim_create_autocmd("User", {
 		Snacks.toggle.inlay_hints():map("<leader>uh")
 		-- Snacks.toggle.indent():map '<leader>ug' -- indent toggle not available
 		Snacks.toggle.dim():map("<leader>uD")
+		-- Supermaven runs as a background process; toggle stops/starts it via the plugin API
+		-- so suggestions can be disabled without unloading the plugin.
+		Snacks.toggle({
+			name = "Supermaven",
+			get = function()
+				local ok, api = pcall(require, "supermaven-nvim.api")
+				return ok and api.is_running()
+			end,
+			set = function(state)
+				local ok, api = pcall(require, "supermaven-nvim.api")
+				if not ok then
+					return
+				end
+				if state then
+					api.start()
+				else
+					api.stop()
+				end
+			end,
+		}):map("<leader>ua")
 	end,
 })
 
