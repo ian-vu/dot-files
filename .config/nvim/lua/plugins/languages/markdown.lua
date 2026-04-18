@@ -40,15 +40,35 @@ return {
 	},
 	{
 		"MeanderingProgrammer/render-markdown.nvim", -- https://github.com/MeanderingProgrammer/render-markdown.nvim
-		opts = {
-			heading = {
-				sign = false,
-				icons = {},
-			},
-			bullet = {
-				right_pad = 1,
-			},
-		},
+		opts = function()
+			local obsidian_util = require("utils.obsidian")
+			return {
+				heading = {
+					sign = false,
+					icons = {},
+				},
+				on = {
+					-- Fix and configure conflicts with obsidian.nvim's UI layer:
+					-- inside vault buffers both plugins render the same elements, so
+					-- overlays stack and corrupt the display. Apply per-buffer tweaks
+					-- here to keep the two renderers compatible.
+					-- See: https://github.com/epwalsh/obsidian.nvim/issues/849
+					attach = function(ctx)
+						if obsidian_util.in_vault(ctx.buf) then
+							local ok, state = pcall(require, "render-markdown.state")
+							if ok and state.cache[ctx.buf] then
+								-- Let obsidian own checkboxes; dual overlays eat the
+								-- first ~3 chars of content after `] `.
+								state.cache[ctx.buf].checkbox.enabled = false
+								-- Add a space after the bullet icon so obsidian's
+								-- bullet doesn't collide with the following text.
+								state.cache[ctx.buf].bullet.right_pad = 1
+							end
+						end
+					end,
+				},
+			}
+		end,
 		ft = { "markdown", "norg", "rmd", "org" },
 		config = function(_, opts)
 			require("render-markdown").setup(opts)

@@ -1,7 +1,6 @@
--- Resolve symlinks so event patterns match the real path Neovim uses
--- (~/notes is a symlink to iCloud)
-local notes_path = vim.uv.fs_realpath(vim.fn.expand("~") .. "/notes") or vim.fn.expand("~") .. "/notes"
-local heidi_path = vim.fn.expand("~") .. "/Documents/heidi_obsidian"
+local obsidian_util = require("utils.obsidian")
+local notes_path = obsidian_util.notes_path
+local heidi_path = obsidian_util.heidi_path
 
 return {
 	{
