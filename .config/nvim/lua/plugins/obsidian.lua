@@ -18,12 +18,61 @@ return {
 			"BufNewFile " .. heidi_path .. "/*.md",
 			"BufNewFile " .. heidi_path .. "/**/*.md",
 		},
+		-- Set conceallevel for vault notes only. The obsidian.nvim `enter_note`
+		-- callback is unreliable — markdown ftplugin loads after it and resets
+		-- the option — so we own this via a BufEnter autocmd that re-applies
+		-- every time the buffer is focused.
+		init = function()
+			local group = vim.api.nvim_create_augroup("ObsidianVaultConceal", { clear = true })
+			vim.api.nvim_create_autocmd("BufEnter", {
+				group = group,
+				pattern = {
+					notes_path .. "/*.md",
+					notes_path .. "/**/*.md",
+					heidi_path .. "/*.md",
+					heidi_path .. "/**/*.md",
+				},
+				callback = function()
+					vim.opt_local.conceallevel = 2
+				end,
+			})
+		end,
 		dependencies = {
 			"nvim-lua/plenary.nvim",
+		},
+		-- Keymaps also act as lazy-load triggers so commands work outside vault buffers
+		keys = {
+			{ "<leader>on", "<cmd>Obsidian new<cr>", desc = "Obsidian: new note" },
+			{ "<leader>oo", "<cmd>Obsidian open<cr>", desc = "Obsidian: open in app" },
+			{ "<leader>os", "<cmd>Obsidian search<cr>", desc = "Obsidian: search notes" },
+			{ "<leader>oq", "<cmd>Obsidian quick_switch<cr>", desc = "Obsidian: quick switch" },
+			{ "<leader>ob", "<cmd>Obsidian backlinks<cr>", desc = "Obsidian: backlinks" },
+			{ "<leader>ok", "<cmd>Obsidian links<cr>", desc = "Obsidian: links in note" },
+			{ "<leader>of", "<cmd>Obsidian follow_link<cr>", desc = "Obsidian: follow link" },
+			{ "<leader>og", "<cmd>Obsidian tags<cr>", desc = "Obsidian: tags" },
+			{ "<leader>ot", "<cmd>Obsidian today<cr>", desc = "Obsidian: today's daily note" },
+			{ "<leader>oy", "<cmd>Obsidian yesterday<cr>", desc = "Obsidian: yesterday's daily note" },
+			{ "<leader>oT", "<cmd>Obsidian tomorrow<cr>", desc = "Obsidian: tomorrow's daily note" },
+			{ "<leader>od", "<cmd>Obsidian dailies<cr>", desc = "Obsidian: list dailies" },
+			{ "<leader>oi", "<cmd>Obsidian template<cr>", desc = "Obsidian: insert template" },
+			{ "<leader>ow", "<cmd>Obsidian workspace<cr>", desc = "Obsidian: switch workspace" },
+			{ "<leader>ox", "<cmd>Obsidian toggle_checkbox<cr>", desc = "Obsidian: toggle checkbox" },
+			{ "<leader>or", "<cmd>Obsidian rename<cr>", desc = "Obsidian: rename note" },
+			{ "<leader>op", "<cmd>Obsidian paste_img<cr>", desc = "Obsidian: paste image" },
+			{ "<leader>ol", "<cmd>Obsidian link<cr>", mode = "v", desc = "Obsidian: link selection" },
+			{
+				"<leader>oL",
+				"<cmd>Obsidian link_new<cr>",
+				mode = "v",
+				desc = "Obsidian: new linked note from selection",
+			},
 		},
 		---@module 'obsidian'
 		---@type obsidian.config
 		opts = {
+			-- Use new command format (e.g. :Obsidian backlinks instead of :ObsidianBacklinks)
+			legacy_commands = false,
+
 			workspaces = {
 				{
 					name = "notes",
@@ -49,7 +98,7 @@ return {
 
 			-- Attachments match Obsidian app setting
 			attachments = {
-				img_folder = "04_Archive/attachments",
+				folder = "04_Archive/attachments",
 			},
 
 			-- Use note title as filename, falling back to zettel-style ID
@@ -64,10 +113,14 @@ return {
 				name = "snacks.pick",
 			},
 
-			-- Advanced URI plugin is installed in the notes vault
-			use_advanced_uri = true,
+			open = {
+				-- Advanced URI plugin is installed in the notes vault
+				use_advanced_uri = true,
+			},
 
-			preferred_link_style = "wiki",
+			link = {
+				style = "wiki",
+			},
 
 			-- blink.cmp is auto-detected; no explicit config needed
 		},
