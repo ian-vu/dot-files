@@ -197,9 +197,9 @@ return {
 					close_review_tab = { lhs = "<C-q>", desc = "close review tab" },
 					select_next_entry = { lhs = "<tab>", desc = "move to next changed file" },
 					select_prev_entry = { lhs = "<s-tab>", desc = "move to previous changed file" },
-					add_review_comment = { lhs = "<leader>gpc", desc = "add a new review comment", mode = { "n", "x" } },
+					add_review_comment = { lhs = "<leader>pc", desc = "add a new review comment", mode = { "n", "x" } },
 					add_review_suggestion = {
-						lhs = "<leader>gps",
+						lhs = "<leader>ps",
 						desc = "add a new review suggestion",
 						mode = { "n", "x" },
 					},
