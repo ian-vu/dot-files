@@ -179,6 +179,39 @@ alias gitc='git commit'
 alias git-branch-previous='i=0; while [ $? -eq 0 ]; do i=$((i+1)); echo -n "$i. "; git rev-parse --symbolic-full-name @{-$i} 2> /dev/null; done'
 alias gitb=git-branch-previous
 
+# Reset local branch to match remote (handles diverged branches)
+git-reset-to-remote() {
+  local branch=$(git branch --show-current)
+  if [ -z "$branch" ]; then
+    echo "Error: not on a branch (detached HEAD)"
+    return 1
+  fi
+
+  echo "Fetching origin/$branch..."
+  git fetch origin "$branch" || return 1
+
+  local local_sha=$(git rev-parse HEAD)
+  local remote_sha=$(git rev-parse "origin/$branch")
+
+  if [ "$local_sha" = "$remote_sha" ]; then
+    echo "Already up to date with origin/$branch"
+    return 0
+  fi
+
+  # Check if local is an ancestor of remote (fast-forward possible)
+  if git merge-base --is-ancestor HEAD "origin/$branch"; then
+    echo "Fast-forwarding to origin/$branch..."
+  # Check if branches have diverged (neither is ancestor of the other)
+  elif ! git merge-base --is-ancestor "origin/$branch" HEAD; then
+    echo "Branch has diverged from origin/$branch, resetting to origin..."
+  else
+    echo "Local is ahead of origin/$branch, resetting to origin..."
+  fi
+
+  git reset --hard "origin/$branch"
+}
+alias gpr='git-reset-to-remote'
+
 alias tf='terraform'
 
 alias zshrcv='vim ~/.zshrc'
