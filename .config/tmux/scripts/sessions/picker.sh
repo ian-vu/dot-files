@@ -92,6 +92,8 @@ selection="$(list_default | fzf-tmux \
   --pointer ' ➜' \
   --color "gutter:#222436,border:#ff966c,label:#ff966c" \
   --no-sort \
+  `# --query "'" seeds the fzf prompt with the exact-match prefix (https://junegunn.github.io/fzf/search-syntax/)` \
+  --query "'" \
   --border-label ' Tmux Sessions ' \
   --prompt '  ' \
   --bind 'tab:down,btab:up' \
