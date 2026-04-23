@@ -48,9 +48,12 @@ spin() {
   "$@" >/dev/null 2>&1 &
   local pid=$!
 
-  # Animate spinner until the background process exits
+  # Animate spinner until the background process exits.
+  # Uses CSI escape sequences (\033[G = cursor to col 1, \033[2K = erase line)
+  # instead of \r because tmux popups can leave the tty with OCRNL set after
+  # fzf exits, which translates \r to \n and breaks the overwrite animation.
   while kill -0 "$pid" 2>/dev/null; do
-    printf "\r${ORANGE}%s${RESET} %s" "${chars:$i:1}" "$msg"
+    printf "\033[2K\033[G${ORANGE}%s${RESET} %s" "${chars:$i:1}" "$msg"
     i=$(( (i + 1) % ${#chars} ))
     sleep 0.08
   done
@@ -59,9 +62,9 @@ spin() {
   wait "$pid"
   local rc=$?
   if [ $rc -eq 0 ]; then
-    printf "\r${GREEN}✓${RESET} %s\n" "$msg"
+    printf "\033[2K\033[G${GREEN}✓${RESET} %s\n" "$msg"
   else
-    printf "\r${RED}✗${RESET} %s\n" "$msg"
+    printf "\033[2K\033[G${RED}✗${RESET} %s\n" "$msg"
     return $rc
   fi
 }
