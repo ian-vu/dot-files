@@ -52,9 +52,13 @@
       "Bash(shellcheck:*)"
     ],
     "deny": [],
-    "ask": ["Bash(git commit:*)", "Bash(git push:*)"]
+    "ask": [
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
+    ],
+    "defaultMode": "auto"
   },
-  "model": "opus[1m]",
+  "model": "opus",
   "hooks": {
     "Stop": [
       {
@@ -129,8 +133,10 @@
     }
   },
   "alwaysThinkingEnabled": false,
+  "tui": "default",
+  "skipDangerousModePermissionPrompt": true,
+  "skipAutoPermissionPrompt": true,
   "feedbackSurveyState": {
     "lastShownTime": 1753940027251
-  },
-  "skipDangerousModePermissionPrompt": true
+  }
 }
