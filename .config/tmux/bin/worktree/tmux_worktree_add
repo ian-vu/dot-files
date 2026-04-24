@@ -37,16 +37,24 @@ RESET='\033[0m'
 # Accumulates stderr from all spin steps. On failure, the full log is shown
 # so earlier warnings (e.g., a fetch error) can explain a later failure.
 LOG_FILE=$(mktemp)
-trap 'rm -f "$LOG_FILE"' EXIT
+SPIN_RESULT_FILE=$(mktemp)
+trap 'rm -f "$LOG_FILE" "$SPIN_RESULT_FILE"' EXIT
+
+# Set the result text shown after → on spin completion.
+# Called from inside commands that spin runs in the background.
+spin_result() { printf '%s' "$1" > "$SPIN_RESULT_FILE"; }
 
 # Run a command in the background with a braille spinner animation.
 # Stderr is appended to LOG_FILE for error reporting. On completion,
-# displays ✓ (success) or ✗ (failure) with the message.
+# displays ✓ (success) or ✗ (failure). If the command called spin_result,
+# the text is appended after →.
 # Usage: spin "message" command [args...]
 spin() {
   local msg="$1"; shift
   local chars='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
   local i=0
+
+  > "$SPIN_RESULT_FILE"
 
   # Capture stderr to log file for error reporting.
   # Stdout is suppressed — any stdout would break the spinner animation.
@@ -67,7 +75,13 @@ spin() {
   wait "$pid"
   local rc=$?
   if [ $rc -eq 0 ]; then
-    printf "\033[2K\033[G${GREEN}✓${RESET} %s\n" "$msg"
+    local result=""
+    [ -s "$SPIN_RESULT_FILE" ] && result=$(cat "$SPIN_RESULT_FILE")
+    if [ -n "$result" ]; then
+      printf "\033[2K\033[G${GREEN}✓${RESET} %s ${DIM}→ %s${RESET}\n" "$msg" "$result"
+    else
+      printf "\033[2K\033[G${GREEN}✓${RESET} %s\n" "$msg"
+    fi
   else
     printf "\033[2K\033[G${RED}✗${RESET} %s\n" "$msg"
     return $rc
@@ -199,13 +213,17 @@ if [ ! -d "$WORKTREE_PATH" ]; then
     if git show-ref --verify --quiet "refs/heads/$BRANCH"; then
       if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
         echo "local_with_remote" > "$strategy_file"
+        spin_result "local branch, tracking origin"
       else
         echo "local" > "$strategy_file"
+        spin_result "local branch"
       fi
     elif git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
       echo "remote" > "$strategy_file"
+      spin_result "found on origin"
     else
       echo "new" > "$strategy_file"
+      spin_result "new from $BASE_BRANCH"
     fi
   }
   spin "Checking branch" resolve_branch
@@ -220,12 +238,15 @@ if [ ! -d "$WORKTREE_PATH" ]; then
         git fetch origin "$BRANCH" --quiet || true
         git branch --set-upstream-to="origin/$BRANCH" "$BRANCH" || true
         git branch -f "$BRANCH" "origin/$BRANCH" || true
+        spin_result "origin/$BRANCH"
         ;;
       remote)
         git fetch origin "$BRANCH" --quiet || true
+        spin_result "origin/$BRANCH"
         ;;
       new)
         git fetch origin "$BASE_BRANCH" --quiet || true
+        spin_result "origin/$BASE_BRANCH"
         ;;
     esac
   }
@@ -247,6 +268,7 @@ if [ ! -d "$WORKTREE_PATH" ]; then
         git worktree add "$WORKTREE_PATH" -b "$BRANCH" --no-track "origin/$BASE_BRANCH" --quiet
         ;;
     esac
+    spin_result "$WT_DIR/$WORKTREE_DIR"
   }
 
   spin "Adding worktree" create_worktree || die "Failed to create worktree"
@@ -260,6 +282,8 @@ fi
 # re-running setup ensures fresh copies (like .env) and working symlinks.
 # All operations are idempotent: cp overwrites, ln -sf overwrites.
 setup_files() {
+  local copied=0 linked=0
+
   # Copy files: independent copies that may differ per worktree (e.g., .env)
   while IFS= read -r file; do
     [ -z "$file" ] && continue
@@ -268,6 +292,7 @@ setup_files() {
     if [ -f "$src" ]; then
       mkdir -p "$(dirname "$dest")"
       cp "$src" "$dest"
+      copied=$((copied + 1))
     fi
   done < <(cfg_array copy_paths)
 
@@ -280,6 +305,7 @@ setup_files() {
       # mkdir -p handles nested paths like ".claude/settings.local.json"
       mkdir -p "$(dirname "$dest")"
       ln -sf "$src" "$dest"
+      linked=$((linked + 1))
     fi
   done < <(cfg_array symlinks)
 
@@ -292,6 +318,11 @@ setup_files() {
     mkdir -p "$wt_git_dir/info"
     ln -sf "$main_exclude" "$wt_git_dir/info/exclude"
   fi
+
+  local parts=()
+  [ "$copied" -gt 0 ] && parts+=("$copied copied")
+  [ "$linked" -gt 0 ] && parts+=("$linked symlinked")
+  [ ${#parts[@]} -gt 0 ] && spin_result "$(IFS=', '; echo "${parts[*]}")"
 }
 
 spin "Setting up files" setup_files
@@ -322,6 +353,8 @@ if ! tmux has-session -t "=$SESSION" 2>/dev/null; then
     if [ -n "$STARTUP_CMD" ]; then
       tmux send-keys -t "$SESSION" "$STARTUP_CMD" Enter
     fi
+
+    spin_result "$SESSION"
   }
 
   spin "Starting session" create_session || die "Failed to create session"
