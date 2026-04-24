@@ -32,6 +32,24 @@ vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter", "CursorHold", "CursorHo
 	command = "checktime",
 })
 
+-- Markdown links use percent-encoding for spaces (%20) and other special chars.
+-- Neovim's gf doesn't decode these, so it looks for a literal "%20" file.
+-- Also, & is not in isfname so gf truncates filenames at that character.
+local function percent_decode(fname)
+	return (fname:gsub("%%(%x%x)", function(hex)
+		return string.char(tonumber(hex, 16))
+	end))
+end
+_G._percent_decode = percent_decode
+
+vim.api.nvim_create_autocmd("FileType", {
+	pattern = "markdown",
+	callback = function()
+		vim.opt_local.isfname:append("&")
+		vim.bo.includeexpr = "v:lua._percent_decode(v:fname)"
+	end,
+})
+
 -- Prevent auto-inserting comment leaders when opening a new line with o/O in normal mode.
 -- By default, Neovim's built-in filetype plugins (ftplugins) add the 'o' flag to
 -- formatoptions for most languages. This causes o/O to auto-continue comments, which
