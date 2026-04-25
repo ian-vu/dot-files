@@ -38,6 +38,7 @@ worktree:
   # Files to symlink from the main repo into each worktree.
   # Symlinks stay in sync — editing in the worktree edits the original.
   # Use for config files shared across all worktrees.
+  # Works for both files and directories (no trailing slash needed).
   # Nested paths (e.g., .claude/settings.local.json) auto-create parent directories.
   symlinks:
     # - .justfile
