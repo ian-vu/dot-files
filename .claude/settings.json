@@ -58,7 +58,7 @@
     ],
     "defaultMode": "auto"
   },
-  "model": "opus",
+  "model": "opus[1m]",
   "hooks": {
     "Stop": [
       {
@@ -135,6 +135,8 @@
   "alwaysThinkingEnabled": false,
   "tui": "default",
   "skipDangerousModePermissionPrompt": true,
+  "theme": "dark-daltonized",
+  "preferredNotifChannel": "kitty",
   "skipAutoPermissionPrompt": true,
   "feedbackSurveyState": {
     "lastShownTime": 1753940027251
