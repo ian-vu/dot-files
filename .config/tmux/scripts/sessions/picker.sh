@@ -84,8 +84,16 @@ cmd_find="command -v fd >/dev/null 2>&1 && fd -H -d 2 -t d -E .Trash . \"\$HOME\
 # (which rewrites sessions.list) runs via tmux's async `run-shell`; without
 # the sleep we'd sometimes re-read the file before the hook has updated it.
 
+popup_width=100
+session_trunc="${current_session:0:35}"
+left_label=" Tmux Session"
+right_label="[$session_trunc] "
+gap=$((popup_width - 4 - ${#left_label} - ${#right_label}))
+fill=$(printf '─%.0s' $(seq 1 "$gap"))
+border_label="${left_label}${fill}${right_label}"
+
 selection="$(list_default | fzf-tmux \
-  -p 100,40% \
+  -p ${popup_width},40% \
   --layout reverse \
   --info right \
   --keep-right \
@@ -94,7 +102,8 @@ selection="$(list_default | fzf-tmux \
   --no-sort \
   `# --query "'" seeds the fzf prompt with the exact-match prefix (https://junegunn.github.io/fzf/search-syntax/)` \
   --query "'" \
-  --border-label ' Tmux Sessions ' \
+  --border-label "$border_label" \
+  --border-label-pos 0 \
   --prompt '  ' \
   --bind 'tab:down,btab:up' \
   --bind "ctrl-t:change-prompt(  )+reload($cmd_saved)" \
