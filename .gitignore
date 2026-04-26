@@ -43,3 +43,4 @@ Gemfile.lock
 .config/vi-mongo/history.txt
 # vi-mongo default styles (regenerated on first run)
 .config/vi-mongo/styles/
+.work-summaries/
