@@ -1,15 +1,15 @@
 ---
 name: work-summary
-description: Summarize work done in the current session into a concise status update suitable for standups, PRs, or async comms. Includes repo/branch/worktree metadata if in a git repo.
+description: Summarize work done in the current session into a concise status update suitable for standups, PRs, or async comms. Writes to the Obsidian vault with per-file symlinks back to the repo.
 ---
 
 # Work Summary Skill
 
-Create or update a dated work summary file in `.work-summaries/` (relative to the current working directory).
+Create or update a dated work summary file in the Obsidian vault at `~/notes/04_Archive/work-summaries/`, with a per-file symlink in `.work-summaries/` (relative to the current working directory).
 
 ## Metadata
 
-If inside a git repository, collect context to include in the summary header:
+If inside a git repository, collect context for frontmatter tags:
 
 ```sh
 git rev-parse --show-toplevel 2>/dev/null         # repo/worktree root
@@ -27,41 +27,67 @@ git worktree list | head -1 | awk '{print $1}' | xargs basename
 
 This ensures the repo name is always `ml-scribe` (not `OT-and-P-explore` or similar worktree directory name).
 
-- **Worktree**: if `git worktree list` shows more than one entry AND the current directory is not the main worktree, include the current worktree directory name in the header. Otherwise omit.
+- **Worktree**: if `git worktree list` shows more than one entry AND the current directory is not the main worktree, note the worktree name for the context slug. Otherwise omit.
 - If any command fails, skip that field — the summary works without git.
-
-Include a metadata block at the top of the file, after the title. Only include fields that are available:
-
-```markdown
-> **Repo:** <repo-name> | **Branch:** <branch> | **Worktree:** <worktree-path>
-```
 
 ## File Naming
 
-Files use this pattern: `YYYY-MM-DD|<repo>|<context-slug>|<short-keywords>.md`
+Files use this pattern: `YYYY-MM-DD@<repo>@<context-slug>@<short-keywords>.md`
 
 - Date is today's date (use `date +%Y-%m-%d` if unsure)
 - Repo: the git repo name (from `git worktree list | head -1 | awk '{print $1}' | xargs basename` — NOT `git rev-parse --show-toplevel` which returns the worktree path in linked worktrees). Sanitize to lowercase alphanumeric and hyphens. If not in a git repo, omit.
 - Context slug (max 20 chars, truncated): the git worktree directory name if in a linked worktree, otherwise the branch name. Sanitize to lowercase alphanumeric and hyphens only (replace `/`, `_`, and other special chars with `-`, collapse consecutive hyphens, strip leading/trailing hyphens). If not in a git repo, omit the context slug.
 - Keywords: 2–4 lowercase words joined with underscores, derived from the main topic of the session (e.g. `feed_updates`, `auth_refactor`, `spider_debug`)
-- Delimiter between segments is `|` (pipe)
+- Delimiter between segments is `@`
 - Check if a file for today already exists with matching context slug and keywords — if so, update it rather than creating a new one
 
 Examples:
-- Repo `aladdin`, worktree `aladdin-feat-spider`: `2026-04-24|aladdin|aladdin-feat-spider|spider_debug.md`
-- Repo `myapp`, branch `feat/auth-refactor`: `2026-04-24|myapp|feat-auth-refactor|auth_cleanup.md`
-- Repo `myapp`, branch `very-long-feature-branch-name-here`: `2026-04-24|myapp|very-long-feature-bra|feed_updates.md`
-- Not in a git repo: `2026-04-24|notes_cleanup.md`
+- Repo `aladdin`, worktree `aladdin-feat-spider`: `2026-04-24@aladdin@aladdin-feat-spider@spider_debug.md`
+- Repo `myapp`, branch `feat/auth-refactor`: `2026-04-24@myapp@feat-auth-refactor@auth_cleanup.md`
+- Repo `myapp`, branch `very-long-feature-branch-name-here`: `2026-04-24@myapp@very-long-feature-bra@feed_updates.md`
+- Not in a git repo: `2026-04-24@notes_cleanup.md`
 
 To find existing today's summaries:
 
 ```bash
-ls .work-summaries/$(date +%Y-%m-%d)\|*.md 2>/dev/null
+ls ~/notes/04_Archive/work-summaries/$(date +%Y-%m-%d)@*.md 2>/dev/null
+```
+
+## File Location & Symlinks
+
+1. **Write the canonical file** to `~/notes/04_Archive/work-summaries/<filename>.md`
+2. **Create `.work-summaries/`** in the current repo root if it doesn't exist
+3. **Add `.work-summaries/` to `.gitignore`** if not already present
+4. **Create a symlink** from `.work-summaries/<filename>.md` → `~/notes/04_Archive/work-summaries/<filename>.md`
+
+```bash
+# Ensure directory exists and is gitignored
+mkdir -p .work-summaries
+grep -qxF '.work-summaries/' .gitignore 2>/dev/null || echo '.work-summaries/' >> .gitignore
+
+# Create symlink
+ln -sf ~/notes/04_Archive/work-summaries/<filename>.md .work-summaries/<filename>.md
 ```
 
 ## File Format
 
 ```markdown
+---
+dateCreated: YYYY-MM-DD
+timeCreated: HH:MM
+tags:
+  [YYYY/MM/DD, repo/<repo-name>, branch/<branch-name>]
+type: work-summary
+---
+
+###### _links:_
+
+[[YYYY-MM-DD]]
+[[Work Summaries - Root]]
+[[<repo-name>]]
+
+---
+
 # <Title — concise description of the work> — <YYYY-MM-DD>
 
 ## Background
@@ -110,16 +136,22 @@ Describe what was discovered or done. Include:
 - <unresolved question or unknown that may need investigation>
 ```
 
+**Frontmatter notes:**
+- If not in a git repo, omit `repo/` and `branch/` tags; omit the `[[<repo-name>]]` link
+- The `[[YYYY-MM-DD]]` link uses today's date (same as `dateCreated`) to connect to the Obsidian daily note
+- Tags use nested format for Obsidian tag hierarchy (e.g. `repo/ml-scribe` appears under `repo` in the tag pane)
+
 ## Process
 
 1. Review the conversation history to extract all meaningful work done this session
 2. Determine 2–4 keyword slug for the filename based on the dominant topic
-3. Check if a matching file already exists for today
+3. Check if a matching file already exists for today in `~/notes/04_Archive/work-summaries/`
 4. If updating: read the existing file, then append or merge new sections — preserve existing content
 5. If creating: write a new file with the full format above
-6. Be thorough — include SQL queries, code snippets, file paths, and command outputs that were significant
-7. Omit conversational back-and-forth; only include substantive findings and actions
-8. At the end, consider whether there are any follow-ups, verifications, or planned tasks — if so, populate the **Next Session Checklist** section; otherwise omit it entirely
+6. Create the symlink in the repo's `.work-summaries/` directory (ensure dir exists and is gitignored)
+7. Be thorough — include SQL queries, code snippets, file paths, and command outputs that were significant
+8. Omit conversational back-and-forth; only include substantive findings and actions
+9. At the end, consider whether there are any follow-ups, verifications, or planned tasks — if so, populate the **Next Session Checklist** section; otherwise omit it entirely
 
 ## Quality Bar
 
