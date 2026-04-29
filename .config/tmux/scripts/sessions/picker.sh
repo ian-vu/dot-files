@@ -13,7 +13,7 @@
 #   - bin/t                       (no-arg invocation)
 #
 # Source views (toggled by Ctrl-*):
-#   default / Ctrl-t  ->  saved list   (persistent, MRU-ordered)
+#   default / Ctrl-t  ->  saved + live merged (see scripts/sessions/list.sh)
 #   Ctrl-a            ->  active       (live tmux sessions, MRU by attach)
 #   Ctrl-d            ->  zoxide dirs  (frecent directories)
 #   Ctrl-f            ->  fd dirs      (under $HOME, max depth 2)
@@ -27,52 +27,18 @@
 
 set -u
 
-state_file="${XDG_STATE_HOME:-$HOME/.local/state}/tmux/sessions.list"
 current_session="$(tmux display -p '#S' 2>/dev/null || echo '')"
 
 # Dismiss any open float popup so it doesn't sit on top of / behind ours.
 tmux_close_float >/dev/null 2>&1 || true
 
-# Source-list helpers used to populate the INITIAL picker view.
-# (The Ctrl-* reload bindings can't reuse these — see "Inline commands"
-# below for why — so they exist mainly to drive list_default.)
-
-list_saved() {
-  # Hide the current session: switching to yourself is a no-op, and it just
-  # clutters the picker.
-  [ -f "$state_file" ] || return 0
-  awk -F '\t' -v cur="$current_session" '$1 != cur {print $1}' "$state_file"
-}
-
-list_active() {
-  # MRU by `#{session_last_attached}` (epoch). Never-attached sessions
-  # report 0 and sort to the bottom. `|` is a safer separator than TAB
-  # here because session names can contain spaces but not `|` in practice.
-  tmux list-sessions -F '#{session_last_attached}|#{session_name}' 2>/dev/null \
-    | awk -F '|' -v cur="$current_session" '$2 != cur && $2 !~ /float/' \
-    | sort -t '|' -k1,1 -rn \
-    | awk -F '|' '{print $2}'
-}
-
-list_default() {
-  # Saved list when populated; otherwise fall back to live sessions so a
-  # first-time / freshly-synced picker is never empty.
-  local out
-  out="$(list_saved)"
-  if [ -n "$out" ]; then
-    printf '%s\n' "$out"
-  else
-    list_active
-  fi
-}
-
 # Inline command strings for the fzf reload bindings.
-# fzf runs reload commands via `$SHELL -c "..."`, which is zsh in this setup.
-# zsh can't see bash-exported functions, so the bindings can't call the
-# helpers above directly. We expand $state_file / $current_session here, in
-# the parent bash, so the bindings hand fzf self-contained shell snippets.
+# fzf runs reload commands via `$SHELL -c "..."`. The default/saved view is
+# extracted into list.sh so it can be reused by the Ctrl-t binding. The
+# remaining commands stay inline because they're one-liners and don't share
+# logic with anything else.
 
-cmd_saved="awk -F '\t' -v cur=\"$current_session\" '\$1 != cur {print \$1}' \"$state_file\""
+cmd_default="$HOME/.config/tmux/scripts/sessions/list.sh"
 cmd_active="tmux list-sessions -F '#{session_last_attached}|#{session_name}' 2>/dev/null | awk -F '|' -v cur=\"$current_session\" '\$2 != cur && \$2 !~ /float/' | sort -t '|' -k1,1 -rn | awk -F '|' '{print \$2}'"
 cmd_zoxide="command -v zoxide >/dev/null 2>&1 && zoxide query -l 2>/dev/null"
 cmd_find="command -v fd >/dev/null 2>&1 && fd -H -d 2 -t d -E .Trash . \"\$HOME\""
@@ -92,7 +58,7 @@ gap=$((popup_width - 4 - ${#left_label} - ${#right_label}))
 fill=$(printf '─%.0s' $(seq 1 "$gap"))
 border_label="${left_label}${fill}${right_label}"
 
-selection="$(list_default | fzf-tmux \
+selection="$($cmd_default | fzf-tmux \
   -p ${popup_width},40% \
   --layout reverse \
   --info right \
@@ -106,12 +72,12 @@ selection="$(list_default | fzf-tmux \
   --border-label-pos 0 \
   --prompt '  ' \
   --bind 'tab:down,btab:up' \
-  --bind "ctrl-t:change-prompt(  )+reload($cmd_saved)" \
+  --bind "ctrl-t:change-prompt(  )+reload($cmd_default)" \
   --bind "ctrl-a:change-prompt(⚡ )+reload($cmd_active)" \
   --bind "ctrl-d:change-prompt(📁 )+reload($cmd_zoxide)" \
   --bind "ctrl-f:change-prompt(🔎 )+reload($cmd_find)" \
-  --bind "ctrl-x:execute-silent(tmux kill-session -t {} 2>/dev/null; sleep 0.08)+change-prompt(  )+reload($cmd_saved)" \
-  --bind "ctrl-s:execute-silent($HOME/.config/tmux/scripts/sessions/sync.sh >/dev/null 2>&1)+change-prompt(  )+reload($cmd_saved)" \
+  --bind "ctrl-x:execute-silent(tmux kill-session -t {} 2>/dev/null; sleep 0.08)+change-prompt(  )+reload($cmd_default)" \
+  --bind "ctrl-s:execute-silent($HOME/.config/tmux/scripts/sessions/sync.sh >/dev/null 2>&1)+change-prompt(  )+reload($cmd_default)" \
   --header '  C-t Saved | C-a Active | C-d Zoxide | C-f Find | C-s Sync | C-x Kill' \
 )"
 
