@@ -161,6 +161,28 @@ fi
 alias zs='source ~/.zshrc'
 alias copy='pbcopy'
 alias paste='pbpaste'
+fcopy() {
+  osascript -e "set the clipboard to (POSIX file \"$(realpath "$1")\")"
+}
+alias copyfile='fcopy'
+# Paste file(s) on the clipboard into a directory — mirrors Finder's right-click Paste.
+# Pairs with fcopy: anything copied with Cmd-C in Finder (or via fcopy) lands here.
+fpaste() {
+  local target="${1:-$PWD}"
+  target=$(realpath "$target") || return 1
+  osascript <<EOF
+tell application "Finder"
+  set destFolder to (POSIX file "$target") as alias
+  try
+    set clipItems to the clipboard as «class furl»
+  on error
+    return "fpaste: no file on clipboard"
+  end try
+  duplicate clipItems to destFolder
+end tell
+EOF
+}
+alias pastefile='fpaste'
 alias cp='cp -Riv'
 alias mv='mv -fv'
 alias h='history'
@@ -220,8 +242,11 @@ alias zshrca='atom ~/.zshrc'
 alias npr='npm run --silent $*'
 alias chrome="open -a 'Google Chrome'"
 alias arst='asdf'
+
+# export ANTHROPIC_DEFAULT_OPUS_MODEL='claude-opus-4-6'
 alias claude='[ -n "$TMUX" ] && [ "$(tmux show-window-option -v automatic-rename 2>/dev/null)" != "off" ] && tmux rename-window "claude"; ~/.local/bin/claude --allow-dangerously-skip-permissions'
 alias cc='claude'
+
 alias gitstats="onefetch"
 alias fabric='fabric-ai'
 alias fb='fabric'
@@ -482,8 +507,6 @@ autoload -U +X bashcompinit && bashcompinit
 # Set up z
 _zsh_cache_eval zoxide zoxide init zsh
 
-# set up mise (coding language version manager)
-_zsh_cache_eval mise ~/.local/bin/mise activate zsh
 
 # Set config for lazygit
 export XDG_CONFIG_HOME="$HOME/.config"
@@ -511,3 +534,7 @@ export PATH="$BUN_INSTALL/bin:$PATH"
 
 # PAI alias
 alias pai='bun /Users/ivu/.claude/PAI/Tools/pai.ts'
+
+# This should be last to avoid system installed tools
+# set up mise (coding language version manager)
+_zsh_cache_eval mise ~/.local/bin/mise activate zsh
