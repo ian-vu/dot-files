@@ -7,7 +7,8 @@ return {
 			spec = {
 				{
 					mode = { "n", "v" },
-					{ "<leader>cy", group = "yank" },
+					{ "<leader>y", group = "yank" },
+					{ "<leader>yg", group = "github yank" },
 					{ "<leader>g", group = "[g]it" },
 					{ "<leader>gp", group = "[p]ull request" },
 				},

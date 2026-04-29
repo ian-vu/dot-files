@@ -274,7 +274,7 @@ local function get_current_diagnostic()
 end
 
 -- Copy current diagnostic message to clipboard
-vim.keymap.set("n", "<leader>cyd", function()
+vim.keymap.set("n", "<leader>yd", function()
 	local message = get_current_diagnostic()
 	if message then
 		vim.fn.setreg("+", message)
@@ -285,21 +285,21 @@ vim.keymap.set("n", "<leader>cyd", function()
 end, { desc = "Copy diagnostic message" })
 
 -- Copy current file to clipboard
-vim.keymap.set("n", "<leader>cyf", function()
+vim.keymap.set("n", "<leader>yf", function()
 	local file = get_filepath_prefix() .. get_relative_file()
 	vim.fn.setreg("+", file)
 	print("Copied: " .. file)
 end, { desc = "Copy file path" })
 
 -- Copy full file path to clipboard
-vim.keymap.set("n", "<leader>cyF", function()
+vim.keymap.set("n", "<leader>yF", function()
 	local full_path = get_filepath_prefix() .. transform_path(vim.fn.expand("%:p"))
 	vim.fn.setreg("+", full_path)
 	print("Copied: " .. full_path)
 end, { desc = "Copy full file path" })
 
 -- Copy file path with line(s) — single line in normal mode, range in visual mode
-vim.keymap.set({ "n", "v" }, "<leader>cyL", function()
+vim.keymap.set({ "n", "v" }, "<leader>yL", function()
 	local file_path = transform_path(vim.fn.expand("%:p"))
 	local line_ref
 	if vim.fn.mode():match("[vV]") or vim.fn.mode() == "\22" then
@@ -313,7 +313,7 @@ vim.keymap.set({ "n", "v" }, "<leader>cyL", function()
 	print("Copied " .. result)
 end, { desc = "Copy full path with line(s)" })
 
-vim.keymap.set({ "n", "v" }, "<leader>cyl", function()
+vim.keymap.set({ "n", "v" }, "<leader>yl", function()
 	local file_path = get_relative_file()
 	local line_ref
 	if vim.fn.mode():match("[vV]") or vim.fn.mode() == "\22" then
@@ -328,7 +328,7 @@ vim.keymap.set({ "n", "v" }, "<leader>cyl", function()
 end, { desc = "Copy path with line(s)" })
 
 -- Copy current line number and diagnostic message to clipboard
-vim.keymap.set("n", "<leader>cyD", function()
+vim.keymap.set("n", "<leader>yD", function()
 	local file_line = get_filepath_prefix() .. get_file_line()
 	local diagnostic = get_current_diagnostic()
 
@@ -340,6 +340,106 @@ vim.keymap.set("n", "<leader>cyD", function()
 		print("No diagnostic on current line")
 	end
 end, { desc = "Copy line number and diagnostic" })
+
+-- GitHub URL helpers — explicit because we need branch control (current vs trunk)
+-- that snacks.gitbrowse doesn't expose directly.
+local function get_github_repo_path()
+	local remote = vim.fn.system("git config --get remote.origin.url 2>/dev/null"):gsub("\n", "")
+	if vim.v.shell_error ~= 0 or remote == "" then
+		return nil
+	end
+	-- Match both ssh (git@github.com:owner/repo.git) and https (https://github.com/owner/repo.git)
+	local owner_repo = remote:match("github%.com[:/]([^%s]+/[^%s]+)")
+	if owner_repo then
+		owner_repo = owner_repo:gsub("%.git$", "")
+	end
+	return owner_repo
+end
+
+local function get_current_branch()
+	local branch = vim.fn.system("git branch --show-current 2>/dev/null"):gsub("\n", "")
+	if vim.v.shell_error ~= 0 or branch == "" then
+		return nil
+	end
+	return branch
+end
+
+local function get_trunk_branch()
+	-- Prefer origin/HEAD which reflects the remote default branch
+	local trunk = vim.fn.system("git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null"):gsub("\n", "")
+	if vim.v.shell_error == 0 and trunk ~= "" then
+		return trunk:gsub("^origin/", "")
+	end
+	-- Fall back to common trunk names if origin/HEAD is missing
+	for _, candidate in ipairs({ "main", "master" }) do
+		vim.fn.system("git rev-parse --verify " .. candidate .. " 2>/dev/null")
+		if vim.v.shell_error == 0 then
+			return candidate
+		end
+	end
+	return nil
+end
+
+local function build_github_url(opts)
+	opts = opts or {}
+	local repo_path = get_github_repo_path()
+	if not repo_path then
+		vim.notify("Not a GitHub repo", vim.log.levels.ERROR)
+		return nil
+	end
+	local branch = opts.branch or get_current_branch()
+	if not branch then
+		vim.notify("Could not determine branch", vim.log.levels.ERROR)
+		return nil
+	end
+	local url = string.format("https://github.com/%s/blob/%s/%s", repo_path, branch, get_relative_file())
+	if opts.line_start then
+		if opts.line_end and opts.line_end ~= opts.line_start then
+			url = url .. "#L" .. opts.line_start .. "-L" .. opts.line_end
+		else
+			url = url .. "#L" .. opts.line_start
+		end
+	end
+	return url
+end
+
+local function visual_or_current_line_range()
+	if vim.fn.mode():match("[vV]") or vim.fn.mode() == "\22" then
+		vim.cmd('normal! "vy')
+		return vim.fn.line("'<"), vim.fn.line("'>")
+	end
+	return vim.fn.line("."), nil
+end
+
+local function copy_github_url(opts)
+	local url = build_github_url(opts)
+	if url then
+		vim.fn.setreg("+", url)
+		print("Copied: " .. url)
+	end
+end
+
+-- Copy GitHub URL to current file on current branch
+vim.keymap.set("n", "<leader>ygf", function()
+	copy_github_url()
+end, { desc = "Copy GitHub URL to file (current branch)" })
+
+-- Copy GitHub URL with line(s) on current branch
+vim.keymap.set({ "n", "v" }, "<leader>ygl", function()
+	local line_start, line_end = visual_or_current_line_range()
+	copy_github_url({ line_start = line_start, line_end = line_end })
+end, { desc = "Copy GitHub URL to line(s) (current branch)" })
+
+-- Copy GitHub URL to current file on trunk branch (main/master)
+vim.keymap.set("n", "<leader>ygF", function()
+	copy_github_url({ branch = get_trunk_branch() })
+end, { desc = "Copy GitHub URL to file (trunk)" })
+
+-- Copy GitHub URL with line(s) on trunk branch (main/master)
+vim.keymap.set({ "n", "v" }, "<leader>ygL", function()
+	local line_start, line_end = visual_or_current_line_range()
+	copy_github_url({ branch = get_trunk_branch(), line_start = line_start, line_end = line_end })
+end, { desc = "Copy GitHub URL to line(s) (trunk)" })
 
 -- Flash keymaps
 vim.keymap.set({ "n" }, "s", function()
