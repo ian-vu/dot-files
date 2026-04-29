@@ -1,5 +1,8 @@
 {
   "includeCoAuthoredBy": false,
+  "env": {
+    "CLAUDE_CODE_DISABLE_1M_CONTEXT": "1"
+  },
   "permissions": {
     "allow": [
       "Bash(sed:*)",
@@ -52,13 +55,10 @@
       "Bash(shellcheck:*)"
     ],
     "deny": [],
-    "ask": [
-      "Bash(git commit:*)",
-      "Bash(git push:*)"
-    ],
+    "ask": ["Bash(git commit:*)", "Bash(git push:*)"],
     "defaultMode": "auto"
   },
-  "model": "opus[1m]",
+  "model": "opus",
   "hooks": {
     "Stop": [
       {
