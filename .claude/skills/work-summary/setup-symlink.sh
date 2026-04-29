@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Create a per-file symlink from repo .work-summaries/ to the Obsidian vault.
-# Also ensures .work-summaries/ exists and is gitignored.
+# Also ensures .work-summaries/ exists and is excluded via .git/info/exclude
+# (local-only — does not modify the tracked .gitignore).
 # Usage: setup-symlink.sh <filename> [repo-root]
 #   filename: the summary filename (e.g. 2026-04-24@myapp@main@feed_updates.md)
 #   repo-root: path to create .work-summaries/ in (default: git repo root)
@@ -29,11 +30,15 @@ fi
 ws_dir="$repo_root/.work-summaries"
 mkdir -p "$ws_dir"
 
-gitignore="$repo_root/.gitignore"
-if [[ -f "$gitignore" ]]; then
-  grep -qxF '.work-summaries/' "$gitignore" || echo '.work-summaries/' >> "$gitignore"
-else
-  echo '.work-summaries/' > "$gitignore"
+# Use .git/info/exclude so the ignore rule stays local and doesn't touch the
+# tracked .gitignore (avoids polluting commits in shared repos).
+git_dir=$(git -C "$repo_root" rev-parse --git-dir 2>/dev/null || true)
+if [[ -n "$git_dir" ]]; then
+  [[ "$git_dir" = /* ]] || git_dir="$repo_root/$git_dir"
+  exclude_file="$git_dir/info/exclude"
+  mkdir -p "$(dirname "$exclude_file")"
+  touch "$exclude_file"
+  grep -qxF '.work-summaries/' "$exclude_file" || echo '.work-summaries/' >> "$exclude_file"
 fi
 
 ln -sf "$vault_file" "$ws_dir/$filename"

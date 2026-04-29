@@ -16,7 +16,7 @@ All in this skill directory (`~/.claude/skills/work-summary/`):
 | `get-metadata.sh`               | Collect git context as `key=value` pairs (repo, branch, slugs, date, time) |
 | `make-filename.sh <keywords>`   | Generate filename from keywords + metadata                                 |
 | `make-frontmatter.sh`           | Generate Obsidian frontmatter + `_links:` section                          |
-| `setup-symlink.sh <filename>`   | Create `.work-summaries/`, gitignore it, symlink the file                  |
+| `setup-symlink.sh <filename>`   | Create `.work-summaries/`, exclude it via `.git/info/exclude`, symlink it  |
 | `link-summaries.sh [repo-name]` | Bulk-recreate all symlinks for a repo                                      |
 
 ## Process
