@@ -11,9 +11,34 @@ return {
 				exclude = {
 					"*.log",
 					"*.tmp",
-					"node_modules/",
 					".DS_Store",
 					".worktrees/",
+					-- Generated / dependency dirs: large, never want to fuzzy-find into them
+					"node_modules/",
+					-- Python
+					".venv/",
+					"venv/",
+					"__pycache__/",
+					".pytest_cache/",
+					".mypy_cache/",
+					".ruff_cache/",
+					"*.pyc",
+					-- JS/TS
+					"dist/",
+					"build/",
+					".next/",
+					".nuxt/",
+					".turbo/",
+					"*.min.js",
+					"*.min.css",
+					-- Rust
+					"target/",
+					-- Ruby
+					"vendor/bundle/",
+					".bundle/",
+					-- Generic
+					"coverage/",
+					".cache/",
 				},
 				matcher = {
 					history_bonus = true,
