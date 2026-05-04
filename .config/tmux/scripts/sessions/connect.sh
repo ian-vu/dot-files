@@ -44,9 +44,24 @@ go() {
 # because no session-created hook fires for plain switches; without an
 # explicit bump, switching would leave the saved-list order untouched.
 # Passing no cwd tells save.sh to preserve the existing cwd.
-if tmux has-session -t="$selection" 2>/dev/null; then
+#
+# `-t "=NAME"` forces EXACT match. Without the `=` prefix, tmux falls back
+# to prefix matching, which silently fails (rc=1) when the prefix is
+# ambiguous — e.g. picking `dot-files` while `dot-files 🔔` and
+# `dot-files/wt/...` exist. The fall-through then lazy-creates a duplicate.
+if tmux has-session -t "=$selection" 2>/dev/null; then
   go "$selection"
   "$HOME/.config/tmux/scripts/sessions/save.sh" "$selection"
+  exit 0
+fi
+
+# Case 1b: same session, but with a 🔔 suffix added by Claude's
+# notify_on_finish_script when work completed in a background window.
+# Treat `dot-files` and `dot-files 🔔` as the same session — the
+# client-session-changed hook will clear the bell on switch, and the
+# session-renamed hook will sync the saved list back to the bell-free name.
+if tmux has-session -t "=$selection 🔔" 2>/dev/null; then
+  go "$selection 🔔"
   exit 0
 fi
 
