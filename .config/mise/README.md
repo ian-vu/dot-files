@@ -14,13 +14,46 @@ Use `mise use -g` instead of `npx` for tools you want always available:
 mise use -g npm:<package>@latest
 ```
 
-To update later, run the same command again — mise will pull the newest version.
+## Updating a Global Installation
 
-### Installed Global npm Packages
+Re-run the install command with `@latest` — mise resolves the newest version and replaces the existing one:
 
-| Package | Description | Install |
-|---------|-------------|---------|
-| `@tokscale/cli` | Token usage and cost tracking across AI coding assistants (Claude Code, Cursor, Gemini CLI, etc.) | `mise use -g npm:@tokscale/cli@latest` |
+```bash
+mise use -g npm:<package>@latest
+```
+
+Example — updating `@tokscale/cli`:
+
+```bash
+mise use -g npm:@tokscale/cli@latest
+```
+
+To check what's currently installed:
+
+```bash
+mise ls
+```
+
+## Cleaning Up Old Versions
+
+Updating leaves the previous version on disk. To remove versions no longer referenced by any config:
+
+```bash
+mise prune --dry-run   # preview what would be deleted
+mise prune             # delete them
+```
+
+To uninstall a specific version manually:
+
+```bash
+mise uninstall npm:<package>@<version>
+```
+
+To remove a tool entirely (both from `config.toml` and disk):
+
+```bash
+mise rm -g npm:<package>
+```
 
 ## Resources
 
