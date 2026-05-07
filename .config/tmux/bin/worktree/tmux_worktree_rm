@@ -30,7 +30,7 @@ REPO_NAME="${REPO_NAME//:/-}"
 # parses to display as "repo 🌳 [branch]" in the status bar.
 SESSION="$REPO_NAME/wt/$WORKTREE_DIR"
 
-# Read the worktree directory name from .ivu.yml (defaults to .worktrees).
+# Read the worktree directory from .ivu.yml (defaults to .worktrees).
 # This must match what tmux_worktree_add used when creating the worktree.
 CONFIG="$REPO_ROOT/.ivu.yml"
 if [ -f "$CONFIG" ] && command -v yq >/dev/null 2>&1; then
@@ -39,7 +39,13 @@ else
   WT_DIR=".worktrees"
 fi
 
-WORKTREE_PATH="$REPO_ROOT/$WT_DIR/$WORKTREE_DIR"
+# Resolve absolute/~-prefixed paths the same way tmux_worktree_add does:
+# nest under the repo name to avoid collisions across repos.
+case "$WT_DIR" in
+  '~'/*) WORKTREE_PATH="$HOME/${WT_DIR#'~/'}/$REPO_NAME/$WORKTREE_DIR" ;;
+  /*)    WORKTREE_PATH="$WT_DIR/$REPO_NAME/$WORKTREE_DIR" ;;
+  *)     WORKTREE_PATH="$REPO_ROOT/$WT_DIR/$WORKTREE_DIR" ;;
+esac
 
 # Kill the tmux session first (before removing the directory it's rooted in).
 # Uses "=" prefix for exact session name matching — without it, tmux does

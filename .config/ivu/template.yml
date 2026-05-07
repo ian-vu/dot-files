@@ -16,10 +16,17 @@
 #   5. Run startup_cmd in the session
 
 worktree:
-  # Directory where worktrees are stored (relative to repo root).
+  # Directory where worktrees are stored.
   # Each worktree gets a subdirectory named after the branch (slashes → dashes).
-  # Example: branch "feat/auth" creates .worktrees/feat-auth/
-  dir: .worktrees
+  #
+  # Relative paths are anchored to the repo root (default — keeps worktrees
+  # inside the repo). Example: branch "feat/auth" → .worktrees/feat-auth/
+  #
+  # Absolute or ~-prefixed paths are treated as a shared root and nested under
+  # the repo name to avoid collisions when multiple repos share the same root.
+  # Example: dir: ~/.worktree, repo "myrepo", branch "feat/auth"
+  #          → ~/.worktree/myrepo/feat-auth/
+  dir: ~/.worktrees
 
   # Base branch for creating new branches.
   # When the requested branch doesn't exist locally or on origin,

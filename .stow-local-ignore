@@ -48,3 +48,4 @@ docs
 CLAUDE.md
 AGENTS.md
 \.luarc\.json
+^/\.worktrees

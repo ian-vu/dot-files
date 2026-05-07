@@ -104,6 +104,15 @@ while true; do
   CONFIG="$REPO_ROOT/.ivu.yml"
   WT_DIR=$(cfg dir .worktrees)
 
+  # Resolve absolute/~-prefixed worktree dirs to a shared root nested under
+  # the repo name. Relative paths are passed through and stay anchored to the
+  # repo root by the consumers (tmux_worktree_list_worktrees runs with cwd at
+  # $REPO_ROOT, and tmux_worktree_rm prepends $REPO_ROOT for relative paths).
+  case "$WT_DIR" in
+    '~'/*) WT_DIR="$HOME/${WT_DIR#'~/'}/$REPO_NAME" ;;
+    /*)    WT_DIR="$WT_DIR/$REPO_NAME" ;;
+  esac
+
   # Auto-detect the default branch from the remote HEAD.
   # The .ivu.yml base_branch setting overrides this if explicitly set.
   DEFAULT_BASE=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's|^refs/remotes/origin/||')
@@ -140,6 +149,11 @@ while true; do
     esac
 
     BRANCH="${SELECTED:-$QUERY}"
+    # Trim leading/trailing whitespace — pasted branch names often carry stray
+    # spaces, and git rejects refs containing whitespace, which previously
+    # produced a half-created worktree directory with no checkout.
+    BRANCH="${BRANCH#"${BRANCH%%[![:space:]]*}"}"
+    BRANCH="${BRANCH%"${BRANCH##*[![:space:]]}"}"
     [ -z "$BRANCH" ] && exit 0
 
     # Hand off to tmux_worktree_add for creation + session + switch.

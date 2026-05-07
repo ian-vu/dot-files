@@ -157,9 +157,17 @@ fi
 # =============================================================================
 # Read configuration from .ivu.yml
 # =============================================================================
-WT_DIR=$(cfg dir .worktrees)              # Directory for worktrees (relative to repo root)
+WT_DIR=$(cfg dir .worktrees)              # Directory for worktrees (relative to repo root, or absolute)
 STARTUP_CMD=$(cfg startup_cmd "")         # Command to run in session after setup
 SUPPRESS_HOOK=$(cfg suppress_tmux_startup_hook "true")  # Skip tmux_git_setup hook
+
+# Resolve absolute/~-prefixed worktree dirs to a shared root nested under
+# the repo name (so multiple repos pointing at e.g. ~/.worktree don't
+# collide). Relative paths stay relative to the repo root.
+case "$WT_DIR" in
+  '~'/*) WT_DIR="$HOME/${WT_DIR#'~/'}/$REPO_NAME" ;;
+  /*)    WT_DIR="$WT_DIR/$REPO_NAME" ;;
+esac
 
 # Auto-detect the default branch from the remote HEAD (e.g., main, master, develop).
 # The .ivu.yml base_branch setting overrides this if explicitly set.
@@ -170,7 +178,10 @@ BASE_BRANCH=$(cfg base_branch "${DEFAULT_BASE:-main}")
 # Convert branch slashes to dashes for the directory name.
 # e.g., "feat/auth" becomes "feat-auth" so it's a valid directory name.
 WORKTREE_DIR="${BRANCH//\//-}"
-WORKTREE_PATH="$REPO_ROOT/$WT_DIR/$WORKTREE_DIR"
+case "$WT_DIR" in
+  /*) WORKTREE_PATH="$WT_DIR/$WORKTREE_DIR" ;;
+  *)  WORKTREE_PATH="$REPO_ROOT/$WT_DIR/$WORKTREE_DIR" ;;
+esac
 
 # Session naming convention: <repo>/wt/<worktree_dir>
 # This is parsed by format-session.sh to display as "repo 🌳 [branch]" in the
@@ -196,14 +207,21 @@ fi
 #   2. Fetch from origin (skipped for local-only branches)
 #   3. Create the worktree directory
 if [ ! -d "$WORKTREE_PATH" ]; then
-  mkdir -p "$REPO_ROOT/$WT_DIR"
-
-  # Add the worktree directory to .git/info/exclude so it doesn't show up
-  # as untracked. Only adds the entry once (grep checks for existing match).
-  exclude_file="$REPO_ROOT/.git/info/exclude"
-  if [ -f "$exclude_file" ] && ! grep -qxF "$WT_DIR" "$exclude_file"; then
-    echo "$WT_DIR" >> "$exclude_file"
-  fi
+  case "$WT_DIR" in
+    /*)
+      # Absolute path: worktree lives outside the repo, no gitignore needed.
+      mkdir -p "$WT_DIR"
+      ;;
+    *)
+      mkdir -p "$REPO_ROOT/$WT_DIR"
+      # Add the worktree directory to .git/info/exclude so it doesn't show up
+      # as untracked. Only adds the entry once (grep checks for existing match).
+      exclude_file="$REPO_ROOT/.git/info/exclude"
+      if [ -f "$exclude_file" ] && ! grep -qxF "$WT_DIR" "$exclude_file"; then
+        echo "$WT_DIR" >> "$exclude_file"
+      fi
+      ;;
+  esac
 
   # --- Step 1: Resolve branch strategy ---
   # Uses a temp file to communicate the result back from the background
@@ -256,6 +274,9 @@ if [ ! -d "$WORKTREE_PATH" ]; then
   fi
 
   # --- Step 3: Create worktree ---
+  # `|| return` after the case is critical: without it, a failed `git worktree
+  # add` would still fall through to spin_result, which resets the function's
+  # exit code to 0 and masks the failure from `spin … || die`.
   create_worktree() {
     case "$STRATEGY" in
       local|local_with_remote)
@@ -267,8 +288,8 @@ if [ ! -d "$WORKTREE_PATH" ]; then
       new)
         git worktree add "$WORKTREE_PATH" -b "$BRANCH" --no-track "origin/$BASE_BRANCH" --quiet
         ;;
-    esac
-    spin_result "$WT_DIR/$WORKTREE_DIR"
+    esac || return $?
+    spin_result "${WT_DIR/#$HOME/~}/$WORKTREE_DIR"
   }
 
   spin "Adding worktree" create_worktree || die "Failed to create worktree"
