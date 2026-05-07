@@ -39,9 +39,9 @@ TITLE="⟫"
 if [ -n "$TMUX" ]; then
   TMUX_SESSION=$(tmux display-message -p '#S' 2>/dev/null)
   TMUX_WINDOW=$(tmux display-message -p '#W' 2>/dev/null)
-  # Names may contain ⚡ or 🔔 from hooks; strip before using in title
+  # Window names may contain hook status suffixes; strip before using in title.
   TMUX_WINDOW="${TMUX_WINDOW% ⚡}"
-  TMUX_SESSION="${TMUX_SESSION% 🔔}"
+  TMUX_WINDOW="${TMUX_WINDOW% 🔔}"
   if [ -n "$TMUX_SESSION" ]; then
     TITLE="$TMUX_SESSION"
     if [ -n "$TMUX_WINDOW" ]; then
@@ -50,26 +50,18 @@ if [ -n "$TMUX" ]; then
   fi
 fi
 
-# Update tmux window name: remove ⚡ (in-progress)
+# Update tmux window name: replace ⚡ with 🔔 when Claude finishes in a
+# background window. The bell lives only on the window, never on the session.
 if [ -n "$TMUX" ] && [ -f "/tmp/claude_code_session_${SESSION_ID}_window" ]; then
   WINDOW_ID=$(cat "/tmp/claude_code_session_${SESSION_ID}_window")
   CURRENT_NAME=$(tmux display-message -t "$WINDOW_ID" -p '#W' 2>/dev/null)
-  # Strip in-progress symbol (⚡) from window name
   CLEAN_NAME="${CURRENT_NAME% ⚡}"
-  tmux rename-window -t "$WINDOW_ID" "$CLEAN_NAME"
-fi
-
-# Update tmux session name: add 🔔 (done) suffix
-# Only add if the user is not currently in the window where Claude ran
-if [ -n "$TMUX" ] && [ -f "/tmp/claude_code_session_${SESSION_ID}_window" ]; then
-  WINDOW_ID=$(cat "/tmp/claude_code_session_${SESSION_ID}_window")
+  CLEAN_NAME="${CLEAN_NAME% 🔔}"
   ACTIVE_WINDOW=$(tmux display-message -p '#{window_id}' 2>/dev/null)
   if [ "$WINDOW_ID" != "$ACTIVE_WINDOW" ]; then
-    CURRENT_SESSION=$(tmux display-message -p '#S' 2>/dev/null)
-    case "$CURRENT_SESSION" in
-    *🔔) ;; # already has bell
-    *) tmux rename-session "$CURRENT_SESSION 🔔" ;;
-    esac
+    tmux rename-window -t "$WINDOW_ID" "$CLEAN_NAME 🔔"
+  else
+    tmux rename-window -t "$WINDOW_ID" "$CLEAN_NAME"
   fi
 fi
 

@@ -12,20 +12,10 @@ SESSION_ID=$(echo "$INPUT" | jq -r ".session_id")
   if [ -n "$TMUX" ] && [ -f "/tmp/claude_code_session_${SESSION_ID}_window" ]; then
     WINDOW_ID=$(cat "/tmp/claude_code_session_${SESSION_ID}_window")
     CURRENT_NAME=$(tmux display-message -t "$WINDOW_ID" -p '#W' 2>/dev/null)
-    case "$CURRENT_NAME" in
-    *⚡) ;; # already has lightning, do nothing
-    *)
-      tmux rename-window -t "$WINDOW_ID" "$CURRENT_NAME ⚡"
-      ;;
-    esac
-
-    # Strip 🔔 from session name when work resumes
-    CURRENT_SESSION=$(tmux display-message -p '#S' 2>/dev/null)
-    case "$CURRENT_SESSION" in
-    *🔔)
-      CLEAN_SESSION="${CURRENT_SESSION% 🔔}"
-      tmux rename-session "$CLEAN_SESSION"
-      ;;
-    esac
+    CLEAN_NAME="${CURRENT_NAME% ⚡}"
+    CLEAN_NAME="${CLEAN_NAME% 🔔}"
+    if [ "$CURRENT_NAME" != "$CLEAN_NAME ⚡" ]; then
+      tmux rename-window -t "$WINDOW_ID" "$CLEAN_NAME ⚡"
+    fi
   fi
 } >/dev/null 2>&1

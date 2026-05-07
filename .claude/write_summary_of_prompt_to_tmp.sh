@@ -45,14 +45,6 @@ if [ -n "$TMUX" ]; then
   # Clear status symbols and add ⚡ to window to show Claude is working
   CURRENT_NAME=$(tmux display-message -t "$WINDOW_ID" -p '#W' 2>/dev/null)
   CLEAN_NAME="${CURRENT_NAME% ⚡}"
+  CLEAN_NAME="${CLEAN_NAME% 🔔}"
   tmux rename-window -t "$WINDOW_ID" "$CLEAN_NAME ⚡"
-
-  # Strip 🔔 from session name when a new prompt starts
-  CURRENT_SESSION=$(tmux display-message -p '#S' 2>/dev/null)
-  case "$CURRENT_SESSION" in
-  *🔔)
-    CLEAN_SESSION="${CURRENT_SESSION% 🔔}"
-    tmux rename-session "$CLEAN_SESSION"
-    ;;
-  esac
 fi
