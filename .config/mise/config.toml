@@ -8,6 +8,7 @@ node = "latest"
 "npm:t3" = "latest"
 "npm:vercel" = "latest"
 "npm:@openai/codex" = "latest"
+"npm:@earendil-works/pi-coding-agent" = "latest"
 
 [settings]
 # Add support for files like .python-version, .node-version, etc.
