@@ -5,6 +5,26 @@
 up package:
     mise use -g {{ package }}@latest
 
+# update an installed mise tool to latest by fuzzy name — e.g. `just -g update codex`
+update name:
+    #!/usr/bin/env bash
+    # Resolve a fuzzy name (e.g. "codex") to the full mise tool key (e.g. "npm:@openai/codex")
+    # by case-insensitive substring match against currently installed tools.
+    set -euo pipefail
+    query={{ quote(name) }}
+    matches=$(mise ls -J | jq -r 'keys[]' | grep -iF -- "$query" || true)
+    if [ -z "$matches" ]; then
+        echo "No installed mise tool matches '$query'" >&2
+        exit 1
+    fi
+    count=$(printf '%s\n' "$matches" | wc -l | tr -d ' ')
+    if [ "$count" -gt 1 ]; then
+        echo "Multiple tools match '$query':" >&2
+        printf '  %s\n' $matches >&2
+        exit 1
+    fi
+    mise use -g "${matches}@latest"
+
 # list all installed mise tools and active versions
 ls:
     mise ls
