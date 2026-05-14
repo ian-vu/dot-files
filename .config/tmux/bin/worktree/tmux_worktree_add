@@ -320,6 +320,9 @@ setup_files() {
   # Symlink files: shared config that stays in sync with the main repo
   while IFS= read -r file; do
     [ -z "$file" ] && continue
+    # Strip trailing slash: ln -sf with a "dir/" destination treats it as
+    # "create symlink inside dir/" and fails when the dir doesn't exist yet.
+    file="${file%/}"
     src="$REPO_ROOT/$file"
     dest="$WORKTREE_PATH/$file"
     if [ -e "$src" ]; then
