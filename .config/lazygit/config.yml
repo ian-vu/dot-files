@@ -5,7 +5,6 @@
 
 gui:
   sidePanelWidth: 0.35 # gives you more space to show things side-by-side
-
   theme:
     activeBorderColor:
       - "#ff966c"
@@ -52,49 +51,39 @@ gui:
   commitHashLength: 3
   enlargedSideViewLocation: top
   expandFocusedSidePanel: false
-
   # If true, add a "/" root item in the file tree representing the root of the repository. It is only added when necessary, i.e. when there is more than one item at top level.
   showRootItemInFileTree: false
-
   # Whether to show the divergence from the base branch in the branches view.
   # One of: 'none' | 'onlyArrow'  | 'arrowAndNumber'
   showDivergenceFromBaseBranch: arrowAndNumber
-
   # How things are filtered when typing '/'.
   # One of 'substring' (default) | 'fuzzy'
   filterMode: fuzzy
-
   # If true, show the number of lines changed per file in the Files view
   # showNumstatInFilesView: true
-
 # If true, display a confirmation when subprocess terminates. This allows you to
 # view the output of the subprocess before returning to Lazygit.
 promptToReturnFromSubprocess: false
-
 git:
-  paging:
-    colorArg: always
-
-    # Side by side diff
-    # For global settings see ~/.gitconfig
-    # Flags show line numbers and remove the left side line numbers since it is duplicated
-    pager: delta --dark --paging=never
-    # pager: 'delta --dark --paging=never --line-numbers --line-numbers-left-format="" --line-numbers-right-format="{np:>4} "'
-    # pager: delta --dark --paging=never
-
-    # Use gitconfig
-    # useConfig: true
+  pagers:
+    - colorArg: always
+      # Side by side diff
+      # For global settings see ~/.gitconfig
+      # Flags show line numbers and remove the left side line numbers since it is duplicated
+      pager: delta --dark --paging=never
+      # pager: 'delta --dark --paging=never --line-numbers --line-numbers-left-format="" --line-numbers-right-format="{np:>4} "'
+      # pager: delta --dark --paging=never
+  # Use gitconfig
+  # useConfig: true
 
   # If true, lazygit will automatically stage files that used to have merge
   # conflicts but no longer do; and it will also ask you if you want to
   # continue a merge or rebase if you've resolved all conflicts. If false, it
   # won't do either of these things.
   autoStageResolvedConflicts: false
-
   # If true, parse emoji strings in commit messages e.g. render :rocket: as 🚀
   # (This should really be under 'gui', not 'git')
   parseEmoji: true
-
   log:
     # One of: 'date-order' | 'author-date-order' | 'topo-order' | 'default'
     # 'topo-order' makes it easier to read the git log graph, but commits may not
@@ -102,13 +91,10 @@ git:
     #
     # Can be changed from within Lazygit with `Log menu -> Commit sort order` (`<c-l>` in the commits window by default).
     order: date-order
-
   # If true, periodically fetch from remote
   autoFetch: false
-
   # If true, periodically refresh files and submodules
   autoRefresh: false
-
 keybinding:
   universal:
     nextItem: "n"
@@ -128,7 +114,6 @@ keybinding:
     openStatusFilter: K # <c-b> is already used for page down
     stashAllChanges: S # usually s
     viewStashOptions: s # usually S
-
 os:
   # Reuse an existing nvim instance in tmux instead of spawning a new editor.
   # How it works:
