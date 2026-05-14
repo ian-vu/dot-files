@@ -246,6 +246,8 @@ alias arst='asdf'
 # export ANTHROPIC_DEFAULT_OPUS_MODEL='claude-opus-4-6'
 alias claude='[ -n "$TMUX" ] && [ "$(tmux show-window-option -v automatic-rename 2>/dev/null)" != "off" ] && tmux rename-window "claude"; ~/.local/bin/claude --allow-dangerously-skip-permissions'
 alias cc='claude'
+alias codex='[ -n "$TMUX" ] && [ "$(tmux show-window-option -v automatic-rename 2>/dev/null)" != "off" ] && tmux rename-window "codex"; command codex --dangerously-bypass-approvals-and-sandbox'
+alias cx='codex'
 
 alias gitstats="onefetch"
 alias fabric='fabric-ai'
