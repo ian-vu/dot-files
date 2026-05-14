@@ -1,0 +1,5 @@
+interface:
+  display_name: "Work Summary"
+  short_description: "Write Obsidian work summaries"
+  default_prompt: "Use $work-summary to summarize this session into my Obsidian work summary vault."
+
