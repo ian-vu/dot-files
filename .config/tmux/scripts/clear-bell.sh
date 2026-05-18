@@ -13,8 +13,10 @@ if [ "$CLEAN_NAME" != "$CURRENT_NAME" ]; then
 fi
 
 # Remove the grouped Pi notification whenever this window is acknowledged.
-# This also covers foreground completions where no 🔔 suffix was added.
+# Alerter powers click actions; terminal-notifier remains as a fallback.
+ALERTER=$(PATH="/opt/homebrew/bin:/usr/local/bin:$PATH" command -v alerter 2>/dev/null || true)
 TERMINAL_NOTIFIER=$(PATH="/opt/homebrew/bin:/usr/local/bin:$PATH" command -v terminal-notifier 2>/dev/null || true)
-if [ -n "$TERMINAL_NOTIFIER" ] && [ -n "$WINDOW_ID" ]; then
-  "$TERMINAL_NOTIFIER" -remove "pi-tmux-notify:$WINDOW_ID" >/dev/null 2>&1 || true
+if [ -n "$WINDOW_ID" ]; then
+  [ -n "$ALERTER" ] && "$ALERTER" --remove "pi-tmux-notify:$WINDOW_ID" >/dev/null 2>&1 || true
+  [ -n "$TERMINAL_NOTIFIER" ] && "$TERMINAL_NOTIFIER" -remove "pi-tmux-notify:$WINDOW_ID" >/dev/null 2>&1 || true
 fi

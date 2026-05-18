@@ -8,6 +8,8 @@ tap "mrkai77/cask"
 tap "noahgorstein/tap"
 tap "warrensbox/tap"
 tap "hashicorp/tap"
+# For actionable macOS notifications from AI agent tmux hooks.
+tap "vjeantet/tap"
 # For sketchybar
 tap "FelixKratz/formulae"
 # For TUI mongodb
@@ -155,8 +157,10 @@ brew 'onefetch'
 brew "jqp"
 # TUI file manager
 brew "yazi"
-# cli for notifcation
+# CLI for notifications that can be removed by group.
 brew 'terminal-notifier'
+# Actionable macOS alerts used by Pi tmux notifications to jump back on click.
+brew "vjeantet/tap/alerter"
 # markdown slideshow
 brew 'marp-cli'
 # task runner

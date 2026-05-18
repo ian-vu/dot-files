@@ -5,7 +5,7 @@
  * so background tmux windows still surface native macOS alerts.
  */
 
-import { execFile, execFileSync } from "node:child_process";
+import { execFile, execFileSync, spawn } from "node:child_process";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { isToolCallEventType } from "@earendil-works/pi-coding-agent";
 
@@ -15,12 +15,15 @@ const NOTIFICATION_SOUND = "Pong";
 const NOTIFICATION_DEBOUNCE_MS = 10_000;
 // Foreground completions should still give feedback, but not leave stale macOS alerts.
 const FOREGROUND_NOTIFICATION_TTL_MS = 5_000;
+const KITTY_BUNDLE_ID = "net.kovidgoyal.kitty";
 // Match clear-bell.sh so macOS notifications clear when the tmux bell is acknowledged.
 const NOTIFICATION_GROUP_PREFIX = "pi-tmux-notify";
 
 const DEFAULT_MESSAGE = "Pi is waiting for input";
 
 let submittedPrompt = DEFAULT_MESSAGE;
+let clientName: string | undefined;
+let sessionName: string | undefined;
 let windowId: string | undefined;
 let paneId: string | undefined;
 let agentActive = false;
@@ -70,6 +73,9 @@ function cleanWindowName(name: string): string {
 }
 
 function captureTmuxWindow(): void {
+	// Store the exact tmux target so notification clicks can return to this Pi pane.
+	clientName = tmux("#{client_name}");
+	sessionName = tmux("#{session_name}");
 	windowId = tmux("#{window_id}");
 	paneId = tmux("#{pane_id}");
 }
@@ -89,6 +95,29 @@ function isActivePane(target: string | undefined): boolean {
 	// Query the captured pane directly; an untargeted tmux command can resolve to
 	// the pane running Pi instead of the pane currently focused by the client.
 	return tmux("#{pane_active}:#{window_active}", target) === "1:1";
+}
+
+function frontmostBundleId(): string | undefined {
+	try {
+		return execFileSync(
+			"/usr/bin/osascript",
+			["-e", 'tell application "System Events" to get bundle identifier of first application process whose frontmost is true'],
+			{ encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] },
+		).trim() || undefined;
+	} catch {
+		return undefined;
+	}
+}
+
+function isTmuxClientAtCapturedPane(): boolean {
+	if (!clientName || !sessionName || !windowId || !paneId) return isActivePane(paneId);
+	return tmux("#{session_name}|#{window_id}|#{pane_id}", clientName) === `${sessionName}|${windowId}|${paneId}`;
+}
+
+function isUserViewingCapturedPane(): boolean {
+	// Auto-clear only when Kitty is frontmost and this tmux client is on the exact Pi pane;
+	// if the user is in another app/session/pane, the notification should persist.
+	return frontmostBundleId() === KITTY_BUNDLE_ID && isTmuxClientAtCapturedPane();
 }
 
 function isBackgroundPane(target: string | undefined): boolean {
@@ -126,16 +155,109 @@ function notificationGroup(): string | undefined {
 }
 
 function removeNotificationGroup(group: string): void {
-	const terminalNotifier = commandPath("terminal-notifier");
-	if (!terminalNotifier) return;
+	// Alerter is preferred for actionable notifications; terminal-notifier remains as fallback.
+	const alerter = commandPath("alerter");
+	if (alerter) execFile(alerter, ["--remove", group], () => {});
 
-	execFile(terminalNotifier, ["-remove", group], () => {});
+	const terminalNotifier = commandPath("terminal-notifier");
+	if (terminalNotifier) execFile(terminalNotifier, ["-remove", group], () => {});
 }
 
 function removeNotificationGroupSoon(group: string): void {
 	// If the Pi pane is already active, auto-acknowledge after a short glance window.
 	const timer = setTimeout(() => removeNotificationGroup(group), FOREGROUND_NOTIFICATION_TTL_MS);
 	timer.unref();
+}
+
+function focusTmuxTarget(): void {
+	const tmuxPath = commandPath("tmux");
+	const targetClient = clientName ?? tmux("#{client_name}");
+	const targetSession = sessionName ?? (windowId ? tmux("#S", windowId) : tmux("#S"));
+	const targetWindow = windowId ?? tmux("#{window_id}");
+	const targetPane = paneId ?? tmux("#{pane_id}");
+
+	try {
+		execFileSync("/usr/bin/open", ["-a", "kitty"], { stdio: "ignore" });
+	} catch {}
+	if (!tmuxPath) return;
+
+	try {
+		if (targetClient && targetSession) {
+			execFileSync(tmuxPath, ["switch-client", "-c", targetClient, "-t", targetSession], { stdio: "ignore" });
+		} else if (targetSession) {
+			execFileSync(tmuxPath, ["switch-client", "-t", targetSession], { stdio: "ignore" });
+		}
+	} catch {}
+	try {
+		if (targetWindow) execFileSync(tmuxPath, ["select-window", "-t", targetWindow], { stdio: "ignore" });
+	} catch {}
+	try {
+		if (targetPane) execFileSync(tmuxPath, ["select-pane", "-t", targetPane], { stdio: "ignore" });
+	} catch {}
+	try {
+		// Focus Kitty again after tmux selection in case macOS activation raced the command.
+		execFileSync("/usr/bin/open", ["-a", "kitty"], { stdio: "ignore" });
+	} catch {}
+}
+
+function notifyWithAlerter(
+	alerter: string,
+	title: string,
+	message: string,
+	group: string | undefined,
+	shouldAutoClear: boolean,
+): void {
+	const tmuxPath = commandPath("tmux");
+	if (!tmuxPath) return;
+
+	// Alerter blocks until the user clicks/dismisses, giving reliable click results
+	// on modern macOS where terminal-notifier callbacks no longer fire consistently.
+	const child = spawn(
+		"/usr/bin/env",
+		[
+			"bash",
+			"-lc",
+			`
+				args=(--title "$PI_TITLE" --message "$PI_MESSAGE" --close-label Dismiss --actions Open --json)
+				[ -n "$PI_NOTIFY_GROUP" ] && args+=(--group "$PI_NOTIFY_GROUP")
+				[ -n "$PI_SOUND" ] && args+=(--sound "$PI_SOUND")
+				[ "$PI_AUTO_CLEAR" = 1 ] && args+=(--timeout "$PI_FOREGROUND_TTL_SECONDS")
+
+				result=$("$PI_ALERTER" "\${args[@]}" 2>/dev/null || true)
+				if printf '%s' "$result" | /usr/bin/grep -Eq '"activationType"[[:space:]]*:[[:space:]]*"(contentsClicked|actionClicked)"'; then
+					/usr/bin/open -a kitty >/dev/null 2>&1 || true
+					if [ -n "$PI_TARGET_CLIENT" ] && [ -n "$PI_TARGET_SESSION" ]; then
+						"$PI_TMUX" switch-client -c "$PI_TARGET_CLIENT" -t "$PI_TARGET_SESSION" >/dev/null 2>&1 || true
+					elif [ -n "$PI_TARGET_SESSION" ]; then
+						"$PI_TMUX" switch-client -t "$PI_TARGET_SESSION" >/dev/null 2>&1 || true
+					fi
+					[ -n "$PI_TARGET_WINDOW" ] && "$PI_TMUX" select-window -t "$PI_TARGET_WINDOW" >/dev/null 2>&1 || true
+					[ -n "$PI_TARGET_PANE" ] && "$PI_TMUX" select-pane -t "$PI_TARGET_PANE" >/dev/null 2>&1 || true
+					/usr/bin/open -a kitty >/dev/null 2>&1 || true
+				fi
+			`.replace(/^\t{4}/gm, ""),
+		],
+		{
+			detached: true,
+			stdio: "ignore",
+			env: {
+				...process.env,
+				PI_ALERTER: alerter,
+				PI_TMUX: tmuxPath,
+				PI_TITLE: title,
+				PI_MESSAGE: message,
+				PI_SOUND: NOTIFICATION_SOUND,
+				PI_NOTIFY_GROUP: group ?? "",
+				PI_AUTO_CLEAR: shouldAutoClear ? "1" : "0",
+				PI_FOREGROUND_TTL_SECONDS: String(Math.ceil(FOREGROUND_NOTIFICATION_TTL_MS / 1000)),
+				PI_TARGET_CLIENT: clientName ?? "",
+				PI_TARGET_SESSION: sessionName ?? "",
+				PI_TARGET_WINDOW: windowId ?? "",
+				PI_TARGET_PANE: paneId ?? "",
+			},
+		},
+	);
+	child.unref();
 }
 
 function notify(reason: "complete" | "attention"): void {
@@ -150,7 +272,13 @@ function notify(reason: "complete" | "attention"): void {
 	lastNotificationAt = now;
 
 	const group = notificationGroup();
-	const shouldAutoClear = Boolean(group && isActivePane(paneId));
+	const shouldAutoClear = Boolean(group && isUserViewingCapturedPane());
+	const alerter = commandPath("alerter");
+	if (alerter) {
+		notifyWithAlerter(alerter, title, message, group, shouldAutoClear);
+		return;
+	}
+
 	const terminalNotifier = commandPath("terminal-notifier");
 	if (terminalNotifier) {
 		const args = ["-title", title, "-message", message, "-sound", NOTIFICATION_SOUND];
