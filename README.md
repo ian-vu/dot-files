@@ -1,6 +1,6 @@
 # My dotfiles
 
-Dotfiles managed with [GNU stow](https://www.gnu.org/software/stow/). Running `stow .` from the repo root symlinks config files into `~`.
+Dotfiles managed with [GNU stow](https://www.gnu.org/software/stow/). Running `stow --no-folding .` from the repo root symlinks config files into `~` while keeping repo-only nested files out of `$HOME`.
 
 ## Docs
 

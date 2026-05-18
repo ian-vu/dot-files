@@ -5,7 +5,9 @@
 ```bash
 git clone git@github.com:ian-vu/dot-files.git ~/dot-files
 cd ~/dot-files
-stow .
+# --no-folding keeps repo-only nested files, like Pi extension LSP config, out of $HOME.
+stow --no-folding .
+npm ci --prefix .pi/agent/extensions
 ```
 
 ### macOS

@@ -13,7 +13,7 @@ Each top-level file or directory (other than ignored items) is symlinked to the 
 ~/dot-files/.config/nvim ->  ~/.config/nvim
 ```
 
-Running `stow .` from the repo root creates or updates the symlinks.
+Running `stow --no-folding .` from the repo root creates or updates the symlinks. `--no-folding` is intentional: some nested files are repo-only (for example Pi extension LSP config), and directory folding would expose ignored files by symlinking the whole parent directory.
 
 ## File placement
 
@@ -31,4 +31,4 @@ Pattern syntax:
 | `^/foo` | `foo` only at the repo root |
 | `\.txt` | Literal `.txt` (use `\.` for dots) |
 
-After editing `.stow-local-ignore`, re-run `stow .` to apply the changes.
+After editing `.stow-local-ignore`, re-run `stow --no-folding .` to apply the changes.

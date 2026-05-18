@@ -51,3 +51,13 @@ AGENTS.md
 ^/\.worktrees
 # Pi project settings stay in the repo for the agent, not symlinked into $HOME.
 ^/\.pi/settings\.json
+
+# Pi local runtime state and extension LSP project files are repo/local-only; use
+# `stow --no-folding .` so these nested ignores are not bypassed by dir folding.
+^/\.pi/agent/auth\.json
+^/\.pi/agent/sessions
+^/\.pi/agent/npm
+^/\.pi/agent/extensions/package\.json
+^/\.pi/agent/extensions/package-lock\.json
+^/\.pi/agent/extensions/tsconfig\.json
+^/\.pi/agent/extensions/node_modules

@@ -48,3 +48,6 @@ Gemfile.lock
 # Pi coding-agent session state/auth are local-run artifacts and may contain secrets.
 /.pi/agent/sessions/
 /.pi/agent/auth.json
+
+# Pi extension LSP dependencies are installed only for local editor support.
+/.pi/agent/extensions/node_modules/
