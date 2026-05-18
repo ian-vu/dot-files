@@ -1,0 +1,26 @@
+{
+  "lastChangelogVersion": "0.75.1",
+  "defaultProvider": "openai-codex",
+  "defaultModel": "gpt-5.5",
+  "defaultThinkingLevel": "high",
+  "showHardwareCursor": true,
+  "enableInstallTelemetry": false,
+  "npmCommand": [
+    "mise",
+    "exec",
+    "--",
+    "npm"
+  ],
+  "doubleEscapeAction": "tree",
+  "theme": "tokyo-night",
+  "editorPaddingX": 1,
+  "skills": [
+    "~/.claude/skills",
+    "~/.codex/skills"
+  ],
+  "shellCommandPrefix": "shopt -s expand_aliases\neval \"$(grep '^alias ' ~/.zshrc)\"",
+  "packages": [
+    "npm:@ifi/oh-pi-themes",
+    "npm:pi-web-access"
+  ]
+}

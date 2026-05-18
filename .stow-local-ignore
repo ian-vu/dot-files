@@ -49,3 +49,5 @@ CLAUDE.md
 AGENTS.md
 \.luarc\.json
 ^/\.worktrees
+# Pi project settings stay in the repo for the agent, not symlinked into $HOME.
+^/\.pi/settings\.json

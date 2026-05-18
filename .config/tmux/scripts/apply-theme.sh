@@ -14,8 +14,8 @@ tmux set -g status-left-style "NONE"
 tmux set -g status-right-style "NONE"
 tmux setw -g window-status-separator ""
 
-# Undercurl support
-tmux set -g default-terminal "${TERM}"
+# Undercurl support (default-terminal is set in tmux.conf; do not stomp it here —
+# run-shell on tmux 3.6+ exports TERM=dumb, which breaks Starship and colors)
 tmux set -as terminal-overrides ',*:Smulx=\E[4::%p1%dm'
 tmux set -as terminal-overrides ',*:Setulc=\E[58::2::::%p1%{65536}%/%d::%p1%{256}%/%{255}%&%d::%p1%{255}%&%d%;m'
 

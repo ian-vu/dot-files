@@ -50,7 +50,8 @@ worktree:
   symlinks:
     # - .justfile
     # - .ignore
-    # - .claude/settings.local.json
+    - .claude/settings.local.json
+    - .pi/settings.json
 
   # Command to run in the tmux session after worktree setup.
   # Executes via `tmux send-keys`, so it runs in the worktree's shell.

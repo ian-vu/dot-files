@@ -44,3 +44,7 @@ Gemfile.lock
 # vi-mongo default styles (regenerated on first run)
 .config/vi-mongo/styles/
 .work-summaries/
+
+# Pi coding-agent session state/auth are local-run artifacts and may contain secrets.
+/.pi/agent/sessions/
+/.pi/agent/auth.json
