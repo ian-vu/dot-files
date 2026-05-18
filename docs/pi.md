@@ -24,3 +24,25 @@ The config deliberately sets modern Node/ESM options because Pi and its dependen
 - `noEmit: true` keeps TypeScript checks from writing generated files into the dotfiles repo.
 
 The adjacent `package.json`, lockfile, `node_modules/`, and `tsconfig.json` are ignored by stow on purpose: they support local editor/type-checking only. Runtime extension imports should still be valid from Pi's actual extension loading environment.
+
+## Package runtime state
+
+Pi package installs live under `~/.pi/agent/npm/` and `~/.pi/agent/git/`. These are runtime caches, not dotfiles, and must not be symlinked into this repo. If Pi reports an extension under `~/.pi/agent/npm/...` but the error mentions `~/dot-files/.pi/agent/npm/...`, then Pi is using the repo as its agent directory or stow has exposed package runtime state.
+
+Troubleshooting:
+
+```sh
+# These should normally be empty/unset.
+echo "$PI_CODING_AGENT_DIR"
+echo "$PI_PACKAGE_DIR"
+
+# This should be a real directory, not a symlink into ~/dot-files.
+ls -ld ~/.pi/agent/npm ~/.pi/agent/npm/node_modules
+readlink ~/.pi/agent/npm ~/.pi/agent/npm/node_modules 2>/dev/null
+
+# Repair symlinks from the repo root after changing stow ignores.
+stow --no-folding .
+
+# Reinstall package resources if a package cache was removed or corrupted.
+pi update npm:pi-web-access
+```
