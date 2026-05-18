@@ -13,6 +13,8 @@ const RUNNING_MARKER = "⚡";
 const ATTENTION_MARKER = "🔔";
 const NOTIFICATION_SOUND = "Pong";
 const NOTIFICATION_DEBOUNCE_MS = 10_000;
+// Match clear-bell.sh so macOS notifications clear when the tmux bell is acknowledged.
+const NOTIFICATION_GROUP_PREFIX = "pi-tmux-notify";
 
 const DEFAULT_MESSAGE = "Pi is waiting for input";
 
@@ -103,6 +105,12 @@ function markWaitingForAttention(): void {
 	setWindowMarker(isBackgroundWindow(windowId) ? ATTENTION_MARKER : undefined);
 }
 
+function notificationGroup(): string | undefined {
+	// Re-read as a fallback so notifications stay removable even if startup capture missed tmux.
+	const targetWindowId = windowId ?? tmux("#{window_id}");
+	return targetWindowId ? `${NOTIFICATION_GROUP_PREFIX}:${targetWindowId}` : undefined;
+}
+
 function notify(reason: "complete" | "attention"): void {
 	const title = notificationTitle();
 	const message = submittedPrompt || DEFAULT_MESSAGE;
@@ -116,9 +124,13 @@ function notify(reason: "complete" | "attention"): void {
 
 	const terminalNotifier = commandPath("terminal-notifier");
 	if (terminalNotifier) {
+		const args = ["-title", title, "-message", message, "-sound", NOTIFICATION_SOUND];
+		const group = notificationGroup();
+		if (group) args.push("-group", group);
+
 		execFile(
 			terminalNotifier,
-			["-title", title, "-message", message, "-sound", NOTIFICATION_SOUND],
+			args,
 			(error) => {
 				if (!error) return;
 				notifyWithOsaScript(title, message);
