@@ -20,9 +20,8 @@ THEME_WIN_STYLE="NONE,fg=#828bb8,bg=#1e2030"
 THEME_WIN_ACT_STYLE="underscore,fg=#828bb8,bg=#1e2030"
 
 theme_extras() {
-  # Undercurl
-  # To have undercurls show up and in color, add the following to your Tmux configuration file:
-  tmux set -g default-terminal "${TERM}"
+  # Undercurl (default-terminal is set in tmux.conf; do not stomp it from a
+  # run-shell context — tmux 3.6 sets TERM=dumb there, which kills colors)
   tmux set -as terminal-overrides ',*:Smulx=\E[4::%p1%dm'                                                          # undercurl support
   tmux set -as terminal-overrides ',*:Setulc=\E[58::2::::%p1%{65536}%/%d::%p1%{256}%/%{255}%&%d::%p1%{255}%&%d%;m' # underscore colours - needs tmux-3.0
 }
