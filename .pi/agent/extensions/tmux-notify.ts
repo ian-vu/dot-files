@@ -13,6 +13,8 @@ const RUNNING_MARKER = "⚡";
 const ATTENTION_MARKER = "🔔";
 const NOTIFICATION_SOUND = "Pong";
 const NOTIFICATION_DEBOUNCE_MS = 10_000;
+// Foreground completions should still give feedback, but not leave stale macOS alerts.
+const FOREGROUND_NOTIFICATION_TTL_MS = 5_000;
 // Match clear-bell.sh so macOS notifications clear when the tmux bell is acknowledged.
 const NOTIFICATION_GROUP_PREFIX = "pi-tmux-notify";
 
@@ -20,6 +22,7 @@ const DEFAULT_MESSAGE = "Pi is waiting for input";
 
 let submittedPrompt = DEFAULT_MESSAGE;
 let windowId: string | undefined;
+let paneId: string | undefined;
 let agentActive = false;
 let lastNotificationKey = "";
 let lastNotificationAt = 0;
@@ -68,6 +71,7 @@ function cleanWindowName(name: string): string {
 
 function captureTmuxWindow(): void {
 	windowId = tmux("#{window_id}");
+	paneId = tmux("#{pane_id}");
 }
 
 function notificationTitle(): string {
@@ -79,9 +83,19 @@ function notificationTitle(): string {
 	return window ? `${session}  ⧉  ${window}` : session;
 }
 
-function isBackgroundWindow(target: string): boolean {
-	const activeWindow = tmux("#{window_id}");
-	return Boolean(activeWindow && target !== activeWindow);
+function isActivePane(target: string | undefined): boolean {
+	if (!target) return false;
+
+	// Query the captured pane directly; an untargeted tmux command can resolve to
+	// the pane running Pi instead of the pane currently focused by the client.
+	return tmux("#{pane_active}:#{window_active}", target) === "1:1";
+}
+
+function isBackgroundPane(target: string | undefined): boolean {
+	if (!target) return false;
+
+	const focusState = tmux("#{pane_active}:#{window_active}", target);
+	return Boolean(focusState && focusState !== "1:1");
 }
 
 function setWindowMarker(marker: typeof RUNNING_MARKER | typeof ATTENTION_MARKER | undefined): void {
@@ -102,13 +116,26 @@ function markRunning(): void {
 
 function markWaitingForAttention(): void {
 	if (!windowId) return;
-	setWindowMarker(isBackgroundWindow(windowId) ? ATTENTION_MARKER : undefined);
+	setWindowMarker(isBackgroundPane(paneId) ? ATTENTION_MARKER : undefined);
 }
 
 function notificationGroup(): string | undefined {
 	// Re-read as a fallback so notifications stay removable even if startup capture missed tmux.
 	const targetWindowId = windowId ?? tmux("#{window_id}");
 	return targetWindowId ? `${NOTIFICATION_GROUP_PREFIX}:${targetWindowId}` : undefined;
+}
+
+function removeNotificationGroup(group: string): void {
+	const terminalNotifier = commandPath("terminal-notifier");
+	if (!terminalNotifier) return;
+
+	execFile(terminalNotifier, ["-remove", group], () => {});
+}
+
+function removeNotificationGroupSoon(group: string): void {
+	// If the Pi pane is already active, auto-acknowledge after a short glance window.
+	const timer = setTimeout(() => removeNotificationGroup(group), FOREGROUND_NOTIFICATION_TTL_MS);
+	timer.unref();
 }
 
 function notify(reason: "complete" | "attention"): void {
@@ -122,17 +149,21 @@ function notify(reason: "complete" | "attention"): void {
 	lastNotificationKey = key;
 	lastNotificationAt = now;
 
+	const group = notificationGroup();
+	const shouldAutoClear = Boolean(group && isActivePane(paneId));
 	const terminalNotifier = commandPath("terminal-notifier");
 	if (terminalNotifier) {
 		const args = ["-title", title, "-message", message, "-sound", NOTIFICATION_SOUND];
-		const group = notificationGroup();
 		if (group) args.push("-group", group);
 
 		execFile(
 			terminalNotifier,
 			args,
 			(error) => {
-				if (!error) return;
+				if (!error) {
+					if (shouldAutoClear && group) removeNotificationGroupSoon(group);
+					return;
+				}
 				notifyWithOsaScript(title, message);
 			},
 		);

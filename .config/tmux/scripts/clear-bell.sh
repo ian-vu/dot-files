@@ -1,8 +1,9 @@
 #!/bin/sh
 # Clears the 🔔 symbol from the selected window when it gains focus.
-# Triggered by tmux's after-select-window and client-session-changed hooks.
+# Triggered by tmux's pane/window/session focus hooks so pane-level Pi work is
+# acknowledged even when it finishes in another split in the same window.
 # The 🔔 suffix is added by AI agent hooks when work finishes in a background
-# window; clearing it here also acknowledges matching native notifications.
+# pane; clearing it here also acknowledges matching native notifications.
 
 CURRENT_NAME=$(tmux display-message -p '#W' 2>/dev/null)
 WINDOW_ID=$(tmux display-message -p '#{window_id}' 2>/dev/null)
