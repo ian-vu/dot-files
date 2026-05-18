@@ -22,12 +22,20 @@ let agentActive = false;
 let lastNotificationKey = "";
 let lastNotificationAt = 0;
 
-function commandExists(command: string): boolean {
+function shellQuote(value: string): string {
+	return `'${value.replace(/'/g, `'\\''`)}'`;
+}
+
+function commandPath(command: string): string | undefined {
 	try {
-		execFileSync("/usr/bin/env", ["bash", "-lc", `command -v ${command}`], { stdio: "ignore" });
-		return true;
+		// Resolve through a shell so Homebrew paths from shell startup files are honored;
+		// Pi's Node process PATH can be narrower, making execFile("terminal-notifier") fail silently.
+		return execFileSync("/usr/bin/env", ["bash", "-lc", `command -v ${shellQuote(command)}`], {
+			encoding: "utf8",
+			stdio: ["ignore", "pipe", "ignore"],
+		}).trim() || undefined;
 	} catch {
-		return false;
+		return undefined;
 	}
 }
 
@@ -96,8 +104,6 @@ function markWaitingForAttention(): void {
 }
 
 function notify(reason: "complete" | "attention"): void {
-	if (!commandExists("terminal-notifier")) return;
-
 	const title = notificationTitle();
 	const message = submittedPrompt || DEFAULT_MESSAGE;
 	const key = `${reason}\0${title}\0${message}`;
@@ -108,9 +114,29 @@ function notify(reason: "complete" | "attention"): void {
 	lastNotificationKey = key;
 	lastNotificationAt = now;
 
+	const terminalNotifier = commandPath("terminal-notifier");
+	if (terminalNotifier) {
+		execFile(
+			terminalNotifier,
+			["-title", title, "-message", message, "-sound", NOTIFICATION_SOUND],
+			(error) => {
+				if (!error) return;
+				notifyWithOsaScript(title, message);
+			},
+		);
+		return;
+	}
+
+	notifyWithOsaScript(title, message);
+}
+
+function notifyWithOsaScript(title: string, message: string): void {
 	execFile(
-		"terminal-notifier",
-		["-title", title, "-message", message, "-sound", NOTIFICATION_SOUND],
+		"/usr/bin/osascript",
+		[
+			"-e",
+			`display notification ${JSON.stringify(message)} with title ${JSON.stringify(title)} sound name ${JSON.stringify(NOTIFICATION_SOUND)}`,
+		],
 		() => {},
 	);
 }
