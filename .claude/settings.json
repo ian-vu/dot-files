@@ -1,8 +1,8 @@
 {
-  "includeCoAuthoredBy": false,
   "env": {
     "CLAUDE_CODE_DISABLE_1M_CONTEXT": "1"
   },
+  "includeCoAuthoredBy": false,
   "permissions": {
     "allow": [
       "Bash(sed:*)",
@@ -55,7 +55,9 @@
       "Bash(shellcheck:*)"
     ],
     "deny": [],
-    "ask": ["Bash(git commit:*)", "Bash(git push:*)"],
+    "ask": [
+      "Bash(git push:*)"
+    ],
     "defaultMode": "auto"
   },
   "model": "opus",
@@ -129,6 +131,12 @@
       "source": {
         "source": "github",
         "repo": "tirth8205/code-review-graph"
+      }
+    },
+    "context-mode": {
+      "source": {
+        "source": "github",
+        "repo": "mksglu/context-mode"
       }
     }
   },
