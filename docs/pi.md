@@ -11,6 +11,36 @@ This repo stores Pi configuration under the same paths used in `$HOME`, but a fe
 - [Models](https://pi.dev/docs/latest/models) — custom provider/model configuration.
 - [Keybindings](https://pi.dev/docs/latest/keybindings) — interactive shortcut customization.
 
+## User-private local context
+
+The global Pi extension `.pi/agent/extensions/local-context.ts` lets each checkout provide machine/user-specific context without editing or committing the repo's shared `AGENTS.md`.
+
+Create this file inside any repo where local context is needed:
+
+```sh
+mkdir -p .pi
+$EDITOR .pi/LOCAL_CONTEXT.md
+```
+
+It is ignored globally via `~/.gitignore_global`, so it should not appear in `git status` for any repo using this dotfiles Git config. If you are on a machine without that global ignore, keep it local to the checkout by adding it to the repo-local Git exclude file instead of `.gitignore`:
+
+```sh
+echo ".pi/LOCAL_CONTEXT.md" >> .git/info/exclude
+```
+
+Example content:
+
+```md
+# Local context
+
+- When running Python commands, tests, pytest, tox, or nox, prefix with `LOCAL_ENV=1`.
+- Reason: this machine uses `LOCAL_ENV=1` to load local `.env` files.
+```
+
+The extension discovers `.pi/LOCAL_CONTEXT.md` from the current git repo root down to the current working directory and appends those notes after Pi's normal context, including `AGENTS.md`. This ordering is intentional so local machine context can clarify how commands should be run without changing shared project instructions.
+
+After creating or editing a local context file in an already-running Pi session, run `/reload` or restart Pi.
+
 ## Extension LSP project
 
 `.pi/agent/extensions/tsconfig.json` exists for Neovim/TypeScript language-server support while editing Pi extensions in this repo. Pi itself loads TypeScript extensions with `jiti`, so it does not need this file to run extensions.

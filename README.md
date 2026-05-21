@@ -8,3 +8,4 @@ Dotfiles managed with [GNU stow](https://www.gnu.org/software/stow/). Running `s
 - [Git Configuration](docs/git.md) — automatic identity switching per workspace
 - [Age Encryption](docs/encryption.md) — encrypting/decrypting secrets with age
 - [Bootstrap](docs/bootstrap.md) — installation and post-install setup
+- [Pi](docs/pi.md) — Pi extension notes, including user-private local context
