@@ -11,6 +11,14 @@ This repo stores Pi configuration under the same paths used in `$HOME`, but a fe
 - [Models](https://pi.dev/docs/latest/models) — custom provider/model configuration.
 - [Keybindings](https://pi.dev/docs/latest/keybindings) — interactive shortcut customization.
 
+## MCP servers
+
+Global shared MCP configuration lives in `.config/mcp/mcp.json`, which stows to `~/.config/mcp/mcp.json` so Pi's `pi-mcp-adapter` can discover it without Pi-specific imports.
+
+Linear and Notion use their hosted Streamable HTTP endpoints with OAuth because that avoids local MCP packages/API keys and lets each service manage server updates.
+
+After adding or changing MCP servers in an already-running Pi session, run `/reload` or restart Pi. For OAuth servers such as Linear or Notion, run `/mcp-auth <server>` if `autoAuth` does not prompt automatically.
+
 ## User-private local context
 
 The global Pi extension `.pi/agent/extensions/local-context.ts` lets each checkout provide machine/user-specific context without editing or committing the repo's shared `AGENTS.md`.

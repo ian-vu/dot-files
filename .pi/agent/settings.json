@@ -2,7 +2,7 @@
   "lastChangelogVersion": "0.75.1",
   "defaultProvider": "openai-codex",
   "defaultModel": "gpt-5.5",
-  "defaultThinkingLevel": "high",
+  "defaultThinkingLevel": "medium",
   "showHardwareCursor": true,
   "enableInstallTelemetry": false,
   "npmCommand": [
@@ -21,7 +21,11 @@
   "shellCommandPrefix": "shopt -s expand_aliases\neval \"$(grep '^alias ' ~/.zshrc)\"",
   "packages": [
     "npm:@ifi/oh-pi-themes",
-    "npm:pi-web-access"
+    "npm:pi-web-access",
+    "npm:pi-mcp-adapter",
+    "npm:@juicesharp/rpiv-ask-user-question",
+    "npm:@juicesharp/rpiv-todo",
+    "npm:@juicesharp/rpiv-btw"
   ],
   "hideThinkingBlock": false,
   "markdown": {
