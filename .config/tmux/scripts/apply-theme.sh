@@ -87,7 +87,7 @@ tmux setw -g window-status-current-format "${LEAD_CUR}#[bg=${THEME_ACCENT},fg=${
 tmux setw -g window-status-format "${LEAD_SEC}#[bg=${THEME_SEC_BG},fg=${THEME_SEC_FG}] #I #{?${NAMEBLANK},, ${WINNAME} }#[bg=${THEME_BG},fg=${THEME_SEC_BG},noitalics]"
 
 # Status right
-tmux set -g status-right "#[bg=${THEME_BG},fg=${THEME_SEC_BG} nobold, nounderscore, noitalics]#[bg=${THEME_SEC_BG},fg=${THEME_SEC_FG}] #(~/.config/tmux/scripts/cpu.sh)#[fg=${THEME_SEC_FG}]  #(~/.config/tmux/scripts/mem.sh)#[fg=${THEME_SEC_FG}]  #(~/.config/tmux/scripts/battery.sh)#[fg=${THEME_SEC_FG}]  %I:%M %p #[bg=${THEME_SEC_BG},fg=${THEME_ACCENT},nobold,noitalics,nounderscore]#[bg=${THEME_ACCENT},fg=${THEME_ACCENT_FG},nobold,noitalics,nounderscore] #(~/.config/tmux/scripts/format-session.sh #{session_name}) "
+tmux set -g status-right "#[bg=${THEME_BG},fg=${THEME_SEC_BG} nobold, nounderscore, noitalics]#[bg=${THEME_SEC_BG},fg=${THEME_SEC_FG}]#(~/.config/tmux/scripts/cpu.sh)#[fg=${THEME_SEC_FG}]#(~/.config/tmux/scripts/mem.sh)#[fg=${THEME_SEC_FG}]#(~/.config/tmux/scripts/battery.sh)#[fg=${THEME_SEC_FG}] %I:%M %p #[bg=${THEME_SEC_BG},fg=${THEME_ACCENT},nobold,noitalics,nounderscore]#[bg=${THEME_ACCENT},fg=${THEME_ACCENT_FG},nobold,noitalics,nounderscore] #(~/.config/tmux/scripts/format-session.sh #{session_name}) "
 
 # Theme-specific extras (e.g. gruvbox clock color, bell style)
 if type theme_extras &>/dev/null; then

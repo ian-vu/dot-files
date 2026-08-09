@@ -24,5 +24,7 @@ val=$(vm_stat 2>/dev/null | awk -v total="$total" -v ps="$pagesize" '
 if [ "$val" -lt 1 ] 2>/dev/null; then
   printf '#[bg=#ff9e64,fg=#1b1d2b] 󰘚 %s%% #[bg=#3b4261,fg=#828bb8]' "$val"
 else
-  printf '󰘚 %s%%' "$val"
+  # Padding lives inside the script so the segment owns its spacing and the
+  # warning background extends edge-to-edge to the separator arrows.
+  printf ' 󰘚 %s%% ' "$val"
 fi
