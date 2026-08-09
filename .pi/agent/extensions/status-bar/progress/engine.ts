@@ -1,52 +1,18 @@
 /**
- * Example:
- *   claude-opus-4.7  ❯  think:med  ❯  2.6% 1.0M  ❯  Reviewing package structure
+ * Progress engine for the status-bar footer.
  *
- * Re-renders on model change, thinking-level change, status updates, and after
- * each assistant turn so context usage stays current.
- *
- * Environment variables:
- *   PI_BAR_SHOW           comma-separated list of segments to show, including cost
- *   PI_BAR_THRESHOLDS     warning,danger context-usage percentages
- *   PI_BAR_PROGRESS_MODEL provider/id for the progress update model
- *   PI_BAR_CONFIG         override the persisted pi-bar config path
+ * Collects activity "facts" from Pi events, periodically asks a fast model for
+ * a one-line progress update, sanitizes the model output, and debounces
+ * renders into the footer. Also exports stripTerminalControls for status-filter
+ * text cleanup. Reconstructed from the monolithic pi-bar-cost.ts predecessor.
  */
 
-import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
-import { homedir } from "node:os";
-import { dirname, join } from "node:path";
 import { complete, type UserMessage } from "@earendil-works/pi-ai";
 import {
-  getSettingsListTheme,
   SettingsManager,
-  type ExtensionAPI,
   type ExtensionContext,
-  type ThemeColor,
 } from "@earendil-works/pi-coding-agent";
-import {
-  Container,
-  type SettingItem,
-  SettingsList,
-  truncateToWidth,
-} from "@earendil-works/pi-tui";
 
-type SegmentName =
-  | "model"
-  | "thinking"
-  | "context"
-  | "cost"
-  | "progress"
-  | "extensions";
-type StatusFilter =
-  | { mode: "all"; hidden: Set<string> }
-  | { mode: "only"; shown: Set<string> };
-type SerializedStatusFilter =
-  | { mode: "all"; hidden: string[] }
-  | { mode: "only"; shown: string[] };
-type GlobalBarConfig = {
-  statusFilter?: SerializedStatusFilter;
-  segments?: SegmentName[];
-};
 type ProgressActivityType =
   | "user_message"
   | "assistant_update"
@@ -79,7 +45,6 @@ type FastModelAuth = {
   headers?: Record<string, string>;
 };
 
-const STATUS_FILTER_ENTRY_TYPE = "pi-bar-status-filter";
 const SETTINGS_PROGRESS_KEY = "progress";
 const SETTINGS_BAR_KEY = "bar";
 const MAX_ACTIVITY_TEXT_CHARS = 800;
@@ -105,181 +70,6 @@ const NORMAL_CHECKPOINT_MAX_WAIT_MS = 2_500;
 // Defensive ceiling: even if the model ignores the length instruction, never
 // blast a large payload into the footer.
 const MAX_SAFE_PROGRESS_CHARS = 240;
-const CONFIG_PATH =
-  process.env.PI_BAR_CONFIG ?? join(homedir(), ".pi", "agent", "pi-bar.json");
-
-const DEFAULT_SEGMENTS: SegmentName[] = [
-  "model",
-  "thinking",
-  "context",
-  "cost",
-  "progress",
-  "extensions",
-];
-const ALL_SEGMENTS: readonly SegmentName[] = [
-  "model",
-  "thinking",
-  "context",
-  "cost",
-  "progress",
-  "extensions",
-];
-const SEGMENT_LABELS: Record<SegmentName, string> = {
-  model: "Model",
-  thinking: "Thinking level",
-  context: "Context usage",
-  cost: "Session cost",
-  progress: "Progress update",
-  extensions: "Extension statuses",
-};
-const DEFAULT_WARNING_THRESHOLD = 70;
-const DEFAULT_ERROR_THRESHOLD = 90;
-
-const SEGMENT_SEPARATOR = "❯";
-const EXTENSION_STATUS_SEPARATOR = SEGMENT_SEPARATOR;
-
-function formatCost(amount: number): string {
-  if (amount <= 0) return "$0.00";
-  if (amount < 0.01) return `$${amount.toFixed(4)}`;
-  if (amount < 1) return `$${amount.toFixed(3)}`;
-  return `$${amount.toFixed(2)}`;
-}
-
-function assistantMessageCost(message: unknown): number {
-  if (!message || typeof message !== "object") return 0;
-  const record = message as Record<string, unknown>;
-  if (record.role !== "assistant") return 0;
-  const usage = record.usage;
-  if (!usage || typeof usage !== "object") return 0;
-  const cost = (usage as Record<string, unknown>).cost;
-  if (!cost || typeof cost !== "object") return 0;
-  const total = (cost as Record<string, unknown>).total;
-  return typeof total === "number" && Number.isFinite(total) ? total : 0;
-}
-
-function sessionCostFromEntries(ctx: ExtensionContext): number {
-  // Recompute on session/reload so the cost segment survives /reload and /resume
-  // without writing extension-owned state into the session file.
-  return ctx.sessionManager.getEntries().reduce((total, entry) => {
-    if (!entry || typeof entry !== "object") return total;
-    const message = (entry as unknown as Record<string, unknown>).message;
-    return total + assistantMessageCost(message);
-  }, 0);
-}
-
-class CostTracker {
-  private total = 0;
-
-  resetFromSession(ctx: ExtensionContext): void {
-    this.total = sessionCostFromEntries(ctx);
-  }
-
-  recordMessage(message: unknown): void {
-    this.total += assistantMessageCost(message);
-  }
-
-  text(): string {
-    return formatCost(this.total);
-  }
-}
-
-function formatTokens(n: number): string {
-  if (n >= 1_000_000) {
-    const value = n / 1_000_000;
-    return value >= 10 ? `${Math.round(value)}M` : `${value.toFixed(1)}M`;
-  }
-  if (n >= 1_000) {
-    const value = n / 1_000;
-    return value >= 10 ? `${Math.round(value)}k` : `${value.toFixed(1)}k`;
-  }
-  return `${n}`;
-}
-
-function formatModelName(id: string | undefined): string {
-  if (!id) return "no-model";
-  const base = id.includes("/") ? (id.split("/").pop() ?? id) : id;
-  return base.replace(/-\d{8}$/, "").replace(/-\d{4}-\d{2}-\d{2}$/, "");
-}
-
-function thinkingColor(level: string): ThemeColor {
-  switch (level) {
-    case "off":
-      return "thinkingOff";
-    case "minimal":
-    case "min":
-      return "thinkingMinimal";
-    case "low":
-      return "thinkingLow";
-    case "medium":
-    case "med":
-      return "thinkingMedium";
-    case "high":
-      return "thinkingHigh";
-    case "xhigh":
-    case "extra-high":
-      return "thinkingXhigh";
-    default:
-      return "thinkingText";
-  }
-}
-
-function contextColor(
-  percent: number | null | undefined,
-  warningThreshold: number,
-  errorThreshold: number,
-): ThemeColor {
-  if (percent === null || percent === undefined) return "muted";
-  if (percent >= errorThreshold) return "error";
-  if (percent >= warningThreshold) return "warning";
-  return "success";
-}
-
-function isSegmentName(value: string): value is SegmentName {
-  return (ALL_SEGMENTS as readonly string[]).includes(value);
-}
-
-function parseSegments(): SegmentName[] {
-  const raw = process.env.PI_BAR_SHOW;
-  if (!raw) return DEFAULT_SEGMENTS;
-
-  const requested = raw
-    .split(",")
-    .map((segment) => segment.trim().toLowerCase())
-    .filter(isSegmentName);
-
-  return requested.length > 0 ? requested : DEFAULT_SEGMENTS;
-}
-
-function parseThresholds(): {
-  warningThreshold: number;
-  errorThreshold: number;
-} {
-  const raw = process.env.PI_BAR_THRESHOLDS;
-  if (!raw) {
-    return {
-      warningThreshold: DEFAULT_WARNING_THRESHOLD,
-      errorThreshold: DEFAULT_ERROR_THRESHOLD,
-    };
-  }
-
-  const [warning, error] = raw
-    .split(",")
-    .map((value) => Number.parseFloat(value.trim()));
-
-  if (
-    Number.isFinite(warning) &&
-    Number.isFinite(error) &&
-    warning >= 0 &&
-    error > warning
-  ) {
-    return { warningThreshold: warning, errorThreshold: error };
-  }
-
-  return {
-    warningThreshold: DEFAULT_WARNING_THRESHOLD,
-    errorThreshold: DEFAULT_ERROR_THRESHOLD,
-  };
-}
 
 function parseProgressModelSpec(
   value: string,
@@ -733,7 +523,7 @@ class ProgressFactCollector {
   }
 }
 
-class FooterProgressEngine {
+export class FooterProgressEngine {
   private readonly facts = new ProgressFactCollector();
   private configuredModel?: ProgressModelPreference;
   private runId = 0;
@@ -1419,7 +1209,7 @@ function skipEscapeSequence(text: string, escapeIndex: number): number {
   }
 }
 
-function stripTerminalControls(text: string): string {
+export function stripTerminalControls(text: string): string {
   let stripped = "";
   for (let index = 0; index < text.length; ) {
     const code = text.charCodeAt(index);
@@ -1459,7 +1249,7 @@ function stripTerminalControls(text: string): string {
 // parrot them; the regex is narrow enough not to clip natural starts like
 // "Activity slowed after retry" or "Checkpointing release state".
 const LEAKED_PREFIX_PATTERN =
-  /^\s*(?:[-*•]\s*)?(?:(?:through\s+activity|activity|checkpoint)\s+\d+\s*[:.\-—–]\s*|(?:tldr|summary|progress\s+update|progress)\s*[:.\-—–]\s*)+/i;
+  /^\s*(?:[-*•]\s*)?(?:(?:through\s+activity|activity|checkpoint)\s+\d+\s*[:.\-—–]\s*|(?:tldr|summary|progress\s+update|progress)\s*[:.\-—–]\s*]+)/i;
 const LEADING_PUNCT_PATTERN = /^[\s\-—–•*:#.,;]+/;
 const TRAILING_PUNCT_PATTERN = /[\s\-—–•*:#.,;]+$/;
 
@@ -1587,5 +1377,25 @@ const BANNED_FIRST_WORD_PATTERN = new RegExp(
 );
 
 function rewriteBannedFirstWord(text: string): string {
+  const match = BANNED_FIRST_WORD_PATTERN.exec(text);
+  if (!match) return text;
+  const original = match[1];
+  const replacement = BANNED_FIRST_WORD_REWRITES[original];
+  if (!replacement) return text;
+  return `${replacement}${text.slice(original.length)}`;
+}
 
-[Showing lines 1-1589 of 2341 (50.0KB limit). Use offset=1590 to continue.]
+// Pipeline that cleans model output before it reaches the footer: terminal
+// controls, leaked prompt scaffolding, markdown formatting, identifier/path
+// leaks, dangling prepositions left by identifier removal, and banned
+// tool-narration first words. Empty results are dropped by the caller.
+function sanitizeProgressText(text: string): string {
+  let cleaned = stripTerminalControls(text);
+  cleaned = stripLeakedScaffolding(cleaned);
+  cleaned = stripMarkdownFormatting(cleaned);
+  cleaned = stripIdentifierLeaks(cleaned);
+  cleaned = stripDanglingPrepositions(cleaned);
+  cleaned = rewriteBannedFirstWord(cleaned);
+  cleaned = truncateText(cleaned, MAX_SAFE_PROGRESS_CHARS);
+  return cleaned.trim();
+}

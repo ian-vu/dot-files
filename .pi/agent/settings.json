@@ -26,7 +26,6 @@
     "npm:@ff-labs/pi-fff",
     "npm:pi-fzf",
     "npm:pi-mcp-adapter",
-    "npm:pi-tool-display",
     "npm:pi-simplify",
     "npm:@hypabolic/pi-hypa",
     "npm:context-mode",
