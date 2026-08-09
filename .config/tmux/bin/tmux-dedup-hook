@@ -1,0 +1,31 @@
+#!/usr/bin/env sh
+# Remove every global tmux hook entry for <hook> whose command contains
+# <marker>, highest index first so earlier removals don't shift the indices
+# we still need to remove. Pair with a following `set-hook -ag <hook> ...`
+# so hooks.conf can be re-sourced (tmux source-file, config reloads) without
+# accumulating duplicate entries.
+#
+# Why not just `set-hook -g name[idx]` with a fixed index? A fixed index is
+# fragile (collides if the set of preceding hooks changes). Appending after
+# dedup is order-independent and self-cleaning on reload.
+#
+# Usage: tmux-dedup-hook <hook-name> <marker>
+#   <hook-name>  tmux hook, e.g. session-created
+#   <marker>     literal substring identifying our entries (e.g. sessions/save.sh)
+
+set -eu
+
+hook="$1"
+marker="$2"
+
+# show-hooks prints `name[idx] command`. Filter to our hook + marker, extract
+# the index, then unset each from the highest down so removals don't renumber
+# lower indices we still have to remove.
+tmux show-hooks -g 2>/dev/null \
+  | grep -F "$marker" \
+  | grep -E "^${hook}\[[0-9]+\]" \
+  | sed -E "s|^${hook}\[([0-9]+)\].*|\1|" \
+  | sort -rn \
+  | while read -r idx; do
+      tmux set-hook -gu "${hook}[${idx}]"
+    done

@@ -1,0 +1,14 @@
+{
+	"width": 32,
+	"keys": {
+		"down": "n",
+		"up": "e",
+		"switch": "enter",
+		"refresh": "r",
+		"resize": "w",
+		"quit": "q"
+	},
+	"tick_seconds": 1.0,
+	"stale_hours": 5,
+	"elapsed_alert_minutes": 10
+}
