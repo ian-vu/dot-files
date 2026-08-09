@@ -246,11 +246,24 @@ return {
 			-- Set default capabilities for all servers (blink.cmp completion support)
 			vim.lsp.config("*", { capabilities = capabilities })
 
-			-- Set up servers using vim.lsp.config (nvim 0.11+ API)
+			-- Set up servers using vim.lsp.config (nvim 0.11+ API).
+			-- Server specs may set `enabled = false` or `enabled = function() ... end`
+			-- so project-local `.nvim.lua` flags can opt out of expensive servers.
+			local enabled_servers = {}
 			for server_name, server_config in pairs(servers) do
-				vim.lsp.config(server_name, server_config)
+				local enabled = server_config.enabled
+				if type(enabled) == "function" then
+					enabled = enabled()
+				end
+
+				-- Do not register disabled servers with Neovim; this prevents automatic
+				-- startup when their filetypes are opened.
+				if enabled ~= false then
+					vim.lsp.config(server_name, server_config)
+					table.insert(enabled_servers, server_name)
+				end
 			end
-			vim.lsp.enable(vim.tbl_keys(servers))
+			vim.lsp.enable(enabled_servers)
 		end,
 	},
 }

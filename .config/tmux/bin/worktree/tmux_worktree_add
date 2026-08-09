@@ -1,77 +1,56 @@
 #!/usr/bin/env bash
 # =============================================================================
-# tmux_worktree_add — Create a git worktree and tmux session
+# tmux_worktree_add — Create/switch a tmux session for a wt-managed worktree
 # =============================================================================
-# Called by tmux_worktree with repo_root and branch already resolved.
-# Handles the full creation lifecycle: worktree → file setup → session → switch.
+# Tmux owns presentation and session lifecycle. The reusable wt CLI owns git
+# worktree creation, .ivu.yml/.ivu.yaml config, and file setup.
 #
 # Usage:
-#   tmux_worktree_add <repo_root> <branch>
-#
-# Reads .ivu.yml from the repo root for per-repo configuration (worktree dir,
-# files to copy/symlink, startup command). See ~/.config/ivu/template.yml for
-# the full schema and documentation.
-#
-# Dependencies: yq (mikefarah), git, tmux
+#   tmux_worktree_add <repo_root> <branch> [session_name]
 
-REPO_ROOT="$1"
-BRANCH="$2"
+REPO_ROOT="${1:-}"
+BRANCH="${2:-}"
+SESSION_OVERRIDE="${3:-}"
+# Prefer the stowed binary path so tmux works even if the server has a stale PATH.
+if [ -z "${WT_BIN:-}" ]; then
+  [ -x "$HOME/.local/bin/wt" ] && WT_BIN="$HOME/.local/bin/wt" || WT_BIN="wt"
+fi
 
 if [ -z "$REPO_ROOT" ] || [ -z "$BRANCH" ]; then
-  echo "Usage: tmux_worktree_add <repo_root> <branch>" >&2
+  echo "Usage: tmux_worktree_add <repo_root> <branch> [session_name]" >&2
   exit 1
 fi
 
-TEMPLATE="$HOME/.config/ivu/template.yml"
-
-# =============================================================================
-# UI helpers — spinner and error display
-# =============================================================================
-# Colors matching the popup's orange border theme
+# Colors matching the popup's orange border theme.
 ORANGE='\033[1;33m'
 GREEN='\033[1;32m'
 RED='\033[1;31m'
 DIM='\033[2m'
 RESET='\033[0m'
 
-# Accumulates stderr from all spin steps. On failure, the full log is shown
-# so earlier warnings (e.g., a fetch error) can explain a later failure.
 LOG_FILE=$(mktemp)
 SPIN_RESULT_FILE=$(mktemp)
-trap 'rm -f "$LOG_FILE" "$SPIN_RESULT_FILE"' EXIT
+META_FILE=$(mktemp)
+trap 'rm -f "$LOG_FILE" "$SPIN_RESULT_FILE" "$META_FILE"' EXIT
 
-# Set the result text shown after → on spin completion.
-# Called from inside commands that spin runs in the background.
 spin_result() { printf '%s' "$1" > "$SPIN_RESULT_FILE"; }
 
-# Run a command in the background with a braille spinner animation.
-# Stderr is appended to LOG_FILE for error reporting. On completion,
-# displays ✓ (success) or ✗ (failure). If the command called spin_result,
-# the text is appended after →.
-# Usage: spin "message" command [args...]
 spin() {
   local msg="$1"; shift
   local chars='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
   local i=0
 
   > "$SPIN_RESULT_FILE"
-
-  # Capture stderr to log file for error reporting.
-  # Stdout is suppressed — any stdout would break the spinner animation.
   "$@" >/dev/null 2>>"$LOG_FILE" &
   local pid=$!
 
-  # Animate spinner until the background process exits.
-  # Uses CSI escape sequences (\033[G = cursor to col 1, \033[2K = erase line)
-  # instead of \r because tmux popups can leave the tty with OCRNL set after
-  # fzf exits, which translates \r to \n and breaks the overwrite animation.
+  # CSI cursor movement is more reliable than carriage returns in tmux popups.
   while kill -0 "$pid" 2>/dev/null; do
     printf "\033[2K\033[G${ORANGE}%s${RESET} %s" "${chars:$i:1}" "$msg"
     i=$(( (i + 1) % ${#chars} ))
     sleep 0.08
   done
 
-  # Collect exit code and show final status
   wait "$pid"
   local rc=$?
   if [ $rc -eq 0 ]; then
@@ -88,8 +67,6 @@ spin() {
   fi
 }
 
-# Show error with accumulated log output and wait for keypress before exiting.
-# Without the wait, the popup closes immediately and the error flashes away.
 die() {
   printf "${RED}✗${RESET} %s\n" "$1"
   if [ -s "$LOG_FILE" ]; then
@@ -103,291 +80,125 @@ die() {
   exit 1
 }
 
-# =============================================================================
-# Config helpers — read .ivu.yml with fallback defaults
-# =============================================================================
-# Uses yq (mikefarah) to read values from the worktree section of .ivu.yml.
-# The "//" operator is yq's alternative operator: returns the right side
-# when the left side is null (key missing from config).
+json_get() {
+  python3 - "$META_FILE" "$1" <<'PY'
+import json
+import sys
+with open(sys.argv[1]) as f:
+    value = json.load(f).get(sys.argv[2], "")
+if value is True:
+    print("true")
+elif value is False:
+    print("false")
+elif value is None:
+    print("")
+else:
+    print(value)
+PY
+}
 
-# Read a single value. Usage: cfg <key> <default>
-cfg() {
-  local key="$1" default="$2"
-  if [ -f "$CONFIG" ]; then
-    yq -r ".worktree.$key // \"$default\"" "$CONFIG"
+ensure_worktree() {
+  if [ -n "$SESSION_OVERRIDE" ]; then
+    "$WT_BIN" worktrees add "$BRANCH" --repo "$REPO_ROOT" --format json --session "$SESSION_OVERRIDE" > "$META_FILE" || return 1
   else
-    echo "$default"
+    "$WT_BIN" worktrees add "$BRANCH" --repo "$REPO_ROOT" --format json > "$META_FILE" || return 1
   fi
+  local path
+  # Treat malformed wt metadata as a setup failure so the popup shows the real
+  # wt error instead of creating an empty /wt/ tmux session.
+  path=$(json_get worktree_path) || return 1
+  if [ -z "$path" ]; then
+    echo "wt did not return worktree_path metadata" >&2
+    return 1
+  fi
+  spin_result "${path/#$HOME/~}"
 }
 
-# Read an array value, one item per line. Usage: cfg_array <key>
-# Returns nothing if the key is null or missing (yq's []? operator
-# is the "try iterate" — silently returns nothing on null).
-cfg_array() {
-  local key="$1"
-  if [ -f "$CONFIG" ]; then
-    yq -r ".worktree.${key}[]?" "$CONFIG" 2>/dev/null
-  fi
-}
-
-# =============================================================================
-# Derive repo-dependent state
-# =============================================================================
-cd "$REPO_ROOT"
-REPO_NAME=$(basename "$REPO_ROOT")
-# tmux session names cannot contain . or : characters
-REPO_NAME="${REPO_NAME//./-}"
-REPO_NAME="${REPO_NAME//:/-}"
-CONFIG="$REPO_ROOT/.ivu.yml"
-
-# Visual separator between fzf and the progress output below
+# Visual separator between fzf and the progress output below.
 echo ""
 
-# =============================================================================
-# Create .ivu.yml from template if missing
-# =============================================================================
-# On first use in a repo, copy the documented template so the user has a
-# starting point to configure. The template has all options commented out
-# with explanations. See ~/.config/ivu/template.yml.
-if [ ! -f "$CONFIG" ] && [ -f "$TEMPLATE" ]; then
-  cp "$TEMPLATE" "$CONFIG"
+spin "Preparing worktree" ensure_worktree || die "Failed to prepare worktree"
+
+WORKTREE_PATH=$(json_get worktree_path)
+WORKTREE_DIR=$(json_get worktree_dir)
+REPO_SAFE_NAME=$(json_get repo_safe_name)
+STARTUP_CMD=$(json_get startup_cmd)
+SUPPRESS_HOOK=$(json_get suppress_tmux_startup_hook)
+CONFIG_CREATED=$(json_get config_created)
+CREATED=$(json_get created)
+SESSION=$(json_get session_name)
+# Preserve the long-standing convention unless the caller supplied an explicit
+# tmux session name through wt/tmux_worktree.
+[ -n "$SESSION" ] || SESSION="$REPO_SAFE_NAME/wt/$WORKTREE_DIR"
+STALE_SESSION=""
+
+if [ "$CONFIG_CREATED" = "true" ]; then
   printf "${GREEN}✓${RESET} Created .ivu.yml from template\n"
 fi
 
-# =============================================================================
-# Read configuration from .ivu.yml
-# =============================================================================
-WT_DIR=$(cfg dir .worktrees)              # Directory for worktrees (relative to repo root, or absolute)
-STARTUP_CMD=$(cfg startup_cmd "")         # Command to run in session after setup
-SUPPRESS_HOOK=$(cfg suppress_tmux_startup_hook "true")  # Skip tmux_git_setup hook
-
-# Resolve absolute/~-prefixed worktree dirs to a shared root nested under
-# the repo name (so multiple repos pointing at e.g. ~/.worktree don't
-# collide). Relative paths stay relative to the repo root.
-case "$WT_DIR" in
-  '~'/*) WT_DIR="$HOME/${WT_DIR#'~/'}/$REPO_NAME" ;;
-  /*)    WT_DIR="$WT_DIR/$REPO_NAME" ;;
-esac
-
-# Auto-detect the default branch from the remote HEAD (e.g., main, master, develop).
-# The .ivu.yml base_branch setting overrides this if explicitly set.
-# Falls back to "main" if both detection and config fail.
-DEFAULT_BASE=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's|^refs/remotes/origin/||')
-BASE_BRANCH=$(cfg base_branch "${DEFAULT_BASE:-main}")
-
-# Convert branch slashes to dashes for the directory name.
-# e.g., "feat/auth" becomes "feat-auth" so it's a valid directory name.
-WORKTREE_DIR="${BRANCH//\//-}"
-case "$WT_DIR" in
-  /*) WORKTREE_PATH="$WT_DIR/$WORKTREE_DIR" ;;
-  *)  WORKTREE_PATH="$REPO_ROOT/$WT_DIR/$WORKTREE_DIR" ;;
-esac
-
-# Session naming convention: <repo>/wt/<worktree_dir>
-# This is parsed by format-session.sh to display as "repo 🌳 [branch]" in the
-# tmux status bar. Also used by tmux_git_setup to skip worktree sessions (*/wt/*).
-SESSION="$REPO_NAME/wt/$WORKTREE_DIR"
-
-# =============================================================================
-# Fast path: worktree + session already exist → just switch
-# =============================================================================
-if [ -d "$WORKTREE_PATH" ] && tmux has-session -t "=$SESSION" 2>/dev/null; then
-  printf "${GREEN}✓${RESET} Switching to %s\n" "$SESSION"
-  # Brief pause so the user sees the message before the popup closes
-  sleep 0.3
-  tmux switch-client -t "$SESSION"
-  exit 0
-fi
-
-# =============================================================================
-# Create git worktree (if directory doesn't exist yet)
-# =============================================================================
-# Split into three visible steps so the user sees progress:
-#   1. Resolve branch strategy (local, remote, or new)
-#   2. Fetch from origin (skipped for local-only branches)
-#   3. Create the worktree directory
-if [ ! -d "$WORKTREE_PATH" ]; then
-  case "$WT_DIR" in
-    /*)
-      # Absolute path: worktree lives outside the repo, no gitignore needed.
-      mkdir -p "$WT_DIR"
-      ;;
-    *)
-      mkdir -p "$REPO_ROOT/$WT_DIR"
-      # Add the worktree directory to .git/info/exclude so it doesn't show up
-      # as untracked. Only adds the entry once (grep checks for existing match).
-      exclude_file="$REPO_ROOT/.git/info/exclude"
-      if [ -f "$exclude_file" ] && ! grep -qxF "$WT_DIR" "$exclude_file"; then
-        echo "$WT_DIR" >> "$exclude_file"
-      fi
-      ;;
-  esac
-
-  # --- Step 1: Resolve branch strategy ---
-  # Uses a temp file to communicate the result back from the background
-  # process that spin runs, since spin suppresses stdout.
-  strategy_file=$(mktemp)
-  resolve_branch() {
-    if git show-ref --verify --quiet "refs/heads/$BRANCH"; then
-      if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
-        echo "local_with_remote" > "$strategy_file"
-        spin_result "local branch, tracking origin"
-      else
-        echo "local" > "$strategy_file"
-        spin_result "local branch"
-      fi
-    elif git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
-      echo "remote" > "$strategy_file"
-      spin_result "found on origin"
-    else
-      echo "new" > "$strategy_file"
-      spin_result "new from $BASE_BRANCH"
-    fi
-  }
-  spin "Checking branch" resolve_branch
-  STRATEGY=$(cat "$strategy_file")
-  rm -f "$strategy_file"
-
-  # --- Step 2: Fetch from origin ---
-  # Skipped entirely for local-only branches (no remote counterpart).
-  fetch_branch() {
-    case "$STRATEGY" in
-      local_with_remote)
-        git fetch origin "$BRANCH" --quiet || true
-        git branch --set-upstream-to="origin/$BRANCH" "$BRANCH" || true
-        git branch -f "$BRANCH" "origin/$BRANCH" || true
-        spin_result "origin/$BRANCH"
-        ;;
-      remote)
-        git fetch origin "$BRANCH" --quiet || true
-        spin_result "origin/$BRANCH"
-        ;;
-      new)
-        git fetch origin "$BASE_BRANCH" --quiet || true
-        spin_result "origin/$BASE_BRANCH"
-        ;;
-    esac
-  }
-
-  if [ "$STRATEGY" != "local" ]; then
-    spin "Fetching from origin" fetch_branch
-  fi
-
-  # --- Step 3: Create worktree ---
-  # `|| return` after the case is critical: without it, a failed `git worktree
-  # add` would still fall through to spin_result, which resets the function's
-  # exit code to 0 and masks the failure from `spin … || die`.
-  create_worktree() {
-    case "$STRATEGY" in
-      local|local_with_remote)
-        git worktree add "$WORKTREE_PATH" "$BRANCH" --quiet
-        ;;
-      remote)
-        git worktree add "$WORKTREE_PATH" -b "$BRANCH" --track "origin/$BRANCH" --quiet
-        ;;
-      new)
-        git worktree add "$WORKTREE_PATH" -b "$BRANCH" --no-track "origin/$BASE_BRANCH" --quiet
-        ;;
-    esac || return $?
-    spin_result "${WT_DIR/#$HOME/~}/$WORKTREE_DIR"
-  }
-
-  spin "Adding worktree" create_worktree || die "Failed to create worktree"
-fi
-
-# =============================================================================
-# Setup worktree files (copy, symlink, git exclude)
-# =============================================================================
-# Runs on EVERY session creation, not just new worktrees. This is intentional:
-# when a worktree exists but its session was killed (e.g., tmux restart),
-# re-running setup ensures fresh copies (like .env) and working symlinks.
-# All operations are idempotent: cp overwrites, ln -sf overwrites.
-setup_files() {
-  local copied=0 linked=0
-
-  # Copy files: independent copies that may differ per worktree (e.g., .env)
-  while IFS= read -r file; do
-    [ -z "$file" ] && continue
-    src="$REPO_ROOT/$file"
-    dest="$WORKTREE_PATH/$file"
-    if [ -f "$src" ]; then
-      mkdir -p "$(dirname "$dest")"
-      cp "$src" "$dest"
-      copied=$((copied + 1))
-    fi
-  done < <(cfg_array copy_paths)
-
-  # Symlink files: shared config that stays in sync with the main repo
-  while IFS= read -r file; do
-    [ -z "$file" ] && continue
-    # Strip trailing slash: ln -sf with a "dir/" destination treats it as
-    # "create symlink inside dir/" and fails when the dir doesn't exist yet.
-    file="${file%/}"
-    src="$REPO_ROOT/$file"
-    dest="$WORKTREE_PATH/$file"
-    if [ -e "$src" ]; then
-      # mkdir -p handles nested paths like ".claude/settings.local.json"
-      mkdir -p "$(dirname "$dest")"
-      ln -sf "$src" "$dest"
-      linked=$((linked + 1))
-    fi
-  done < <(cfg_array symlinks)
-
-  # Share git's local exclude file between main repo and worktree.
-  # Without this, patterns added to .git/info/exclude in the main repo
-  # wouldn't apply in worktrees.
-  main_exclude="$REPO_ROOT/.git/info/exclude"
-  if [ -f "$main_exclude" ]; then
-    wt_git_dir=$(git -C "$WORKTREE_PATH" rev-parse --git-dir)
-    mkdir -p "$wt_git_dir/info"
-    ln -sf "$main_exclude" "$wt_git_dir/info/exclude"
-  fi
-
-  local parts=()
-  [ "$copied" -gt 0 ] && parts+=("$copied copied")
-  [ "$linked" -gt 0 ] && parts+=("$linked symlinked")
-  [ ${#parts[@]} -gt 0 ] && spin_result "$(IFS=', '; echo "${parts[*]}")"
+session_has_missing_cwd() {
+  local pane_path
+  while IFS= read -r pane_path; do
+    # If a worktree was removed outside wt (for example from LazyGit), tmux can
+    # keep panes whose process cwd no longer exists. Reusing that session makes
+    # tools like LazyGit panic on their next git refresh, so replace it instead.
+    [ -n "$pane_path" ] && [ -d "$pane_path" ] && continue
+    return 0
+  done < <(tmux list-panes -s -t "=$1" -F '#{pane_current_path}' 2>/dev/null || true)
+  return 1
 }
 
-spin "Setting up files" setup_files
+replace_existing_session() {
+  local reason="$1"
+  STALE_SESSION="$SESSION-stale-$$"
+  printf "${GREEN}✓${RESET} Replacing stale tmux session %s ${DIM}(%s)${RESET}\n" "$SESSION" "$reason"
+  tmux rename-session -t "=$SESSION" "$STALE_SESSION" || return 1
+}
 
-# =============================================================================
-# Create tmux session
-# =============================================================================
-# Uses "=" prefix with has-session for exact name matching. Without it,
-# tmux does prefix matching which could match the wrong session
-# (e.g., "repo/wt/feat" matching "repo/wt/feat-auth").
-if ! tmux has-session -t "=$SESSION" 2>/dev/null; then
-  create_session() {
-    if [ "$SUPPRESS_HOOK" = "true" ]; then
-      # TMUX_NO_STARTUP_HOOK=1 tells tmux_git_setup (session-created hook)
-      # to skip its default setup (nvim + lazygit + shell windows).
-      # We suppress it because .ivu.yml defines its own startup_cmd.
-      # Note: worktree sessions (*/wt/*) are also skipped by the hook itself
-      # as a defense-in-depth measure.
-      TMUX_NO_STARTUP_HOOK=1 tmux new-session -d -s "$SESSION" -c "$WORKTREE_PATH"
-    else
-      tmux new-session -d -s "$SESSION" -c "$WORKTREE_PATH"
-    fi
-
-    # Run the configured startup command (e.g., "source .env && uv sync").
-    # Uses send-keys so it executes in the session's shell, not this script.
-    # Note: send-keys does NOT use "=" prefix — it expects a target-pane
-    # format, not a session filter (unlike has-session/switch-client).
-    if [ -n "$STARTUP_CMD" ]; then
-      tmux send-keys -t "$SESSION" "$STARTUP_CMD" Enter
-    fi
-
-    spin_result "$SESSION"
-  }
-
-  spin "Starting session" create_session || die "Failed to create session"
+if tmux has-session -t "=$SESSION" 2>/dev/null; then
+  if [ "$CREATED" = "true" ]; then
+    replace_existing_session "worktree was recreated" || die "Failed to replace stale session"
+  elif session_has_missing_cwd "$SESSION"; then
+    replace_existing_session "pane cwd disappeared" || die "Failed to replace stale session"
+  else
+    printf "${GREEN}✓${RESET} Switching to %s\n" "$SESSION"
+    sleep 0.3
+    tmux switch-client -t "=$SESSION"
+    exit 0
+  fi
 fi
 
-# =============================================================================
-# Switch to the worktree session
-# =============================================================================
+cleanup_stale_session() {
+  [ -n "$STALE_SESSION" ] || return 0
+  tmux kill-session -t "=$STALE_SESSION" 2>/dev/null || true
+}
+
+create_session() {
+  local start_pane
+  if [ "$SUPPRESS_HOOK" = "true" ]; then
+    # wt returns the config value; tmux alone decides how it affects sessions.
+    # Capture the first pane id so send-keys targets a pane, not just a session.
+    start_pane=$(TMUX_NO_STARTUP_HOOK=1 tmux new-session -d -P -F '#{pane_id}' -s "$SESSION" -c "$WORKTREE_PATH")
+  else
+    # Capture the first pane id so startup commands work for exact session names
+    # containing slashes; tmux send-keys cannot target a bare session name.
+    start_pane=$(tmux new-session -d -P -F '#{pane_id}' -s "$SESSION" -c "$WORKTREE_PATH")
+  fi
+  if [ -z "$start_pane" ]; then
+    echo "tmux did not return a startup pane for session: $SESSION" >&2
+    return 1
+  fi
+
+  if [ -n "$STARTUP_CMD" ]; then
+    tmux send-keys -t "$start_pane" "$STARTUP_CMD" Enter || return 1
+  fi
+
+  spin_result "$SESSION"
+}
+
+spin "Starting session" create_session || die "Failed to create session"
+
 printf "${GREEN}✓${RESET} Switching to %s 🌳\n" "$SESSION"
-# Brief pause so the user sees the completion message before the popup closes
 sleep 0.3
-tmux switch-client -t "$SESSION"
+tmux switch-client -t "=$SESSION"
+cleanup_stale_session

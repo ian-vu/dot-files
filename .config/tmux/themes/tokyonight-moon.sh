@@ -1,23 +1,27 @@
 #!/usr/bin/env bash
 # TokyoNight Moon — color definitions for apply-theme.sh
 
-THEME_BG="#1e2030"
-THEME_BG_STATUS="#1e2030"
+# Match the terminal background (#222436, TokyoNight Moon "bg") so the status
+# bar blends in instead of using the darker "bg_dark" (#1e2030).
+THEME_BG="#222436"
+THEME_BG_STATUS="#222436"
 THEME_FG="#82aaff"
 THEME_ACCENT="#82aaff"
 THEME_ACCENT_FG="#1b1d2b"
 THEME_SEC_BG="#3b4261"
 THEME_SEC_FG="#828bb8"
 THEME_BORDER="#3b4261"
+# Keep the active pane border on the TokyoNight accent color.
 THEME_BORDER_ACT="#82aaff"
-THEME_MODE_FG="#82aaff"
-THEME_MODE_BG="#3b4261"
-THEME_MSG_FG="#82aaff"
-THEME_MSG_BG="#3b4261"
+THEME_MODE_FG="#1b1d2b"
+THEME_MODE_BG="#ff9e64"
+THEME_MSG_FG="#1b1d2b"
+THEME_MSG_BG="#ff9e64"
 THEME_HIGHLIGHT="#ffc777"
 THEME_LEFT_FG="#3b4261"
-THEME_WIN_STYLE="NONE,fg=#828bb8,bg=#1e2030"
-THEME_WIN_ACT_STYLE="underscore,fg=#828bb8,bg=#1e2030"
+THEME_WIN_STYLE="NONE,fg=#828bb8,bg=#222436"
+# Keep stale or externally-set activity flags from underlining window tabs.
+THEME_WIN_ACT_STYLE="NONE,fg=#828bb8,bg=#222436"
 
 theme_extras() {
   # Undercurl (default-terminal is set in tmux.conf; do not stomp it from a

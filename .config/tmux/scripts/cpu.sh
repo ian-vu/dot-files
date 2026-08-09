@@ -13,5 +13,8 @@ if [ "$val" -gt 80 ] 2>/dev/null; then
 elif [ "$val" -gt 60 ] 2>/dev/null; then
   printf '#[bg=#e0af68,fg=#1b1d2b] 󰍛 %s%% #[bg=#3b4261,fg=#828bb8]' "$val"
 else
-  printf '󰍛 %s%%' "$val"
+  # Padding lives inside the script (all branches) so that when a warning
+  # colour is active the background extends edge-to-edge with no default-bg
+  # gap next to the separator arrows in status-right.
+  printf ' 󰍛 %s%% ' "$val"
 fi

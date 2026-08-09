@@ -34,6 +34,9 @@ Gemfile.lock
 # age secrey identity used for encryption
 .age/secret-key.txt
 
+# Slack MCP session tokens (machine-local plaintext secrets, sourced by .zshrc).
+.config/mcp/slack-tokens.env
+
 # vim
 .vim/vimrc
 

@@ -50,7 +50,8 @@ gui:
   tabWidth: 2
   commitHashLength: 3
   enlargedSideViewLocation: top
-  expandFocusedSidePanel: false
+  # Expand the focused side panel so the current Lazygit window has more room.
+  expandFocusedSidePanel: true
   # If true, add a "/" root item in the file tree representing the root of the repository. It is only added when necessary, i.e. when there is more than one item at top level.
   showRootItemInFileTree: false
   # Whether to show the divergence from the base branch in the branches view.
@@ -99,6 +100,8 @@ keybinding:
   universal:
     nextItem: "n"
     prevItem: "e"
+    nextItem-alt: "<down>"
+    prevItem-alt: "<up>"
     edit: "E"
     new: "N"
     scrollUpMain-alt1: <c-b>
@@ -115,17 +118,16 @@ keybinding:
     stashAllChanges: S # usually s
     viewStashOptions: s # usually S
 os:
-  # Reuse an existing nvim instance in tmux instead of spawning a new editor.
-  # How it works:
-  #   1. `tmux list-panes -s` lists all panes in the current session (-s = session-wide).
-  #   2. Grep for a pane whose current command matches "vim" or "nvim".
-  #   3. If found, switch to that pane's window and send `:e <file>` keystrokes to open the file.
-  #   4. If no nvim pane exists, fall back to launching a new nvim process in-place.
-  # This avoids hardcoding a window index so it works regardless of where lazygit,
-  # Claude Code, or nvim are positioned across tmux windows/panes.
-  # Also jumps to the first changed hunk by parsing `git diff` for the first @@ line number.
-  # Checks unstaged diff first, then staged (--cached), so it works for both states.
-  edit: 'sh -c ''HUNK=$(git diff -U0 -- "{{filename}}" 2>/dev/null | grep -m1 "^@@" | sed "s/.*+\([0-9]*\).*/\1/"); if [ -z "$HUNK" ]; then HUNK=$(git diff --cached -U0 -- "{{filename}}" 2>/dev/null | grep -m1 "^@@" | sed "s/.*+\([0-9]*\).*/\1/"); fi; MATCH=$(tmux list-panes -s -F "#{window_id} #{pane_id} #{pane_current_command}" | grep -E "n?vim" | head -n1); if [ -n "$MATCH" ]; then WIN=$(echo "$MATCH" | cut -d" " -f1); PANE=$(echo "$MATCH" | cut -d" " -f2); tmux select-window -t "$WIN" && tmux select-pane -t "$PANE" && tmux send-keys -t "$PANE" Escape ":e {{filename}}" Enter; if [ -n "$HUNK" ]; then tmux send-keys -t "$PANE" ":$HUNK" Enter; fi; else if [ -n "$HUNK" ]; then nvim "+$HUNK" "{{filename}}"; else nvim "{{filename}}"; fi; fi'''
-  # editAtLine: same as edit but also sends `:<line>` to jump to the target line.
-  # Fallback launches nvim with `+<line>` flag instead.
-  editAtLine: 'sh -c ''MATCH=$(tmux list-panes -s -F "#{window_id} #{pane_id} #{pane_current_command}" | grep -E "n?vim" | head -n1); if [ -n "$MATCH" ]; then WIN=$(echo "$MATCH" | cut -d" " -f1); PANE=$(echo "$MATCH" | cut -d" " -f2); tmux select-window -t "$WIN" && tmux select-pane -t "$PANE" && tmux send-keys -t "$PANE" Escape ":e {{filename}}" Enter ":{{line}}" Enter; else nvim "+{{line}}" "{{filename}}"; fi'''
+  # Open a file in the nearest Neovim (parent nvim via $NVIM, or a nearby tmux
+  # nvim pane). When lazygit runs in the tmux display-popup (prefix g g, which
+  # sets LAZYGIT_IN_POPUP=1), the popup is closed after the edit so the nvim pane
+  # is revealed. Logic lives in a script so the YAML stays readable; see
+  # ~/.config/lazygit/bin/lazygit-edit for the full behavior and env handling.
+  edit: '$HOME/.config/lazygit/bin/lazygit-edit {{filename}}'
+  # Shift-E line edits route to the same script with the target line.
+  editAtLine: '$HOME/.config/lazygit/bin/lazygit-edit {{filename}} {{line}}'
+  # Blocking variant (lazygit waits for the editor to exit, e.g. in-place hunk
+  # edits): drive the parent nvim via $NVIM, otherwise run nvim in the
+  # foreground. Deliberately not routed through lazygit-edit: the popup must stay
+  # open and the editor runs inline so you return to lazygit on :q.
+  editAtLineAndWait: 'sh -c ''if [ -n "$NVIM" ]; then nvim --server "$NVIM" --remote-send "q" && nvim --server "$NVIM" --remote-send "<Esc>:tabfirst<CR>" && nvim --server "$NVIM" --remote {{filename}} && nvim --server "$NVIM" --remote-send ":{{line}}<CR>"; else nvim "+{{line}}" "{{filename}}"; fi'''

@@ -4,14 +4,26 @@
 # Path to your oh-my-zsh installation.
 export ZSH=~/.oh-my-zsh
 
-# Skip oh-my-zsh's internal compinit (we call it once ourselves later)
-skip_global_compinit=1
+# Keep $PATH and $fpath free of duplicates. Both the scalar (PATH/FPATH) and
+# array (path/fpath) forms must be flagged: the scalar `export PATH="$PATH:..."`
+# appends used below only dedupe when the scalar itself carries -U.
+typeset -U PATH path FPATH fpath
+
+# Skip oh-my-zsh's compaudit security scan on every startup (safe on single-user
+# macOS). Note: oh-my-zsh has no real "skip compinit" switch - the old
+# `skip_global_compinit=1` was a no-op, so compinit ran twice. We now let oh-my-zsh
+# run the single compinit (with all fpath entries in place before it runs) and drop
+# the redundant second compinit further down.
+ZSH_DISABLE_COMPFIX=true
+
+# Update Oh My Zsh manually instead of checking during shell startup.
+zstyle ':omz:update' mode disabled
 
 #### Functions ####
 
-# Function to check if the system is macOS
+# Check the shell-provided platform value without spawning uname.
 is_mac() {
-    [[ "$(uname)" == "Darwin" ]]
+    [[ $OSTYPE == darwin* ]]
 }
 
 # Cache eval output to avoid spawning subprocesses on every shell start
@@ -25,6 +37,12 @@ _zsh_cache_eval() {
   local cache="$_zsh_cache_dir/$name.zsh"
   if [[ ! -f "$cache" ]]; then
     "$@" > "$cache" 2>/dev/null
+  fi
+  # Compile a .zwc bytecode digest when missing or stale. `source` auto-selects
+  # the .zwc when it is newer than the plaintext, so this speeds up parsing of
+  # the cached init scripts (fzf/starship/zoxide/mise) on every start.
+  if [[ ! -f "$cache.zwc" || "$cache" -nt "$cache.zwc" ]]; then
+    zcompile -R -- "$cache" 2>/dev/null
   fi
   source "$cache"
 }
@@ -94,6 +112,10 @@ plugins=(
 ) #vi-mode)
 
 
+# Completion paths must be present before Oh My Zsh runs compinit. Bun's
+# completion is then autoloaded only when requested instead of sourced here.
+fpath=("$HOME/.bun" /opt/homebrew/share/zsh/completions $fpath)
+
 source $ZSH/oh-my-zsh.sh
 
 # export MANPATH="/usr/local/man:$MANPATH"
@@ -138,6 +160,10 @@ alias v='vim'
 
 alias neo='neovide --no-tabs --frame transparent'
 alias nr='nvim -c "Octo review"'
+alias n='nvim'
+
+# Open the current branch's PR in a browser
+alias gho='gh pr view --web'
 
 # Tmux things
 alias ta='tmux attach'
@@ -483,16 +509,12 @@ export BAT_THEME=tokyonight-moon
 
 # eval $(thefuck --alias)
 
-# Add brew executables to tab completion
-FPATH="/opt/homebrew/share/zsh/completions:${FPATH}"
-
-# OPENSPEC:START
-# OpenSpec shell completions configuration
-fpath=("/Users/ivu/.oh-my-zsh/custom/completions" $fpath)
-# OPENSPEC:END
-
-# Single compinit call after all fpath additions (-C skips security check for speed)
-autoload -Uz compinit && compinit -C
+# Rebuild Oh My Zsh's host-specific completion dump after installing a CLI that
+# adds completions. Restarting lets Oh My Zsh restore its dump metadata as well.
+compinit-now() {
+  command rm -f -- "$ZSH_COMPDUMP" "$ZSH_COMPDUMP.zwc"
+  exec zsh
+}
 
 
 # yazi
@@ -503,8 +525,6 @@ function y() {
 	[ -n "$cwd" ] && [ "$cwd" != "$PWD" ] && builtin cd -- "$cwd"
 	rm -- "$tmp"
 }
-
-autoload -U +X bashcompinit && bashcompinit
 
 # Set up z
 _zsh_cache_eval zoxide zoxide init zsh
@@ -527,9 +547,6 @@ if [[ -f ~/.zshrc_local ]]; then
 fi
 
 
-# bun completions
-[ -s "/Users/ivu/.bun/_bun" ] && source "/Users/ivu/.bun/_bun"
-
 # bun
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
@@ -537,6 +554,16 @@ export PATH="$BUN_INSTALL/bin:$PATH"
 # PAI alias
 alias pai='bun /Users/ivu/.claude/PAI/Tools/pai.ts'
 
+# Slack MCP session tokens (xoxc/xoxd) for the Pi MCP adapter's slack server.
+# Machine-local and gitignored; the file holds the actual secrets, this only sources it.
+[ -f ~/.config/mcp/slack-tokens.env ] && source ~/.config/mcp/slack-tokens.env
+
 # This should be last to avoid system installed tools
-# set up mise (coding language version manager)
+# Set up mise with full activation, but update environments on directory changes
+# rather than before every prompt. Run `_mise_hook` after editing mise config in
+# the current directory.
 _zsh_cache_eval mise ~/.local/bin/mise activate zsh
+add-zsh-hook -d precmd _mise_hook_precmd
+
+# lazydiff
+export PATH=/Users/ivu/.lazydiff/bin:$PATH

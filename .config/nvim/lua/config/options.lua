@@ -12,6 +12,10 @@ vim.g.maplocalleader = " "
 -- Set to true if you have a Nerd Font installed and selected in the terminal
 vim.g.have_nerd_font = true
 
+-- Allow trusted repositories to provide local Neovim overrides in .nvim.lua.
+vim.o.exrc = true
+vim.o.secure = true
+
 -- Disable unused providers to avoid slow detection on file open
 vim.g.loaded_python3_provider = 0
 

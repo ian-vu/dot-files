@@ -1,32 +1,19 @@
 #!/usr/bin/env bash
 # =============================================================================
-# tmux_worktree_pick_repo — Pick a repository from a dev directory
+# tmux_worktree_pick_repo — tmux/fzf repository picker backed by wt
 # =============================================================================
-# Displays an fzf picker listing git repos under the dev directory.
-# Outputs the absolute path of the selected directory to stdout.
-# Called by tmux_worktree_add when the user presses ctrl-p or when no repo
-# context is available.
-#
-# Caches the repo list to avoid re-scanning on every invocation. The cache is
-# built synchronously on first run, then refreshed in the background so
-# subsequent opens are instant. New repos appear on the next invocation.
-#
-# Pinned repos are stored in a separate file and shown at the top of the list
-# with an icon. Press ctrl-m to toggle pinning.
-#
-# Usage:
-#   tmux_worktree_pick_repo [dev_dir]                  # interactive picker
-#   tmux_worktree_pick_repo --list [dev_dir]            # output formatted list
-#   tmux_worktree_pick_repo --toggle <repo> [dev_dir]   # toggle pin for a repo
-#
-# Exit behavior:
-#   - Selection: prints absolute path to stdout, exits 0
-#   - Escape:    prints nothing, exits 0
+# wt owns repository discovery, cache, and pins. This script only renders the
+# picker and returns the selected absolute path for tmux_worktree.
 
 SCRIPT_PATH="$0"
+# Prefer the stowed binary path so tmux works even if the server has a stale PATH.
+if [ -z "${WT_BIN:-}" ]; then
+  [ -x "$HOME/.local/bin/wt" ] && WT_BIN="$HOME/.local/bin/wt" || WT_BIN="wt"
+fi
 DEV_DIR="$HOME/dev"
 ACTION="pick"
 TOGGLE_REPO=""
+PIN_ICON="📌"
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -36,81 +23,19 @@ while [ $# -gt 0 ]; do
   esac
 done
 
-CACHE_FILE="${XDG_CACHE_HOME:-$HOME/.cache}/tmux_worktree_repos"
-PINS_FILE="${XDG_CACHE_HOME:-$HOME/.cache}/tmux_worktree_pinned_repos"
-
-# Pin icon shown next to pinned repos. Non-pinned repos get a two-space
-# prefix to keep alignment.
-PIN_ICON="📌"
-
-# List git repos up to 5 levels deep (e.g., ~/dev/org/repo).
-# Stops descending into directories that contain .git — avoids listing
-# subdirectories of repos (src/, .worktrees/, etc.).
-list_repos() {
-  find -L "$DEV_DIR" -mindepth 2 -maxdepth 5 -type d -exec test -e '{}/.git' \; -print -prune \
-    | sed "s|^$DEV_DIR/||" | sort
-}
-
-# Output formatted list: pinned repos first with icon, then the rest.
-build_list() {
-  # Pinned repos at the top
-  if [ -f "$PINS_FILE" ]; then
-    while IFS= read -r repo; do
-      [ -z "$repo" ] && continue
-      # Only show if repo still exists in cache
-      if grep -qxF "$repo" "$CACHE_FILE" 2>/dev/null; then
-        echo "$PIN_ICON $repo"
-      fi
-    done < "$PINS_FILE"
-  fi
-  # Remaining repos (skip pinned ones)
-  while IFS= read -r repo; do
-    if [ -f "$PINS_FILE" ] && grep -qxF "$repo" "$PINS_FILE" 2>/dev/null; then
-      continue
-    fi
-    echo "  $repo"
-  done < "$CACHE_FILE"
-}
-
-# Add or remove a repo from the pins file.
-toggle_pin() {
-  local repo="$1"
-  mkdir -p "$(dirname "$PINS_FILE")"
-  if grep -qxF "$repo" "$PINS_FILE" 2>/dev/null; then
-    # || true: when removing the last pin, grep -v produces no output and exits 1.
-    # Without this, && would skip the mv and the pin file would never update.
-    grep -vxF "$repo" "$PINS_FILE" > "$PINS_FILE.tmp" || true
-    mv "$PINS_FILE.tmp" "$PINS_FILE"
-  else
-    echo "$repo" >> "$PINS_FILE"
-  fi
-}
-
-# --- Sub-command dispatch ---
 case "$ACTION" in
   list)
-    build_list
+    "$WT_BIN" repos list --dev-dir "$DEV_DIR" --format fzf
     exit 0
     ;;
   toggle)
-    toggle_pin "$TOGGLE_REPO"
+    "$WT_BIN" repos pin toggle "$TOGGLE_REPO"
     exit 0
     ;;
 esac
 
-# --- Interactive picker ---
-
-# Build cache on first run (synchronous — has to wait once).
-if [ ! -f "$CACHE_FILE" ]; then
-  mkdir -p "$(dirname "$CACHE_FILE")"
-  list_repos > "$CACHE_FILE"
-fi
-
-# Refresh cache in background for next invocation.
-( list_repos > "$CACHE_FILE.tmp" 2>/dev/null && mv "$CACHE_FILE.tmp" "$CACHE_FILE" ) &
-
 SELECTED=$(
-  build_list | fzf \
+  "$WT_BIN" repos list --dev-dir "$DEV_DIR" --format fzf | fzf \
     --layout reverse --info right \
     --no-border \
     --prompt '  repo: ' \
@@ -121,7 +46,6 @@ SELECTED=$(
 ) || true
 
 if [ -n "$SELECTED" ]; then
-  # Strip pin icon or leading whitespace prefix.
   SELECTED="${SELECTED#$PIN_ICON }"
   SELECTED="${SELECTED#  }"
   echo "$DEV_DIR/$SELECTED"

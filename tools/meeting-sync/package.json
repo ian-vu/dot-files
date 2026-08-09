@@ -1,0 +1,13 @@
+{
+  "name": "meeting-sync",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "One-way sync of Notion AI Meeting Notes into an Obsidian vault.",
+  "bin": {
+    "meeting-sync": "bin/meeting-sync"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

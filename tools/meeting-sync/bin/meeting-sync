@@ -1,0 +1,120 @@
+#!/usr/bin/env node
+// meeting-sync entrypoint.
+//
+// Phase 1 supports --probe: authenticate, call "Query meeting notes", and print
+// what comes back so we can confirm scope and learn the exact payload shape
+// before building the block->markdown converter and upsert logic (Phases 2+).
+
+import { loadConfig, loadToken } from "../src/config.mjs";
+import { queryMeetingNotes } from "../src/notion.mjs";
+
+function parseArgs(argv) {
+  const args = { probe: false, raw: false, limit: undefined };
+  for (const a of argv) {
+    if (a === "--probe") args.probe = true;
+    else if (a === "--raw") args.raw = true;
+    else if (a.startsWith("--limit=")) args.limit = Number(a.slice("--limit=".length));
+    else if (a === "--check-token") args.checkToken = true;
+    else if (a === "-h" || a === "--help") args.help = true;
+  }
+  return args;
+}
+
+function usage() {
+  console.log(`meeting-sync - sync Notion AI Meeting Notes into Obsidian
+
+Usage:
+  meeting-sync --check-token                 Load the token from 1Password and confirm it resolves
+  meeting-sync --probe [--limit=N] [--raw]   Print meeting notes returned by the API
+  meeting-sync                               Run a sync (Phase 2, not yet implemented)
+
+Options:
+  --limit=N   Max notes to fetch (1..50). Probe defaults to 5.
+  --raw       Dump the full JSON of the first result (field discovery).`);
+}
+
+/** Best-effort title extraction from a meeting_notes block (shape is beta). */
+function noteTitle(note) {
+  const mn = note?.meeting_notes ?? {};
+  if (typeof mn.title === "string") return mn.title;
+  if (Array.isArray(mn.title)) return mn.title.map((t) => t.plain_text ?? t?.text?.content ?? "").join("");
+  return "(untitled)";
+}
+
+function checkToken(cfg, token) {
+  console.log(`Token loaded (length ${token.length}).`);
+  console.log(`Notion-Version: ${cfg.notionVersion}`);
+  if (cfg.tokenCachePath) console.log(`Cache: ${cfg.tokenCachePath}`);
+  console.log("OK - 1Password integration is wired up.");
+}
+
+async function probe(cfg, token, args) {
+  const limit = args.limit ?? 5;
+  console.log(`Querying meeting notes (limit=${limit}, Notion-Version=${cfg.notionVersion})...\n`);
+
+  let res;
+  try {
+    res = await queryMeetingNotes({
+      token,
+      version: cfg.notionVersion,
+      sort: [{ property: "last_edited_time", direction: "descending" }],
+      limit,
+    });
+  } catch (err) {
+    console.error(`Request failed: ${err.message}`);
+    if (err.status === 400) {
+      console.error(
+        "\nA 400 here usually means AI meeting notes aren't available for the integration's user,\n" +
+          "or the integration lacks meeting-notes access. Check the integration setup in Notion.",
+      );
+    }
+    process.exitCode = 1;
+    return;
+  }
+
+  const results = res.results ?? [];
+  console.log(`Returned ${results.length} note(s). has_more=${res.has_more}\n`);
+
+  for (const [i, note] of results.entries()) {
+    const mn = note.meeting_notes ?? {};
+    console.log(`${i + 1}. ${noteTitle(note)}`);
+    console.log(`   id:            ${note.id}`);
+    if (mn.status) console.log(`   status:        ${JSON.stringify(mn.status)}`);
+    if (note.created_time) console.log(`   created_time:  ${note.created_time}`);
+    if (note.last_edited_time) console.log(`   last_edited:   ${note.last_edited_time}`);
+    // Tab child block ids (summary / notes / transcription) - names are beta;
+    // print whatever keys look like tab references so we can wire Phase 2.
+    const tabKeys = Object.keys(mn).filter((k) => /tab|summary|note|transcri|child/i.test(k));
+    if (tabKeys.length) {
+      console.log(`   tab-ish keys:  ${tabKeys.join(", ")}`);
+      for (const k of tabKeys) console.log(`     ${k}: ${JSON.stringify(mn[k])}`);
+    }
+    console.log("");
+  }
+
+  if (args.raw && results[0]) {
+    console.log("--- raw first result -------------------------------------------");
+    console.log(JSON.stringify(results[0], null, 2));
+  } else if (results[0]) {
+    console.log("Tip: re-run with --raw to dump the full first result for field discovery.");
+  }
+}
+
+async function main() {
+  const args = parseArgs(process.argv.slice(2));
+  if (args.help) return usage();
+
+  const cfg = await loadConfig();
+  const token = loadToken(cfg);
+
+  if (args.checkToken) return checkToken(cfg, token);
+  if (args.probe) return probe(cfg, token, args);
+
+  console.error("Sync is not implemented yet (Phase 2). Use --probe for now.");
+  process.exitCode = 1;
+}
+
+main().catch((err) => {
+  console.error(err.message ?? err);
+  process.exitCode = 1;
+});

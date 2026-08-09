@@ -1,40 +1,51 @@
 # Worktree Scripts
 
-Git worktree + tmux session manager. Bound to `prefix + w`.
+Tmux UI for the reusable `wt` git worktree CLI. Bound to `prefix + w`.
 
 ## Architecture
 
-`tmux_worktree` is the entry point and orchestrator. It opens a tmux popup and runs a mode-switching loop inside it. Each mode launches a separate fzf instance with `--expect` keys for transitions. When the user makes a selection, it dispatches to the appropriate action script.
+`wt` owns non-tmux behavior: repo discovery/cache/pins, branch listing, `.ivu.yml`/`.ivu.yaml` config, worktree creation/removal, file setup, and machine-readable metadata. The scripts in this directory own tmux/fzf behavior only: popup lifecycle, picker modes, keybindings, and tmux session create/kill/switch.
 
 ```
 tmux_worktree (popup + picker loop)
-  ├── mode: repo     → tmux_worktree_pick_repo
-  ├── mode: branch   → fzf (type/select branch) → exec tmux_worktree_add
-  └── mode: worktree → fzf (select worktrees)    → tmux_worktree_rm
+  ├── mode: repo     → tmux_worktree_pick_repo → wt repos ...
+  ├── mode: branch   → wt branches → fzf → tmux_worktree_add → wt worktrees add → tmux session
+  └── mode: worktree → wt worktrees list → fzf → tmux_worktree_rm → wt worktrees rm
 ```
 
 ## Scripts
 
-| Script | Responsibility |
-|---|---|
-| `tmux_worktree` | Entry point. Opens popup, runs picker loop. Owns all fzf UI and mode transitions. Dispatches to add/rm. |
-| `tmux_worktree_add` | Pure creation. Takes `<repo_root> <branch>`, creates worktree, sets up files, creates tmux session, switches to it. No fzf. |
-| `tmux_worktree_rm` | Pure removal. Takes `<repo_root> <worktree_dir>`, kills session, removes worktree directory. No fzf. |
-| `tmux_worktree_pick_repo` | Standalone repo picker. Lists git repos under `~/dev` with fzf. Returns absolute path on stdout. Has its own pinning system and cache. |
-| `tmux_worktree_list_branches` | Data source. Lists deduplicated local+remote branches. Supports `--fetch` for streaming background fetch. |
-| `tmux_worktree_list_worktrees` | Data source. Lists worktree directories with merge status prefix (`⎇ ` merged, `  ` not merged). |
+| Script                         | Responsibility                                                                                                                                           |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tmux_worktree`                | Entry point. Opens popup, accepts optional direct input, runs picker loop. Owns all fzf UI and mode transitions. Dispatches to add/rm.                   |
+| `tmux_worktree_add`            | Tmux session wrapper. Calls `wt worktrees add --format json`, then creates/switches the tmux session. Accepts an optional session-name override. No fzf. |
+| `tmux_worktree_rm`             | Tmux removal wrapper. Kills the default session and any custom-named session rooted at the worktree path, then calls `wt worktrees rm`. No fzf.          |
+| `tmux_worktree_pick_repo`      | fzf repo picker backed by `wt repos list/refresh/pin`. Returns absolute path on stdout.                                                                  |
+| `tmux_worktree_list_branches`  | Compatibility wrapper around `wt branches`.                                                                                                              |
+| `tmux_worktree_list_worktrees` | Compatibility wrapper around `wt worktrees list --format fzf`.                                                                                           |
 
 ## Mode transitions
 
 - **ctrl-p**: switch to repo picker (from any mode)
 - **ctrl-w**: switch from branch → worktree mode
 - **ctrl-b**: switch from worktree → branch mode (also reloads existing branches within branch mode)
-- **Enter in branch mode**: creates/switches to worktree via `tmux_worktree_add`
+- **Enter in branch mode**: creates/switches to worktree via `tmux_worktree_add`; typed input may be `<branch|pr-url>` or `<session-name> <branch|pr-url>`
 - **Enter in worktree mode**: removes selected worktrees via `tmux_worktree_rm`
 - **ctrl-x in worktree mode**: removes selected worktrees without closing fzf
 
 ## Key conventions
 
-- Per-repo config lives in `.ivu.yml` (see `~/.config/ivu/template.yml`).
-- Session names follow `<repo>/wt/<worktree_dir>` convention, parsed by `format-session.sh` for the status bar.
+- Per-repo config lives in `.ivu.yml` or `.ivu.yaml` (see `~/.config/ivu/template.yml`). `wt` reads and initializes this file so tmux and non-tmux workflows share behavior.
+- Session names default to the `<repo>/wt/<worktree_dir>` convention parsed by `format-session.sh`; direct input or `wt worktrees add --session NAME --format json` can pass through an explicit session name.
 - `tmux_worktree` uses `exec` when handing off to `tmux_worktree_add` so the popup lifecycle (spinners, session switch) stays in one process.
+- `tmux_worktree_add` sends `startup_cmd` to the pane id returned by `tmux new-session`; this avoids tmux treating an exact session target as “no pane” and silently skipping the startup command.
+- Prefix+w opens the floating picker immediately. In branch mode, type a branch/PR URL, or type a session name followed by the branch/PR URL, then press Enter.
+- `tmux_worktree --pane-path PATH` is used by the tmux binding so repo detection follows the pane that launched the popup.
+- Tmux scripts prefer `~/.local/bin/wt` over `wt` from `PATH` so existing tmux servers keep working even if their environment is stale.
+
+## Maintenance notes
+
+- Keep git/worktree behavior in `.local/bin/wt`: repo root detection, repo cache/pins, branch listing, `.ivu` config, worktree add/remove/list, and copy/symlink setup.
+- Keep tmux behavior in this directory: popup UI, fzf keybindings, session naming, startup command dispatch, session kill/switch.
+- Shell completion is generated by `wt __complete ...`; the zsh file at `.oh-my-zsh/custom/completions/_wt` should remain a small shim. When adding a `wt` subcommand, update the parser and completion metadata together in `.local/bin/wt`.
+- Avoid adding new git/worktree logic to compatibility wrappers (`tmux_worktree_list_branches`, `tmux_worktree_list_worktrees`); they should only delegate to `wt`.

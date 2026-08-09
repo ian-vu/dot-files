@@ -1,0 +1,11 @@
+{
+  "vault": "~/Documents/heidi_obsidian",
+  "folder": "02_Areas/meetings",
+  "yearSubfolders": true,
+  "pollWindowMinutes": 1440,
+  "syncTranscript": true,
+  "filenameFormat": "YYYY-MM-DD-{slug}",
+  "notionTokenRef": "op://<vault>/<item>/<field>",
+  "tokenCacheFile": ".cache/notion-token.txt",
+  "notionVersion": "2026-03-11"
+}

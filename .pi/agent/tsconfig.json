@@ -1,0 +1,32 @@
+{
+  // Pi extensions are loaded from ~/.pi/agent outside a normal npm project; use
+  // home-relative paths to the mise-managed Pi install without vendoring deps.
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "types": ["node"],
+    "typeRoots": [
+      "../../../.local/share/mise/installs/npm-earendil-works-pi-coding-agent/latest/lib/node_modules/@earendil-works/pi-coding-agent/node_modules/@types"
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@earendil-works/pi-coding-agent": [
+        "../../../.local/share/mise/installs/npm-earendil-works-pi-coding-agent/latest/lib/node_modules/@earendil-works/pi-coding-agent"
+      ],
+      "@earendil-works/pi-ai": [
+        "../../../.local/share/mise/installs/npm-earendil-works-pi-coding-agent/latest/lib/node_modules/@earendil-works/pi-coding-agent/node_modules/@earendil-works/pi-ai"
+      ],
+      "@earendil-works/pi-tui": [
+        "../../../.local/share/mise/installs/npm-earendil-works-pi-coding-agent/latest/lib/node_modules/@earendil-works/pi-coding-agent/node_modules/@earendil-works/pi-tui"
+      ],
+      "typebox": [
+        "../../../.local/share/mise/installs/npm-earendil-works-pi-coding-agent/latest/lib/node_modules/@earendil-works/pi-coding-agent/node_modules/typebox"
+      ]
+    }
+  },
+  "include": ["extensions/**/*.ts"]
+}

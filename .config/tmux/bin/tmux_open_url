@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
-# Open the URL closest to the cursor in tmux copy mode.
-# Captures the current line from the copy-mode pane and finds the URL
-# nearest to the cursor position, then opens it with `open`.
+# Open the HTTP(S) URL closest to the cursor in tmux copy mode, then cancel
+# copy mode so the pane returns to its original live state.
 
 pane_id="$1"
+
+# Always leave copy mode, including when the search landed on a non-URL match.
+trap 'tmux send-keys -t "$pane_id" -X cancel 2>/dev/null || true' EXIT
 
 # Get cursor x position and the current line content
 cursor_x=$(tmux display-message -t "$pane_id" -p "#{copy_cursor_x}")
@@ -18,7 +20,7 @@ while IFS= read -r match; do
   # Find the byte offset of this URL in the line
   pos="${line%%"$match"*}"
   positions+=("${#pos}")
-done < <(echo "$line" | grep -oE '(https?://[^ )"'"'"'>]+|[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z]{2,})+(/[^ )"'"'"'>]*)*)')
+done < <(printf '%s\n' "$line" | grep -oE 'https?://[^ )"'"'"'>]+')
 
 if [ ${#urls[@]} -eq 0 ]; then
   tmux display-message "No URL found on current line"
@@ -41,11 +43,6 @@ url="${urls[$best]}"
 url="${url%,}"
 url="${url%.}"
 url="${url%;}"
-
-# Ensure URL has a scheme so `open` treats it as a URL
-if [[ "$url" != http://* && "$url" != https://* ]]; then
-  url="https://$url"
-fi
 
 open "$url"
 tmux display-message "Opened: $url"

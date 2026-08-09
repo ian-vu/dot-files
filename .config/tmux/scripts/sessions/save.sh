@@ -3,8 +3,8 @@
 # scripts/sessions/save.sh
 # ============================================================================
 # Purpose:
-#   Record a session as "<name>\t<cwd>" in the persistent MRU list and bump
-#   it to the top. The picker reads this file in order, so position-in-file
+#   Record a session as "<name>\t<cwd>\t<first_saved_epoch>" in the
+#   persistent MRU list and bump it to the top. The picker reads this file in order, so position-in-file
 #   IS the recency ranking — no extra timestamps needed.
 #
 # Called from:
@@ -20,11 +20,17 @@
 #   saved cwd, lazy-recreated sessions would all open in $HOME.
 #
 # Contract:
-#   $1 = session name (required, from `#{session_name}`)
-#   $2 = session cwd  (optional, from `#{pane_current_path}`)
-#                     If empty: preserve the existing entry's cwd or fall
-#                     back to $HOME. Bump-only callers depend on this.
-#   exit 0 on success, no-op, or tolerable failure — a hook that exits
+#   $1 = session name (required, from `#{hook_session_name}` / `#{session_name}`)
+#   $2 = session cwd  (optional). One of:
+#                     - a path: record it verbatim.
+#                     - empty: preserve the existing entry's cwd or fall
+#                       back to $HOME. Bump-only callers depend on this.
+#                     - `--from-session`: resolve the cwd from the live
+#                       session's own `#{session_path}` (the `-c` dir it
+#                       was created with). Used by the session-created hook
+#                       because `#{pane_current_path}` is unreliable there
+#                       (see hooks.conf for why).
+#   exit 0 on success, no-op, or tolerable failure - a hook that exits
 #   non-zero spams tmux's status line. exit 1 only on usage error.
 # ============================================================================
 
@@ -57,6 +63,21 @@ state_file="$state_dir/sessions.list"
 mkdir -p "$state_dir"
 [ -f "$state_file" ] || : > "$state_file"
 
+# --from-session: resolve the cwd from the live session's own working
+# directory (`#{session_path}`, i.e. the `-c` dir the session was created
+# with). `list-sessions -F` expands `#{session_path}` per-session, so the
+# lookup targets the named session regardless of the hook's format context.
+# This matters because `#{pane_current_path}` in a session-created hook
+# for a detached `new-session -d` issued from another client resolves to
+# the TRIGGERING client's pane, not the new session's - which would
+# corrupt the saved cwd (e.g. recording ml-scribe's path against a
+# dot-files session). Falls back to $HOME if the session is already gone.
+if [ "$cwd" = "--from-session" ]; then
+  cwd="$(tmux list-sessions -F $'#{session_name}\t#{session_path}' 2>/dev/null \
+    | awk -F '\t' -v n="$name" '$1 == n {print $2; exit}')"
+  [ -z "$cwd" ] && cwd="$HOME"
+fi
+
 # Bump-only call (no cwd given): preserve the existing entry's cwd, or
 # fall back to $HOME if no entry exists yet. This avoids ever writing a
 # "<name>\t" line with an empty path.
@@ -65,10 +86,16 @@ if [ -z "$cwd" ]; then
   [ -z "$cwd" ] && cwd="$HOME"
 fi
 
-# File format: one entry per line, "<name>\t<cwd>". TAB is the separator
-# because session names and paths can both contain spaces, but neither can
-# contain a literal TAB in any sane setup.
-new_line="${name}	${cwd}"
+# File format: one entry per line, "<name>\t<cwd>\t<first_saved_epoch>".
+# TAB is the separator because session names and paths can both contain
+# spaces, but neither can contain a literal TAB in any sane setup.
+# The epoch records when the entry was FIRST saved and survives MRU bumps,
+# so the picker preview can show a creation date even for sessions that are
+# not currently running. Pre-epoch two-field entries get stamped with "now"
+# on their next bump.
+saved_ts="$(awk -F '\t' -v n="$name" '$1 == n {print $3; exit}' "$state_file")"
+[ -z "$saved_ts" ] && saved_ts="$(date +%s)"
+new_line="${name}	${cwd}	${saved_ts}"
 
 # Atomic "remove-then-prepend" via temp file + mv. Prepending (rather than
 # updating in place) is what makes the saved list MRU-ordered.

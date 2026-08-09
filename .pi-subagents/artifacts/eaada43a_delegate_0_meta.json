@@ -1,0 +1,37 @@
+{
+  "runId": "eaada43a",
+  "agent": "delegate",
+  "task": "Say hello and report the current working directory by running `pwd`.",
+  "exitCode": 1,
+  "usage": {
+    "input": 0,
+    "output": 0,
+    "cacheRead": 0,
+    "cacheWrite": 0,
+    "cost": 0,
+    "turns": 0
+  },
+  "model": "baseten/zai-org/GLM-5.2",
+  "attemptedModels": [
+    "baseten/zai-org/GLM-5.2"
+  ],
+  "modelAttempts": [
+    {
+      "model": "baseten/zai-org/GLM-5.2",
+      "success": false,
+      "exitCode": 1,
+      "usage": {
+        "input": 0,
+        "output": 0,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "cost": 0,
+        "turns": 0
+      }
+    }
+  ],
+  "durationMs": 64,
+  "toolCount": 0,
+  "transcriptPath": "/Users/ivu/dot-files/.pi-subagents/artifacts/eaada43a_delegate_0_transcript.jsonl",
+  "timestamp": 1783843587026
+}

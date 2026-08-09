@@ -37,6 +37,10 @@ _darcs
 # - ".*\.log"        ignores all .log files at any depth
 
 \.DS_Store
+# Self-contained tool projects live in tools/ and are run by absolute path
+# (or stowed to bespoke targets via their own just recipes), never symlinked
+# wholesale into $HOME by the root stow run.
+^/tools
 Gemfile
 vimium.json
 mac
@@ -44,11 +48,14 @@ debian
 \.justfile
 .homebrew
 \.git-blame-ignore-revs
+# Repo-local Git hooks are installed via core.hooksPath, not symlinked to $HOME.
+^/\.githooks
 docs
 CLAUDE.md
 AGENTS.md
 \.luarc\.json
 ^/\.worktrees
+^/\.config/ivu/dotfiles-vendored-skills\.tsv
 # Pi project settings stay in the repo for the agent, not symlinked into $HOME.
 ^/\.pi/settings\.json
 

@@ -1,6 +1,7 @@
 {
   "settings": {
-    "autoAuth": true
+    "autoAuth": true,
+    "toolPrefix": "none"
   },
   "mcpServers": {
     "linear": {
@@ -12,6 +13,26 @@
       "url": "https://mcp.notion.com/mcp",
       "auth": "oauth",
       "lifecycle": "lazy"
+    },
+    "datadog": {
+      "url": "https://mcp.us3.datadoghq.com/api/unstable/mcp-server/mcp",
+      "auth": "oauth",
+      "lifecycle": "lazy"
+    },
+    "sem": {
+      "command": "/opt/homebrew/bin/sem",
+      "args": ["mcp"],
+      "lifecycle": "lazy",
+      "directTools": true
+    },
+    "slack": {
+      "command": "/opt/homebrew/bin/slack-mcp-server",
+      "args": ["--transport", "stdio"],
+      "lifecycle": "lazy",
+      "env": {
+        "SLACK_MCP_XOXC_TOKEN": "${SLACK_MCP_XOXC_TOKEN}",
+        "SLACK_MCP_XOXD_TOKEN": "${SLACK_MCP_XOXD_TOKEN}"
+      }
     }
   }
 }

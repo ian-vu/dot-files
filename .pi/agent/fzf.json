@@ -1,0 +1,12 @@
+{
+  "commands": {
+    "file": {
+      "list": "fd --type f --hidden --exclude .git",
+      "action": "@{{selected}} ",
+      "shortcut": "@",
+      "placement": "belowEditor",
+      "maxVisible": 5,
+      "hideHeader": true
+    }
+  }
+}

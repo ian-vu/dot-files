@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+# Open local Git changes in Neovim Diffview for tmux and opensessions diff actions.
+# opensessions may append LazyDiff-only flags like --branch; DiffviewOpen with
+# no range shows current working-tree/index changes, so arguments are ignored.
+exec nvim -c 'DiffviewOpen'

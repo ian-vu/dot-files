@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Move the focused pane like Neovim's "move split right": create a right column
+# when none exists, otherwise stack under the pane already on the right.
+current="${1:-${TMUX_PANE:-}}"
+if [[ -z "$current" ]]; then
+  tmux display-message "No current pane found"
+  exit 1
+fi
+
+if [[ "$(tmux display-message -p -t "$current" '#{pane_at_right}')" == "0" ]] && tmux select-pane -t "$current" -R 2>/dev/null; then
+  target="$(tmux display-message -p '#{pane_id}')"
+  tmux select-pane -t "$current"
+  tmux move-pane -v -s "$current" -t "$target"
+else
+  window="$(tmux display-message -p -t "$current" '#{window_id}')"
+  target="$(tmux list-panes -t "$window" -F '#{pane_id}' | grep -vxF "$current" | head -n 1)"
+  if [[ -z "$target" ]]; then
+    tmux display-message "No other pane to move next to"
+    exit 0
+  fi
+  tmux move-pane -h -l 45% -s "$current" -t "$target"
+fi
+
+tmux select-pane -t "$current"

@@ -26,6 +26,17 @@ lua/
 - **Key mappings** (non-plugin): `config/keymaps.lua`
 - **Plugin configuration**: `plugins/` — see `plugins/AGENTS.md` for file layout and conventions.
 
+## Project-local overrides
+
+Neovim enables trusted project-local `.nvim.lua` files via `vim.o.exrc = true` and `vim.o.secure = true` in `config/options.lua`. Use this pattern when a repository needs local behavior that should not be hardcoded globally, such as disabling an expensive LSP in a large worktree-heavy repo.
+
+Guidelines:
+
+- Prefer simple `vim.g.*` feature flags in `.nvim.lua` (for example, `vim.g.disable_bashls = true`) and make global plugin config read those flags.
+- If a plugin/server starts before `.nvim.lua` is loaded, check the flag later at attach/root-detection time instead of only during lazy.nvim spec construction. For LSP servers, `root_dir = function(...) ... end` is a good place to return `nil` for per-repo opt-out.
+- Keep project-local `.nvim.lua` files out of normal commits unless the whole team wants them. `.gitignore_global` ignores `.nvim.lua` by default.
+- Document one-off manual re-enable commands in the local `.nvim.lua` when disabling behavior by default.
+
 ## Notifications
 
 Three notification styles are available, each suited to different contexts:

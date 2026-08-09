@@ -22,7 +22,6 @@ return {
 		"saghen/blink.cmp", -- https://github.com/saghen/blink.cmp
 		opts = {
 			sources = {
-				default = { "lsp", "path", "snippets", "buffer" },
 				per_filetype = {
 					sql = { "snippets", "dadbod", "buffer" },
 				},

@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Directional pane navigation that first exits the sidebar-aware zoom
+# (tmux_zoom_sidebar, bound to prefix+z). Mirrors tmux's native zoom behavior
+# where switching panes restores the previous layout, so you never land on one
+# of the shrunken "padding" panes while zoomed.
+#
+# Usage: tmux_navigate_unzoom <L|D|U|R>
+
+dir="${1:?usage: tmux_navigate_unzoom <L|D|U|R>}"
+
+window="$(tmux display-message -p '#{window_id}')"
+saved="$(tmux show-option -w -q -v -t "$window" @keep_zoom_layout)"
+if [[ -n "$saved" ]]; then
+  # select-layout can fail if panes were added/removed while zoomed; clearing
+  # the flag regardless keeps prefix+a toggling sane afterwards.
+  tmux select-layout -t "$window" "$saved" 2>/dev/null || true
+  tmux set-option -w -u -t "$window" @keep_zoom_layout
+fi
+
+tmux select-pane "-$dir"

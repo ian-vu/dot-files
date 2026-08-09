@@ -22,6 +22,10 @@ version_format = '${raw}'
 [package]
 disabled = true
 
+# Avoid probing Bun in broad directories such as $HOME that contain a lockfile.
+[bun]
+disabled = true
+
 [character] # The name of the module we are configuring is 'character'
 success_symbol = '[╰](bold #ff966c)'
 error_symbol = '[╰](bold red)'

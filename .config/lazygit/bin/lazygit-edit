@@ -1,0 +1,110 @@
+#!/usr/bin/env sh
+# Open a file in the nearest Neovim instance from lazygit.
+#
+# Wired to lazygit's `os.edit` (E) and `os.editAtLine` (line-aware shift-E edits)
+# so pressing E jumps to the parent/neighbor nvim instead of nesting an editor
+# inside the lazygit terminal.
+#
+# When lazygit is running inside a tmux display-popup (opened with prefix g g),
+# the popup is closed after the edit is dispatched, revealing the nvim pane
+# underneath. The popup uses `display-popup -E`, which closes when its command
+# (lazygit) exits, so closing the popup means terminating the lazygit ancestor
+# of this script. The tmux prefix-g-g binding sets LAZYGIT_IN_POPUP=1 to opt in.
+#
+# Usage:
+#   lazygit-edit <file>            # os.edit
+#   lazygit-edit <file> <line>     # os.editAtLine
+#
+# Env:
+#   NVIM              server address of a parent Neovim (set when lazygit was
+#                     launched from within nvim, e.g. <leader>gg).
+#   LAZYGIT_IN_POPUP  set to 1 by the tmux prefix-g-g binding when lazygit runs
+#                     in a display-popup; triggers popup-close after the edit.
+#
+# editAtLineAndWait is intentionally NOT routed here: that variant blocks
+# lazygit while the editor runs (e.g. editing a hunk in place), so the popup
+# must stay open and the editor runs in the foreground.
+
+# NOTE: no `set -e` here. Several steps legitimately return non-zero (grep
+# finding no hunk, tmux when no pane matches) and must not abort the script;
+# the original inline lazygit commands relied on the same lenient behavior.
+
+file=${1:?missing file}
+line=${2:-}
+
+close_popup() {
+  [ -z "${LAZYGIT_IN_POPUP:-}" ] && return
+  # A *float* tmux session (the tmux_float toggle) is closed by detaching its
+  # client; lazygit keeps running detached and is reattached on next open.
+  case "$(tmux display-message -p '#{session_name}' 2>/dev/null || true)" in
+    *float*) tmux detach-client 2>/dev/null || true; return ;;
+  esac
+  # display-popup -E closes when its command (lazygit) exits. Walk up the
+  # process tree to the lazygit ancestor and terminate it so the popup closes
+  # and the underlying nvim pane is shown.
+  pid=$$
+  while [ "$pid" != 1 ] && [ -n "$pid" ]; do
+    comm=$(ps -o comm= -p "$pid" 2>/dev/null | tr -d ' ')
+    [ "$comm" = "lazygit" ] && { kill -TERM "$pid" 2>/dev/null || true; return; }
+    pid=$(ps -o ppid= -p "$pid" 2>/dev/null | tr -d ' ')
+  done
+}
+
+# Launched from within Neovim (e.g. <leader>gg): drive the parent nvim via its
+# server socket and close the lazygit terminal buffer. No tmux popup is involved.
+if [ -n "${NVIM:-}" ]; then
+  nvim --server "$NVIM" --remote-send "q"
+  nvim --server "$NVIM" --remote-send "<Esc>:tabfirst<CR>"
+  nvim --server "$NVIM" --remote "$file"
+  [ -n "$line" ] && nvim --server "$NVIM" --remote-send ":${line}<CR>"
+  exit 0
+fi
+
+# Standalone lazygit inside tmux: find a nearby nvim pane and send the edit to
+# it so we don't nest nvim inside the lazygit terminal.
+# For `os.edit` (no explicit line), land on the first changed line of the file
+# so pressing E opens the file at the actual edit.
+if [ -z "$line" ]; then
+  HUNK=$(git diff -U0 -- "$file" 2>/dev/null | grep -m1 '^@@' | sed 's/.*+\([0-9]*\).*/\1/')
+  if [ -z "$HUNK" ]; then
+    HUNK=$(git diff --cached -U0 -- "$file" 2>/dev/null | grep -m1 '^@@' | sed 's/.*+\([0-9]*\).*/\1/')
+  fi
+  [ -n "$HUNK" ] && line=$HUNK
+fi
+
+CUR_WIN=$(tmux display-message -p "#{window_id}")
+FIRST_WIN=$(tmux list-windows -F "#{window_id}" | head -n1)
+MATCH=$(tmux list-panes -F "#{window_id} #{pane_id} #{pane_current_command}" | grep -E 'n?vim' | head -n1)
+if [ -z "$MATCH" ] && [ "$FIRST_WIN" != "$CUR_WIN" ]; then
+  MATCH=$(tmux list-panes -t "$FIRST_WIN" -F "#{window_id} #{pane_id} #{pane_current_command}" | grep -E 'n?vim' | head -n1)
+fi
+if [ -z "$MATCH" ]; then
+  MATCH=$(tmux list-panes -s -F "#{window_id} #{pane_id} #{pane_current_command}" | grep -v "^$CUR_WIN " | grep -v "^$FIRST_WIN " | grep -E 'n?vim' | head -n1)
+fi
+
+if [ -n "$MATCH" ]; then
+  WIN=$(echo "$MATCH" | cut -d' ' -f1)
+  PANE=$(echo "$MATCH" | cut -d' ' -f2)
+  tmux select-window -t "$WIN"
+  tmux select-pane -t "$PANE"
+  tmux send-keys -t "$PANE" Escape ":tabfirst" Enter ":e $file" Enter
+  [ -n "$line" ] && tmux send-keys -t "$PANE" ":$line" Enter
+  close_popup
+else
+  # No existing nvim pane. In a popup, start nvim in the underlying tmux
+  # session (not inside the popup) so closing the popup doesn't kill it.
+  if [ -n "${LAZYGIT_IN_POPUP:-}" ]; then
+    if [ -n "$line" ]; then
+      tmux new-window "nvim '+$line' '$file'"
+    else
+      tmux new-window "nvim '$file'"
+    fi
+    close_popup
+  else
+    if [ -n "$line" ]; then
+      exec nvim "+$line" "$file"
+    else
+      exec nvim "$file"
+    fi
+  fi
+fi

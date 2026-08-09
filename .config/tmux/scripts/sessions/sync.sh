@@ -23,6 +23,8 @@
 #   - Excludes the same patterns save.sh excludes (currently `*float*`).
 #   - Captures each session's active pane cwd as the session cwd.
 #   - Orders by `#{session_last_attached}` desc (matches save.sh's MRU).
+#   - Preserves each entry's existing first-saved epoch (third column);
+#     entries new to the file get the live `#{session_created}` epoch.
 #   - Writes atomically via temp file + mv.
 #
 # Contract:
@@ -34,11 +36,16 @@ set -eu
 state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/tmux"
 state_file="$state_dir/sessions.list"
 mkdir -p "$state_dir"
+# The merge awk below reads the existing file to preserve saved epochs, so
+# it must exist even on first run.
+[ -f "$state_file" ] || : > "$state_file"
 
-# Pull (last_attached, name, cwd-of-active-pane) for every live session.
-# `#{pane_current_path}` resolves against the session's focused pane —
-# the closest tmux concept to "where this session is currently working".
-raw="$(tmux list-sessions -F '#{session_last_attached}|#{session_name}|#{pane_current_path}' 2>/dev/null || true)"
+# Pull (last_attached, name, cwd-of-active-pane, created) for every live
+# session. `#{pane_current_path}` resolves against the session's focused
+# pane — the closest tmux concept to "where this session is currently
+# working". `#{session_created}` seeds the first-saved epoch for sessions
+# not already in the file.
+raw="$(tmux list-sessions -F '#{session_last_attached}|#{session_name}|#{pane_current_path}|#{session_created}' 2>/dev/null || true)"
 
 if [ -z "$raw" ]; then
   echo "sessions/sync: no live tmux sessions to sync" >&2
@@ -48,11 +55,22 @@ fi
 
 tmp="$(mktemp "$state_file.XXXXXX")"
 
-# Filter floats, sort MRU desc, emit "<name>\t<cwd>" for the file format.
-printf '%s\n' "$raw" \
-  | awk -F '|' '$2 !~ /float/' \
-  | sort -t '|' -k1,1 -rn \
-  | awk -F '|' -v OFS='\t' '{print $2, $3}' \
+# Filter floats, sort MRU desc, emit "<name>\t<cwd>\t<epoch>". The awk
+# program first reads the existing file (TAB-separated), remembering each
+# name's saved epoch, then processes the live list (pipe-separated) — so
+# sync preserves first-saved dates instead of resetting them to "now".
+{
+  printf '%s\n' "$raw" \
+    | awk -F '|' '$2 !~ /float/' \
+    | sort -t '|' -k1,1 -rn
+} | awk '
+    NR == FNR { split($0, f, "\t"); if (f[1] != "") ts[f[1]] = f[3]; next }
+    {
+      split($0, f, "|")
+      epoch = (f[2] in ts && ts[f[2]] != "") ? ts[f[2]] : f[4]
+      printf "%s\t%s\t%s\n", f[2], f[3], epoch
+    }
+  ' "$state_file" - \
   > "$tmp"
 
 mv "$tmp" "$state_file"

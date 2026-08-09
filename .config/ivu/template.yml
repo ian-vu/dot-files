@@ -1,18 +1,19 @@
 # .ivu.yml — Per-repo configuration for ivu development workflows.
-# Place this file at the root of your git repository.
+# Place this file at the root of your git repository as .ivu.yml or .ivu.yaml.
 # Tools read specific sections as needed; unused sections are ignored.
 
 # ============================================================================
 # WORKTREE — Git worktree creation and tmux session setup
 # ============================================================================
-# Used by: tmux_worktree_add (prefix + w)
-# Creates git worktrees with automatic file setup and tmux sessions.
+# Used by: wt worktrees add, plus tmux_worktree (prefix + w) for session setup.
+# wt creates git worktrees with automatic file setup; tmux reads the returned
+# metadata to create sessions without embedding git-specific behavior.
 #
 # Flow:
 #   1. Select a branch (fzf picker or paste directly)
 #   2. Create worktree at <dir>/<branch> (slashes in branch name become dashes)
 #   3. Copy/symlink configured files into the worktree
-#   4. Start a tmux session named <repo>/wt/<branch>
+#   4. Start a tmux session, defaulting to <repo>/wt/<branch> unless overridden
 #   5. Run startup_cmd in the session
 
 worktree:

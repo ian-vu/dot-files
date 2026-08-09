@@ -1,29 +1,18 @@
 # Global justfile. Invoke from anywhere with `just -g <recipe>`.
 # List all recipes with `just -g --list`.
 
-# install or update a global mise tool to latest — e.g. `just -g up npm:@tokscale/cli`
-up package:
-    mise use -g {{ package }}@latest
+# install a global mise-managed tool; defaults to latest, or pass a version — e.g. `just -g install npm:@tokscale/cli` or `just -g install npm:@tokscale/cli 1.2.3`
+install package version='latest':
+    mise use -g {{ package }}@{{ version }}
 
-# update an installed mise tool to latest by fuzzy name — e.g. `just -g update codex`
-update name:
-    #!/usr/bin/env bash
-    # Resolve a fuzzy name (e.g. "codex") to the full mise tool key (e.g. "npm:@openai/codex")
-    # by case-insensitive substring match against currently installed tools.
-    set -euo pipefail
-    query={{ quote(name) }}
-    matches=$(mise ls -J | jq -r 'keys[]' | grep -iF -- "$query" || true)
-    if [ -z "$matches" ]; then
-        echo "No installed mise tool matches '$query'" >&2
-        exit 1
-    fi
-    count=$(printf '%s\n' "$matches" | wc -l | tr -d ' ')
-    if [ "$count" -gt 1 ]; then
-        echo "Multiple tools match '$query':" >&2
-        printf '  %s\n' $matches >&2
-        exit 1
-    fi
-    mise use -g "${matches}@latest"
+# update a mise-managed tool while preserving configured version ranges — e.g. `just -g update npm:@tokscale/cli` or `just -g update pi`
+update package:
+    mise upgrade {{ package }}
+
+# update pi only
+update-pi:
+    mise install -q npm:@earendil-works/pi-coding-agent@latest
+    pi update --self
 
 # list all installed mise tools and active versions
 ls:

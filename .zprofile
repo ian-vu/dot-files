@@ -1,5 +1,12 @@
-if [[ "$(uname)" == "Darwin" ]] then
-  eval "$(/opt/homebrew/bin/brew shellenv)"
+if [[ $OSTYPE == darwin* ]]; then
+  # /etc/zprofile already runs path_helper, so set Homebrew's fixed Apple Silicon
+  # environment directly instead of spawning `brew shellenv` for every login.
+  export HOMEBREW_PREFIX="/opt/homebrew"
+  export HOMEBREW_CELLAR="/opt/homebrew/Cellar"
+  export HOMEBREW_REPOSITORY="/opt/homebrew"
+  export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"
+  [[ -z ${MANPATH-} ]] || export MANPATH=":${MANPATH#:}"
+  export INFOPATH="/opt/homebrew/share/info:${INFOPATH:-}"
 fi
 
 

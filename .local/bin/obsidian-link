@@ -1,0 +1,397 @@
+#!/usr/bin/env bash
+# =============================================================================
+# obsidian-link — link the current repository into the Obsidian vault
+# =============================================================================
+# Creates symlinks INSIDE the Obsidian vault that point OUT to selected
+# folders/files in the current git repository. This mirrors the manual layout
+# used for ml-scribe (02_Active/Heidi/repos/ml-scribe/), so repo docs and notes
+# become browsable/editable from Obsidian while the repository itself stays
+# untouched (no gitignore pollution, no iCloud files entering the worktree).
+#
+# Direction:  Obsidian vault  --symlink-->  repo path  (absolute target)
+#
+# The vault root is resolved from the ~/notes symlink (which points at the
+# iCloud Obsidian vault), falling back to the canonical iCloud path.
+#
+# Path selection uses fzf's built-in directory walker so you can browse the
+# actual folder structure of the repo, mark paths with TAB, and either accept
+# the selection or type a new path in the query line (printed via --print-query)
+# to link something not currently shown.
+#
+# Usage:
+#   obsidian-link              # interactive setup (same as `link`)
+#   obsidian-link link         # interactive setup
+#   obsidian-link link --dry-run
+#   obsidian-link list         # show existing vault symlinks targeting this repo
+#   obsidian-link unlink       # remove vault symlinks targeting this repo
+#   obsidian-link help
+#
+# Requires: git, fzf (interactive folder browsing). Falls back to a plain
+# prompt if fzf is unavailable.
+# =============================================================================
+
+set -euo pipefail
+
+# --- pretty output ----------------------------------------------------------
+if [ -t 1 ] && [ -z "${NO_COLOR:-}" ]; then
+  C_RESET=$'\033[0m'; C_BOLD=$'\033[1m'; C_DIM=$'\033[2m'
+  C_GREEN=$'\033[1;32m'; C_YELLOW=$'\033[33m'; C_RED=$'\033[31m'
+else
+  C_RESET=""; C_BOLD=""; C_DIM=""; C_GREEN=""; C_YELLOW=""; C_RED=""
+fi
+
+die()  { printf '%sobsidian-link:%s %s\n' "$C_RED" "$C_RESET" "$*" >&2; exit 1; }
+info() { printf '%sobsidian-link:%s %s\n' "$C_DIM" "$C_RESET" "$*" >&2; }
+good() { printf '%s✓%s %s\n' "$C_GREEN" "$C_RESET" "$*" >&2; }
+warn() { printf '%s!%s %s\n' "$C_YELLOW" "$C_RESET" "$*" >&2; }
+
+DRY_RUN=0
+FORCE=0
+
+# Directory names the fzf walker should skip (never offered as link candidates).
+# These are build artifacts, VCS data, and tool caches that clutter the tree.
+PRUNE_NAMES=(
+  .git .hg .svn node_modules .venv venv env __pycache__ dist build out target
+  .next .turbo .svelte-kit coverage .cache .worktrees .work-summaries
+  .obsidian-notes .idea .vscode .pi .claude .codex
+)
+
+# --- repo resolution --------------------------------------------------------
+resolve_repo() {
+  local root
+  root=$(git rev-parse --show-toplevel 2>/dev/null) || die "not inside a git repository"
+  root=$(cd "$root" && pwd -P)   # canonical absolute path; stable from any cwd
+  REPO_ROOT="$root"
+  REPO_NAME=$(basename "$root")
+}
+
+# --- vault resolution -------------------------------------------------------
+# ~/notes is a symlink to the Obsidian vault root (iCloud). Resolve it; fall
+# back to the canonical iCloud path if the symlink is missing.
+resolve_vault() {
+  local notes="$HOME/notes" vault
+  if [ -L "$notes" ] && [ -d "$notes" ]; then
+    vault=$(readlink "$notes")
+    [ "${vault:0:1}" = "/" ] || vault="$HOME/$vault"   # resolve relative links
+  elif [ -d "$notes" ]; then
+    vault="$notes"
+  else
+    vault="$HOME/Library/Mobile Documents/iCloud~md~obsidian/Documents/obsidian"
+  fi
+  [ -d "$vault" ] || die "Obsidian vault not found at: $vault"
+  VAULT_ROOT=$(cd "$vault" && pwd -P)
+}
+
+# --- path normalization -----------------------------------------------------
+# Canonicalize a path to an absolute, symlink-resolved form. Uses python3
+# (already a dependency of the wt CLI) so it works without coreutils realpath.
+canonical() {
+  python3 -c 'import os,sys; print(os.path.realpath(sys.argv[1]))' "$1"
+}
+
+# Turn one user/fzf-provided path into a canonical absolute path that lives
+# inside the repo. Prints nothing (skips) if the path doesn't exist or escapes
+# the repo. Accepts repo-relative, repo-root-prefixed, or absolute input.
+resolve_abs() {
+  local root="$1" p="$2" abs
+  p="${p#./}"                       # strip leading ./
+  case "$p" in
+    "$root"/*) abs="$p" ;;           # already repo-root-prefixed
+    /*)        abs="$p" ;;           # absolute
+    *)         abs="$root/$p" ;;     # repo-relative
+  esac
+  [ -e "$abs" ] || return 0
+  abs=$(canonical "$abs") || return 0
+  case "$abs" in
+    "$root"|"$root"/*) printf '%s\n' "$abs" ;;
+    *) warn "outside repo, skipped: $p" ;;
+  esac
+}
+
+# --- destination prompt with validation -------------------------------------
+# Ask for a vault-relative destination folder. Validate that its parent exists
+# inside the vault; reprompt until valid or user cancels. Creates the final
+# folder (mkdir -p) on success. Sets DEST_DIR to the absolute path.
+prompt_destination() {
+  local default="$1"
+  while :; do
+    printf '%sdestination in vault%s (relative to vault root): ' "$C_BOLD" "$C_RESET" >&2
+    local input
+    read -r input
+    input="${input:-$default}"
+    input="${input#"$VAULT_ROOT"/}"   # tolerate a full pasted path
+    while [ "${input:0:1}" = "/" ]; do input="${input:1}"; done
+
+    local abs="$VAULT_ROOT/$input"
+    local parent; parent=$(dirname "$abs")
+
+    if [ ! -d "$parent" ]; then
+      warn "parent does not exist in vault: ${parent#$VAULT_ROOT/}"
+      printf 'create it? [y/N] ' >&2; read -r yn
+      case "$yn" in
+        y|Y|yes) mkdir -p "$parent" || { warn "mkdir failed; try again"; continue; } ;;
+        *) continue ;;
+      esac
+    fi
+
+    if [ -e "$abs" ] && [ ! -d "$abs" ] && [ ! -L "$abs" ]; then
+      warn "a non-directory file already exists there: $input"
+      continue
+    fi
+
+    mkdir -p "$abs" || die "could not create destination: $abs"
+    DEST_DIR="$abs"
+    return 0
+  done
+}
+
+# --- path selection ---------------------------------------------------------
+# fzf preview command. Resolves the highlighted entry against the repo root
+# (passed via env var to survive spaces in the iCloud path), then shows a tree
+# for directories or file contents for files.
+PREVIEW_CMD='p={}; p="${p#./}; case "$p" in "$OBSIDIAN_LINK_ROOT"/*|/*) :;; *) p="$OBSIDIAN_LINK_ROOT/$p";; esac; if [ -d "$p" ]; then (command -v eza >/dev/null 2>&1 && eza --tree -L 2 --color=always -- "$p" 2>/dev/null || find "$p" -maxdepth 2 2>/dev/null | head -60); else (command -v bat >/dev/null 2>&1 && bat --color=always --style=plain -- "$p" 2>/dev/null || head -120 "$p" 2>/dev/null); fi'
+
+# Echo canonical absolute repo paths to link, one per line. Uses fzf's
+# directory walker so you can browse the real folder structure, mark with TAB,
+# and type a new path in the query line to link something not listed.
+pick_paths() {
+  local root="$1" skip
+  if ! command -v fzf >/dev/null 2>&1; then
+    warn "fzf not found; falling back to manual entry."
+    printf 'paths (relative to repo, comma or space separated): ' >&2
+    read -r raw
+    echo "$raw" | tr ' ,' '\n\n' | sed '/^$/d' | while IFS= read -r p; do
+      resolve_abs "$root" "$p"
+    done
+    return
+  fi
+
+  skip=$(IFS=,; printf '%s' "${PRUNE_NAMES[*]}")
+  export OBSIDIAN_LINK_ROOT="$root"
+
+  local out
+  out=$(fzf --multi --ansi --height=80% --reverse \
+        --walker=dir,file,follow,hidden \
+        --walker-root="$root" \
+        --walker-skip="$skip" \
+        --preview="$PREVIEW_CMD" \
+        --preview-window=right:50%:border-left \
+        --print-query \
+        --prompt="browse repo, select paths to link> " \
+        --header="TAB mark  ENTER accept  ctrl-] descend  ctrl-\\ ascend  ESC cancel  (type a new path to link it)" \
+        2>/dev/null) || true
+
+  [ -z "$out" ] && return 0
+
+  # --print-query emits the query as the first line; treat it as an extra
+  # candidate path so a typed path that exists gets linked even if not shown.
+  local query
+  query=$(printf '%s\n' "$out" | head -1)
+  {
+    printf '%s\n' "$out" | tail -n +2
+    [ -n "$query" ] && printf '%s\n' "$query"
+  } | while IFS= read -r p; do
+    [ -z "$p" ] && continue
+    resolve_abs "$root" "$p"
+  done | awk '!seen[$0]++'
+}
+
+# --- existing-link scan ----------------------------------------------------
+# Print "linkname -> reltarget" lines for symlinks already in $dest whose
+# target lives under $root. Used to fail fast on re-runs instead of silently
+# relinking or duplicating.
+scan_existing() {
+  local dest="$1" root="$2"
+  [ -d "$dest" ] || return 0
+  local l t
+  while IFS= read -r l; do
+    [ -L "$l" ] || continue
+    t=$(readlink "$l" || true)
+    case "$t" in
+      "$root"/*) printf '%s -> %s\n' "$(basename "$l")" "${t#$root/}" ;;
+    esac
+  done < <(find "$dest" -maxdepth 1 -mindepth 1 2>/dev/null | sort)
+}
+
+# --- symlink creation -------------------------------------------------------
+make_link() {
+  local target="$1" linkname="$2" dest="$3"
+  local link="$dest/$linkname"
+  if [ -L "$link" ]; then
+    local cur; cur=$(readlink "$link")
+    if [ "$cur" = "$target" ]; then
+      info "already linked: $linkname"
+      return 0
+    fi
+    if [ "$DRY_RUN" -eq 1 ]; then
+      printf '%s would replace%s %s -> %s\n' "$C_YELLOW" "$C_RESET" "$linkname" "$target"
+      return 0
+    fi
+    ln -sfn "$target" "$link"
+    good "relinked: $linkname -> ${target#$REPO_ROOT/}"
+    return 0
+  fi
+  if [ -e "$link" ] && [ ! -L "$link" ]; then
+    warn "skipped (real file/dir exists in vault): $linkname"
+    return 0
+  fi
+  if [ "$DRY_RUN" -eq 1 ]; then
+    printf '%s would link%s %s -> %s\n' "$C_GREEN" "$C_RESET" "$linkname" "$target"
+    return 0
+  fi
+  ln -s "$target" "$link"
+  good "linked: $linkname -> ${target#$REPO_ROOT/}"
+}
+
+# --- commands ---------------------------------------------------------------
+cmd_link() {
+  for a in "$@"; do
+    case "$a" in
+      --dry-run|-n) DRY_RUN=1 ;;
+      --force|-f) FORCE=1 ;;
+      *) die "unknown option: $a (see `obsidian-link help`)" ;;
+    esac
+  done
+
+  resolve_repo
+  resolve_vault
+  info "repo:  $REPO_ROOT"
+  info "vault: $VAULT_ROOT"
+
+  local default_dest="02_Active/Heidi/repos/$REPO_NAME"
+  printf '%sDefault destination: %s%s\n' "$C_DIM" "$default_dest" "$C_RESET" >&2
+  prompt_destination "$default_dest"
+
+  # Idempotency guard: refuse to run if links for this repo already exist in the
+  # chosen destination. Re-running should be a deliberate act — unlink first or
+  # use --force to relink (e.g. after paths moved).
+  local existing
+  existing=$(scan_existing "$DEST_DIR" "$REPO_ROOT")
+  if [ -n "$existing" ] && [ "$FORCE" -eq 0 ]; then
+    warn "existing links for '$REPO_NAME' already in ${DEST_DIR#$VAULT_ROOT}/:"
+    printf '%s\n' "$existing" | sed 's/^/    /' >&2
+    die "aborting to avoid clobbering existing links. Review with \`obsidian-link list\`, remove with \`obsidian-link unlink\`, or re-run with --force to relink."
+  fi
+  [ -n "$existing" ] && [ "$FORCE" -eq 1 ] && info "--force: relinking over existing links in ${DEST_DIR#$VAULT_ROOT}/"
+
+  printf '%sSelect repo paths to link:%s\n' "$C_BOLD" "$C_RESET" >&2
+  local selected
+  selected=$(pick_paths "$REPO_ROOT")
+  if [ -z "$selected" ]; then
+    warn "no paths selected; nothing to do."
+    return 0
+  fi
+
+  printf '\n%sLinking into:%s %s\n' "$C_BOLD" "$C_RESET" "${DEST_DIR#$VAULT_ROOT/}" >&2
+  local abs
+  while IFS= read -r abs; do
+    [ -z "$abs" ] && continue
+    make_link "$abs" "$(basename "$abs")" "$DEST_DIR"
+  done <<< "$selected"
+
+  if [ "$DRY_RUN" -eq 1 ]; then
+    info "(dry run — no changes made)"
+  else
+    good "done. Open Obsidian and browse: ${DEST_DIR#$VAULT_ROOT/}/"
+  fi
+}
+
+# List symlinks under the repo's default vault folder whose target lives inside
+# this repo. Stateless: scans the destination directory rather than a manifest.
+cmd_list() {
+  resolve_repo
+  resolve_vault
+  local dest="$VAULT_ROOT/02_Active/Heidi/repos/$REPO_NAME"
+  [ -d "$dest" ] || { info "no vault folder at: ${dest#$VAULT_ROOT/}"; return 0; }
+  local lines
+  lines=$(scan_existing "$dest" "$REPO_ROOT")
+  if [ -z "$lines" ]; then
+    info "no symlinks targeting this repo found in ${dest#$VAULT_ROOT/}"
+  else
+    printf '%s\n' "$lines"
+  fi
+}
+
+cmd_unlink() {
+  resolve_repo
+  resolve_vault
+  local dest="$VAULT_ROOT/02_Active/Heidi/repos/$REPO_NAME"
+  [ -d "$dest" ] || { info "no vault folder at: ${dest#$VAULT_ROOT/}"; return 0; }
+  local -a targets=()
+  while IFS= read -r l; do
+    [ -L "$l" ] || continue
+    local t; t=$(readlink "$l" || true)
+    case "$t" in
+      "$REPO_ROOT"/*) targets+=("$l") ;;
+    esac
+  done < <(find "$dest" -maxdepth 1 -mindepth 1 2>/dev/null | sort)
+  [ "${#targets[@]}" -eq 0 ] && { info "no symlinks targeting this repo to remove"; return 0; }
+  printf '%sAbout to remove %d symlink(s) in %s:%s\n' "$C_YELLOW" "${#targets[@]}" "${dest#$VAULT_ROOT/}" "$C_RESET" >&2
+  for l in "${targets[@]}"; do printf '  %s\n' "$(basename "$l")"; done >&2
+  printf 'proceed? [y/N] ' >&2; read -r yn
+  case "$yn" in
+    y|Y|yes) ;;
+    *) info "aborted"; return 0 ;;
+  esac
+  for l in "${targets[@]}"; do rm -f "$l"; good "removed: $(basename "$l")"; done
+}
+
+cmd_help() {
+  cat <<'EOF'
+obsidian-link — link the current repository into the Obsidian vault
+
+Creates symlinks inside the Obsidian vault that point out to selected
+folders/files in the current git repository (Obsidian -> repo direction).
+The repository itself is never modified.
+
+USAGE
+  obsidian-link                interactive setup (alias for `link`)
+  obsidian-link link [--dry-run] [--force]
+  obsidian-link list           show existing vault symlinks targeting this repo
+  obsidian-link unlink         remove those symlinks (prompts to confirm)
+  obsidian-link help
+
+IDEMPOTENCY
+  `link` fails if symlinks for this repo already exist in the chosen
+  destination, listing them so nothing is silently clobbered. To update after
+  paths move, either `obsidian-link unlink` then re-run, or re-run with
+  --force to relink over them.
+
+PATH SELECTION
+  fzf's directory walker browses the real repo folder structure so you can see
+  what is available. Mark paths with TAB, accept with ENTER. To link a path
+  that isn't shown, just type it in the query line and press ENTER — if it
+  exists under the repo it will be linked.
+    TAB        mark/unmark a path
+    ENTER      accept selection
+    ctrl-]     descend into the highlighted directory
+    ctrl-\      ascend to the parent directory
+    ESC        cancel
+
+DETAILS
+  - Vault root is resolved from the ~/notes symlink (iCloud Obsidian vault).
+  - Destination defaults to 02_Active/Heidi/repos/<repo>/ and is prompted
+    each run; the parent path is validated and you are offered to create it
+    if missing.
+  - Symlink targets are absolute, so links stay valid from any cwd.
+  - Re-running relinks existing symlinks; real files/dirs in the vault are
+    never overwritten.
+
+ENVIRONMENT
+  NO_COLOR   set to disable colored output
+EOF
+}
+
+main() {
+  local cmd="${1:-link}"
+  [ $# -gt 0 ] && shift || true
+  case "$cmd" in
+    link)    cmd_link "$@" ;;
+    list)    cmd_list "$@" ;;
+    unlink)  cmd_unlink "$@" ;;
+    help|-h|--help) cmd_help ;;
+    *) die "unknown command: $cmd (see `obsidian-link help`)" ;;
+  esac
+}
+
+main "$@"

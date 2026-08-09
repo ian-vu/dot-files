@@ -1,0 +1,50 @@
+{
+  "statusFilter": {
+    "mode": "only",
+    "shown": []
+  },
+  "segments": [
+    "model",
+    "thinking",
+    "context",
+    "cost"
+  ],
+  "thresholds": {
+    "context": [
+      {
+        "threshold": 0,
+        "color": "success"
+      },
+      {
+        "threshold": 30,
+        "color": "warning"
+      },
+      {
+        "threshold": 40,
+        "color": "syntaxVariable"
+      },
+      {
+        "threshold": 50,
+        "color": "error"
+      }
+    ],
+    "cost": [
+      {
+        "threshold": 0,
+        "color": "syntaxFunction"
+      },
+      {
+        "threshold": 10,
+        "color": "warning"
+      },
+      {
+        "threshold": 20,
+        "color": "syntaxVariable"
+      },
+      {
+        "threshold": 25,
+        "color": "error"
+      }
+    ]
+  }
+}

@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Sidebar-aware zoom toggle for prefix+z.
+#
+# tmux's built-in zoom (resize-pane -Z) covers the whole window, hiding the
+# opensessions sidebar and stretching text across large monitors. This script
+# instead pseudo-zooms with resizes so the sidebar stays visible:
+#   - The focused pane grows to full height and up to @zoom_max_width_percent
+#     of the window width (default 75%), so text stays readable on wide screens.
+#   - The opensessions sidebar keeps its pre-zoom width; other panes in the
+#     window shrink to absorb the difference and act as padding.
+#   - Toggling again restores the exact pre-zoom layout, which was saved in the
+#     @keep_zoom_layout window option.
+# Windows without a sidebar pane, or zooming the sidebar itself, fall back to
+# tmux's native zoom so behavior elsewhere is unchanged.
+
+pane="${1:-${TMUX_PANE:-}}"
+if [[ -z "$pane" ]]; then
+  tmux display-message "No current pane found"
+  exit 1
+fi
+window="$(tmux display-message -p -t "$pane" '#{window_id}')"
+
+# Locate the opensessions sidebar pane in this window by its pane title.
+sidebar="$(tmux list-panes -t "$window" -F '#{pane_id} #{pane_title}' \
+  | awk '$2 == "opensessions-sidebar" { print $1; exit }')"
+
+if [[ -z "$sidebar" || "$pane" == "$sidebar" ]]; then
+  tmux resize-pane -Z -t "$pane"
+  exit 0
+fi
+
+# Toggle off: restore the saved layout. select-layout can fail if panes were
+# added/removed while zoomed; in that case just clear the flag and stay put.
+saved="$(tmux show-option -w -q -v -t "$window" @keep_zoom_layout)"
+if [[ -n "$saved" ]]; then
+  tmux select-layout -t "$window" "$saved" 2>/dev/null || true
+  tmux set-option -w -u -t "$window" @keep_zoom_layout
+  tmux select-pane -t "$pane"
+  exit 0
+fi
+
+layout="$(tmux display-message -p -t "$window" '#{window_layout}')"
+sidebar_width="$(tmux display-message -p -t "$sidebar" '#{pane_width}')"
+window_width="$(tmux display-message -p -t "$window" '#{window_width}')"
+max_pct="$(tmux show-option -g -q -v @zoom_max_width_percent)"
+max_pct="${max_pct:-75}"
+target=$((window_width * max_pct / 100))
+
+tmux set-option -w -t "$window" @keep_zoom_layout "$layout"
+tmux resize-pane -t "$pane" -y 9999
+tmux resize-pane -t "$pane" -x "$target"
+# Width resizes can steal columns from the sidebar; pin it back to its
+# pre-zoom width so the session list stays fully visible.
+tmux resize-pane -t "$sidebar" -x "$sidebar_width"
+tmux select-pane -t "$pane"

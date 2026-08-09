@@ -44,6 +44,11 @@ return {
 					functions = { italic = true }, -- enable italics in functions
 					-- variables = { italic = true }, -- enable italics in variables
 				},
+				on_highlights = function(hl, c)
+					-- Transparent backgrounds make split boundaries subtle, so use a warm theme accent for separators.
+					hl.WinSeparator = { fg = c.orange, bg = "NONE" }
+					hl.VertSplit = { fg = c.orange, bg = "NONE" } -- Keep older Neovim aliases aligned.
+				end,
 			})
 
 			-- Load the colorscheme here.

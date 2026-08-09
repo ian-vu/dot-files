@@ -1,4 +1,112 @@
 return {
+	{ -- Three-part diff viewer with a connector gutter that preserves each side's line numbers
+		"CoreyKaylor/diffbandit.nvim", -- https://github.com/CoreyKaylor/diffbandit.nvim
+		cmd = {
+			"DiffBandit",
+			"DiffBanditBuffers",
+			"DiffBanditFolderDiff",
+			"DiffBanditGit",
+			"DiffBanditGitCurrent",
+			"DiffBanditCommitPanel",
+			"DiffBanditGitMenu",
+			"DiffBanditGitLog",
+			"DiffBanditGitCommit",
+			"DiffBanditGitCompare",
+			"DiffBanditGitCheckout",
+			"DiffBanditMerge",
+		},
+		-- Mirrors the diffview.nvim workflow: ]q/[q for file entries, <leader>gc… for
+		-- merge conflicts, commit panel sized like diffview's file_panel.
+		opts = {
+			git = {
+				-- Match diffview's ]q/[q file-entry navigation (chunk nav stays ]c/[c).
+				file_keys = { next = "]q", prev = "[q" },
+				panel = {
+					-- Match diffview's bottom file_panel height.
+					commit_height = 12,
+					keys = {
+						-- Match diffview's `c` commit and `<S-a>` amend from the file panel.
+						focus_commit = "c",
+						toggle_amend = "A",
+					},
+				},
+			},
+			merge = {
+				keys = {
+					-- Match diffview's conflict chooser keys: ours / theirs / all.
+					accept_local = "<leader>gco",
+					accept_remote = "<leader>gct",
+					accept_both = "<leader>gca",
+					-- Closest analogue to diffview's <leader>gcA (accept everything).
+					apply_non_conflicting = "<leader>gA",
+				},
+			},
+		},
+		config = function(_, opts)
+			require("diffbandit").setup(opts)
+
+			-- Colemak pane navigation inside diffbandit sessions.
+			-- A session lays out ~9 windows (left/right source, number gutters,
+			-- connector, headers, overviews), so plain wincmd h/l (the
+			-- vim-tmux-navigator fallback) lands on gutter windows and feels like
+			-- it cycles. Bind the colemak left/right nav keys directly to the
+			-- session's source windows so Alt+h/Alt+i and <C-h>/<C-l> move cleanly
+			-- between the two real panes, just like normal nvim splits.
+			local db_state = require("diffbandit.state")
+			local group = vim.api.nvim_create_augroup("DiffBanditColemakNav", { clear = true })
+
+			vim.api.nvim_create_autocmd("WinEnter", {
+				group = group,
+				callback = function(args)
+					local session = db_state.sessions[vim.api.nvim_get_current_tabpage()]
+					if not session then
+						return
+					end
+					local buf = args.buf
+					if not vim.api.nvim_buf_is_valid(buf) then
+						return
+					end
+					-- Re-resolve the live session on each keypress so maps left on a
+					-- reused real-file buffer no-op once the session has closed.
+					local function focus_side(side)
+						local s = db_state.sessions[vim.api.nvim_get_current_tabpage()]
+						local win = s and s[side]
+						if win and vim.api.nvim_win_is_valid(win) then
+							vim.api.nvim_set_current_win(win)
+						end
+					end
+					local set = function(lhs, side)
+						vim.keymap.set("n", lhs, function()
+							focus_side(side)
+						end, { buffer = buf, nowait = true, noremap = true, silent = true })
+					end
+					-- Colemak left/right → diffbandit source panes.
+					set("<M-h>", "left_win")
+					set("<M-i>", "right_win")
+					set("<C-h>", "left_win")
+					set("<C-l>", "right_win")
+					-- <tab>/<s-tab> cycle changed files in a Git queue, mirroring octo/diffview.
+					local function file_step(direction)
+						local s = db_state.sessions[vim.api.nvim_get_current_tabpage()]
+						if not s then
+							return
+						end
+						if direction == "next" then
+							s:goto_next_file()
+						else
+							s:goto_prev_file()
+						end
+					end
+					vim.keymap.set("n", "<tab>", function()
+						file_step("next")
+					end, { buffer = buf, nowait = true, noremap = true, silent = true })
+					vim.keymap.set("n", "<s-tab>", function()
+						file_step("prev")
+					end, { buffer = buf, nowait = true, noremap = true, silent = true })
+				end,
+			})
+		end,
+	},
 	{ -- Adds git related signs to the gutter, as well as utilities for managing changes
 		"lewis6991/gitsigns.nvim", -- https://github.com/lewis6991/gitsigns.nvim
 		event = "BufRead",
@@ -26,6 +134,9 @@ return {
 		-- Git diff view
 		"sindrets/diffview.nvim", -- https://github.com/sindrets/diffview.nvim
 		event = "VeryLazy",
+		-- Register commands before VeryLazy so external launchers can start Neovim
+		-- directly in Diffview without racing plugin lazy-loading.
+		cmd = { "DiffviewOpen", "DiffviewFileHistory", "DiffviewClose" },
 		opts = function()
 			local actions = require("diffview.actions")
 			return {
@@ -33,7 +144,8 @@ return {
 				use_icons = true,
 				default_args = {
 					DiffviewOpen = { "--untracked-files=all", "--imply-local" },
-					DiffviewFileHistory = { "--base=LOCAL" },
+					-- Compare history entries against the current local file so old revisions show their diff from the working tree.
+					-- DiffviewFileHistory = { "--base=LOCAL" },
 				},
 				show_help_hints = false,
 				keymaps = {
@@ -184,7 +296,7 @@ return {
 		end,
 		opts = {
 			picker = "snacks",
-			-- use_local_fs = true,
+			use_local_fs = true,
 			mappings_disable_default = true,
 			mappings = {
 				review_thread = {

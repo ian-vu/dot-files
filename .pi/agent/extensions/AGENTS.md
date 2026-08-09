@@ -2,6 +2,10 @@
 
 This directory contains global Pi extensions managed from the dotfiles repo.
 
+## Extension layout
+
+- In `.pi/agent/extensions/*.ts`, keep the `export default` entrypoint near the top before helper implementations so the extension behaviour is easy to read first.
+
 ## Runtime vs editor support
 
 - Pi runs `.ts` extensions directly through `jiti`; there is no build step required for runtime.

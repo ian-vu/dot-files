@@ -64,6 +64,25 @@ if [ -f "$state_file" ]; then
   saved_cwd="$(awk -F '\t' -v n="$selection" '$1 == n {print $2; exit}' "$state_file")"
   if [ -n "$saved_cwd" ]; then
     [ -d "$saved_cwd" ] || saved_cwd="$HOME"
+
+    # Worktree sessions should be unique per worktree path. If a stale saved
+    # name points at a worktree that is already live under a renamed session,
+    # switch to the live session instead of lazy-creating a duplicate.
+    case "$selection" in
+      */wt/*)
+        live_for_cwd="$(
+          tmux list-sessions -F '#{session_name}|#{session_path}' 2>/dev/null \
+            | awk -F '|' -v cwd="$saved_cwd" '$1 !~ /float/ && $2 == cwd {print $1; exit}'
+        )"
+        if [ -n "$live_for_cwd" ]; then
+          "$HOME/.config/tmux/scripts/sessions/remove.sh" "$selection"
+          "$HOME/.config/tmux/scripts/sessions/save.sh" "$live_for_cwd" "$saved_cwd"
+          go "$live_for_cwd"
+          exit 0
+        fi
+        ;;
+    esac
+
     tmux new-session -d -A -s "$selection" -c "$saved_cwd"
     go "$selection"
     exit 0

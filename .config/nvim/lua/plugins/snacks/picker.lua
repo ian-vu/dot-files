@@ -1,4 +1,25 @@
 -- Snacks picker configuration (telescope alternative)
+vim.api.nvim_create_autocmd("User", {
+	pattern = "VeryLazy",
+	callback = function()
+		local preview = Snacks.picker and Snacks.picker.preview
+		if not preview or preview._dotfiles_full_path_title then
+			return
+		end
+
+		local file_preview = preview.file
+		preview._dotfiles_full_path_title = true
+		preview.file = function(ctx)
+			local ret = file_preview(ctx)
+			local title = ctx.item and (ctx.item.file or Snacks.picker.util.path(ctx.item))
+			if title then
+				ctx.preview:set_title(title)
+			end
+			return ret
+		end
+	end,
+})
+
 return {
 	{
 		"folke/snacks.nvim",
@@ -8,6 +29,7 @@ return {
 				actions = require("trouble.sources.snacks").actions,
 				enabled = true,
 				hidden = true,
+				ignored = true,
 				exclude = {
 					"*.log",
 					"*.tmp",
@@ -99,6 +121,10 @@ return {
 					},
 				},
 				sources = {
+					lines = {
+						-- Start buffer-line searches in strict mode; deleting the prefix restores fuzzy matching.
+						pattern = "'",
+					},
 					smart = {
 						filter = {
 							cwd = true,

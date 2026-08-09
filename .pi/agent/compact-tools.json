@@ -1,0 +1,14 @@
+{
+  "tools": {
+    "read": {
+      "enabled": true,
+      "compact_lines": 0,
+      "show_muted_text": false
+    },
+    "bash": {
+      "enabled": true,
+      "compact_lines": 2,
+      "show_muted_text": true
+    }
+  }
+}

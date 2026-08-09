@@ -1,0 +1,26 @@
+#compdef wt
+
+# Tiny shim: wt owns completion metadata so the shell integration stays stable
+# when subcommands/options change in the CLI implementation.
+_wt() {
+  local -a entries values
+  local line value desc
+
+  entries=("${(@f)$({ command wt __complete zsh "$CURRENT" "${words[@]}" } 2>/dev/null)}")
+  (( ${#entries} )) || return 1
+
+  values=()
+  for line in "${entries[@]}"; do
+    value="${line%%:*}"
+    desc="${line#*:}"
+    if [[ "$value" == "$desc" ]]; then
+      values+=("$value")
+    else
+      values+=("$value:$desc")
+    fi
+  done
+
+  _describe -t wt 'wt' values
+}
+
+_wt "$@"

@@ -5,8 +5,9 @@
 # Entry point for the worktree workflow, bound to: prefix + w
 #
 # Opens a tmux floating popup that wraps the entire lifecycle:
-#   1. Mode-switching fzf picker (branch or worktree view)
-#   2. Dispatches to tmux_worktree_add (create) or tmux_worktree_rm (remove)
+#   1. Optional direct branch/PR URL input with session-name override
+#   2. Mode-switching fzf picker (branch or worktree view)
+#   3. Dispatches to tmux_worktree_add (create) or tmux_worktree_rm (remove)
 #
 # The popup uses display-popup -E which keeps it open until the inner command
 # exits. When called with --inner, runs the picker loop directly (inside the
@@ -16,20 +17,126 @@
 # path. Needed because this directory is NOT on $PATH — it's a subdirectory
 # of ~/.config/tmux/bin/ that only contains worktree-related scripts.
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# Prefer the stowed binary path so tmux works even if the server has a stale PATH.
+if [ -z "${WT_BIN:-}" ]; then
+  [ -x "$HOME/.local/bin/wt" ] && WT_BIN="$HOME/.local/bin/wt" || WT_BIN="wt"
+fi
+
+trim_value() {
+  local value="$1"
+  value="${value#"${value%%[![:space:]]*}"}"
+  value="${value%"${value##*[![:space:]]}"}"
+  printf '%s' "$value"
+}
+
+# Parse the direct/prompt form. One token keeps the historical behavior and is
+# treated as the branch/PR URL; two tokens mean session name first, branch/URL
+# second.
+parse_branch_args() {
+  PARSED_SESSION=""
+  PARSED_BRANCH=""
+
+  if [ $# -eq 0 ]; then
+    return 0
+  fi
+
+  if [ $# -eq 1 ]; then
+    local raw first second rest
+    raw=$(trim_value "$1")
+    [ -z "$raw" ] && return 0
+    read -r first second rest <<< "$raw"
+    [ -z "${rest:-}" ] || return 1
+    if [ -n "${second:-}" ]; then
+      PARSED_SESSION="$first"
+      PARSED_BRANCH="$second"
+    else
+      PARSED_BRANCH="$first"
+    fi
+    return 0
+  fi
+
+  if [ $# -eq 2 ]; then
+    PARSED_SESSION=$(trim_value "$1")
+    PARSED_BRANCH=$(trim_value "$2")
+    return 0
+  fi
+
+  return 1
+}
+
+shell_join() {
+  local arg quoted joined=""
+  for arg in "$@"; do
+    printf -v quoted '%q' "$arg"
+    joined="${joined:+$joined }$quoted"
+  done
+  printf '%s' "$joined"
+}
+
+usage_hint() {
+  printf 'Use: <branch|pr-url> or <session> <branch|pr-url>\n'
+}
 
 # =============================================================================
 # Popup launcher (outer mode)
 # =============================================================================
 # When called without --inner, resolve the repo root and open the popup.
 if [ "${1:-}" != "--inner" ]; then
+  pane_path=""
+  branch_args=()
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --pane-path)
+        [ -n "${2:-}" ] || { tmux display-message "wt: --pane-path requires a path"; exit 1; }
+        pane_path="$2"
+        shift 2
+        ;;
+      --)
+        shift
+        branch_args+=("$@")
+        break
+        ;;
+      *)
+        branch_args+=("$1")
+        shift
+        ;;
+    esac
+  done
+
+  # The tmux binding passes the triggering pane path so the popup resolves the
+  # same repo the user was looking at. Parse it before branch input so paths are
+  # not mistaken for branch names.
+  if ! parse_branch_args "${branch_args[@]}"; then
+    tmux display-message "wt: $(usage_hint)"
+    exit 1
+  fi
+  requested_session="$PARSED_SESSION"
+  requested_branch="$PARSED_BRANCH"
+
   # Resolve the git repo root from whichever directory the user's active pane is in.
-  # Uses --git-common-dir instead of --show-toplevel so that being inside a worktree
-  # resolves to the main repo root (preventing nested worktrees).
-  pane_path=$(tmux display-message -p -F "#{pane_current_path}")
+  # wt centralizes this so plain CLI and tmux entry points handle linked
+  # worktrees the same way.
+  [ -n "$pane_path" ] || pane_path=$(tmux display-message -p -F "#{pane_current_path}")
   repo_root=""
-  if git -C "$pane_path" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-    git_common_dir=$(git -C "$pane_path" rev-parse --path-format=absolute --git-common-dir 2>/dev/null)
-    repo_root="${git_common_dir%/.git}"
+  # Delegate repo-root detection to wt so tmux and non-tmux entry points agree
+  # about resolving linked worktrees back to the main repository.
+  repo_root=$("$WT_BIN" root "$pane_path" 2>/dev/null || true)
+
+  # Direct branch/URL input skips fzf but still uses a popup so progress and
+  # errors stay visible. Empty input opens the normal picker below.
+  if [ -n "$requested_branch" ]; then
+    if [ -z "$repo_root" ]; then
+      tmux display-message "wt: open a repo pane, or submit empty input to pick a repo"
+      exit 1
+    fi
+    if [ -n "$requested_session" ]; then
+      popup_cmd=$(shell_join "$SCRIPT_DIR/tmux_worktree_add" "$repo_root" "$requested_branch" "$requested_session")
+    else
+      popup_cmd=$(shell_join "$SCRIPT_DIR/tmux_worktree_add" "$repo_root" "$requested_branch")
+    fi
+  else
+    # Calls itself with --inner to run the picker loop inside the popup.
+    popup_cmd=$(shell_join "$SCRIPT_DIR/tmux_worktree" --inner "$repo_root")
   fi
 
   # Open the popup:
@@ -38,13 +145,11 @@ if [ "${1:-}" != "--inner" ]; then
   #   -d "$repo_root"           Set CWD to repo root for git commands (omitted when empty)
   #   -E                        Close popup when the inner command exits
   #   -w 80 -h 40%              Fixed 80 columns wide, 40% of terminal height
-  #
-  # Calls itself with --inner to run the picker loop inside the popup.
   tmux display-popup \
     -b rounded -S fg=#ff966c -T '#[align=centre] Git Worktree ' \
     ${repo_root:+-d "$repo_root"} \
     -E -w 80 -h 40% \
-    "'$SCRIPT_DIR/tmux_worktree' --inner '$repo_root'"
+    "$popup_cmd"
   exit 0
 fi
 
@@ -64,17 +169,6 @@ RESET='\033[0m'
 header_with_rule() {
   local text="$1"
   printf '%s\n%s' "$text" "$(printf '─%.0s' $(seq 1 ${#text}))"
-}
-
-# Read a single value from .ivu.yml worktree config.
-# Usage: cfg <key> <default>
-cfg() {
-  local key="$1" default="$2"
-  if [ -f "$CONFIG" ]; then
-    yq -r ".worktree.$key // \"$default\"" "$CONFIG"
-  else
-    echo "$default"
-  fi
 }
 
 # Determine initial mode: branch picker if in a repo, repo picker if not.
@@ -101,23 +195,6 @@ while true; do
   REPO_NAME=$(basename "$REPO_ROOT")
   REPO_NAME="${REPO_NAME//./-}"
   REPO_NAME="${REPO_NAME//:/-}"
-  CONFIG="$REPO_ROOT/.ivu.yml"
-  WT_DIR=$(cfg dir .worktrees)
-
-  # Resolve absolute/~-prefixed worktree dirs to a shared root nested under
-  # the repo name. Relative paths are passed through and stay anchored to the
-  # repo root by the consumers (tmux_worktree_list_worktrees runs with cwd at
-  # $REPO_ROOT, and tmux_worktree_rm prepends $REPO_ROOT for relative paths).
-  case "$WT_DIR" in
-    '~'/*) WT_DIR="$HOME/${WT_DIR#'~/'}/$REPO_NAME" ;;
-    /*)    WT_DIR="$WT_DIR/$REPO_NAME" ;;
-  esac
-
-  # Auto-detect the default branch from the remote HEAD.
-  # The .ivu.yml base_branch setting overrides this if explicitly set.
-  DEFAULT_BASE=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's|^refs/remotes/origin/||')
-  BASE_BRANCH=$(cfg base_branch "${DEFAULT_BASE:-main}")
-
   # Color the repo name orange (matching the popup border theme) to
   # visually distinguish it from the mode label (branch/worktree).
   REPO_LABEL=$'\033[38;2;255;150;108m'"[$REPO_NAME]"$'\033[0m'
@@ -135,7 +212,7 @@ while true; do
         --pointer ' ➜' --color "gutter:#222436,border:#ff966c,label:#ff966c" \
         --print-query \
         --expect=ctrl-p,ctrl-w \
-        --bind "ctrl-b:change-prompt(  $REPO_LABEL Existing branch: )+reload:'$SCRIPT_DIR/tmux_worktree_list_branches' --fetch '$REPO_ROOT'" \
+        --bind "ctrl-b:change-prompt(  $REPO_LABEL Existing branch: )+reload:'$WT_BIN' branches --repo '$REPO_ROOT' --fetch" \
         --header "$(header_with_rule '⌨ <c-p> Repos | <c-b> Branches | <c-w> Worktrees')"
     ) || true
 
@@ -148,7 +225,20 @@ while true; do
       ctrl-w) MODE="worktree"; continue ;;
     esac
 
-    BRANCH="${SELECTED:-$QUERY}"
+    SESSION_OVERRIDE=""
+    if [ -n "$SELECTED" ]; then
+      BRANCH="$SELECTED"
+    else
+      if ! parse_branch_args "$QUERY"; then
+        printf '\n'
+        usage_hint
+        sleep 2
+        exit 1
+      fi
+      BRANCH="$PARSED_BRANCH"
+      SESSION_OVERRIDE="$PARSED_SESSION"
+    fi
+
     # Trim leading/trailing whitespace — pasted branch names often carry stray
     # spaces, and git rejects refs containing whitespace, which previously
     # produced a half-created worktree directory with no checkout.
@@ -159,7 +249,11 @@ while true; do
     # Hand off to tmux_worktree_add for creation + session + switch.
     # exec replaces this process so the popup stays open for the spinner
     # and closes when tmux_worktree_add exits.
-    exec "$SCRIPT_DIR/tmux_worktree_add" "$REPO_ROOT" "$BRANCH"
+    if [ -n "$SESSION_OVERRIDE" ]; then
+      exec "$SCRIPT_DIR/tmux_worktree_add" "$REPO_ROOT" "$BRANCH" "$SESSION_OVERRIDE"
+    else
+      exec "$SCRIPT_DIR/tmux_worktree_add" "$REPO_ROOT" "$BRANCH"
+    fi
   fi
 
   # -----------------------------------------------------------------
@@ -167,7 +261,7 @@ while true; do
   # -----------------------------------------------------------------
   if [ "$MODE" = "worktree" ]; then
     FZF_OUTPUT=$(
-      "$SCRIPT_DIR/tmux_worktree_list_worktrees" "$BASE_BRANCH" "$WT_DIR" "$REPO_ROOT" \
+      "$WT_BIN" worktrees list --repo "$REPO_ROOT" --format fzf \
       | fzf \
         --height 100% \
         --layout reverse --info right --keep-right --no-sort \
@@ -178,7 +272,7 @@ while true; do
         --print-query \
         --expect=ctrl-p,ctrl-b \
         --bind 'tab:toggle+down,btab:toggle+up' \
-        --bind "ctrl-x:execute-silent(for d in {+-1}; do '$SCRIPT_DIR/tmux_worktree_rm' '$REPO_ROOT' \"\$d\"; done)+reload:'$SCRIPT_DIR/tmux_worktree_list_worktrees' '$BASE_BRANCH' '$WT_DIR' '$REPO_ROOT'" \
+        --bind "ctrl-x:execute-silent(for d in {+-1}; do '$SCRIPT_DIR/tmux_worktree_rm' '$REPO_ROOT' \"\$d\"; done)+reload:'$WT_BIN' worktrees list --repo '$REPO_ROOT' --format fzf" \
         --header "$(header_with_rule '⌨ <c-p> Repos | <c-b> Branches | <enter> Remove | <c-x> Remove+stay')"
     ) || true
 
@@ -192,6 +286,7 @@ while true; do
     # Enter — remove all selected worktrees and close the popup.
     echo ""
     tail -n +3 <<< "$FZF_OUTPUT" | while IFS= read -r item; do
+      item="${item# }"
       item="${item#⎇ }"
       item="${item#  }"
       [ -z "$item" ] && continue

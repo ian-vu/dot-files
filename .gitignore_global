@@ -4,5 +4,6 @@ CLAUDE.local.md
 .claude/settings.local.json
 .ignore
 .ivu.yml
+.nvim.lua
 # User-private Pi context should never be offered for commit in any repo.
 .pi/LOCAL_CONTEXT.md

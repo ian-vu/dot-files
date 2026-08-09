@@ -8,6 +8,8 @@
 [core]
 	pager = delta
 	excludesfile = /Users/ivu/.gitignore_global
+	; Global attributes enable weave without committing .gitattributes to every repo.
+	attributesfile = ~/.config/git/attributes
 	sshCommand = ssh -i ~/.ssh/id_ed25519_personal
 
 [interactive]
@@ -31,6 +33,11 @@
 
 [merge]
 	conflictstyle = diff3
+
+; Weave resolves supported files with tree-sitter-aware entity-level merges.
+[merge "weave"]
+	name = Entity-level semantic merge
+	driver = /opt/homebrew/bin/weave-driver %O %A %B %L %P
 
 [diff]
 	colorMoved = default

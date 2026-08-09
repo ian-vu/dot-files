@@ -1,0 +1,264 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Use Mason-managed formatter binaries first so the hook mirrors the tools
+# Neovim installs and runs through conform.nvim.
+export PATH="$HOME/.local/share/nvim/mason/bin:$PATH"
+
+repo_root="$(git rev-parse --show-toplevel)"
+cd "$repo_root"
+
+TEMP_DIRS=()
+formatted_files=()
+index_only_files=()
+
+cleanup() {
+	local status=$?
+	trap - EXIT
+	local dir
+	for dir in "${TEMP_DIRS[@]}"; do
+		# These directories are created by mktemp for formatter scratch files only.
+		rm -rf "$dir"
+	done
+	exit "$status"
+}
+
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+
+require_cmd() {
+	local cmd="$1"
+	if ! command -v "$cmd" >/dev/null 2>&1; then
+		cat >&2 <<EOF
+pre-commit: required formatter '$cmd' was not found.
+
+Install it through Neovim/Mason or make sure it is available on PATH.
+EOF
+		return 1
+	fi
+}
+
+append_unique() {
+	local candidate="$1"
+	shift
+	local existing
+	for existing in "$@"; do
+		if [ "$existing" = "$candidate" ]; then
+			return 1
+		fi
+	done
+	return 0
+}
+
+record_formatted_file() {
+	local file="$1"
+	if append_unique "$file" "${formatted_files[@]}"; then
+		formatted_files[${#formatted_files[@]}]="$file"
+	fi
+}
+
+record_index_only_file() {
+	local file="$1"
+	if append_unique "$file" "${index_only_files[@]}"; then
+		index_only_files[${#index_only_files[@]}]="$file"
+	fi
+}
+
+format_prettier_file() {
+	local original_path="$1"
+	local file_to_format="$2"
+	local next_file="$3"
+
+	require_cmd prettierd
+	if ! prettierd --no-color "$original_path" <"$file_to_format" >"$next_file"; then
+		echo "pre-commit: prettierd failed for $original_path" >&2
+		return 1
+	fi
+	cat "$next_file" >"$file_to_format"
+}
+
+format_lua_file() {
+	local original_path="$1"
+	local file_to_format="$2"
+	local next_file="$3"
+
+	require_cmd stylua
+	stylua --allow-hidden --search-parent-directories --stdin-filepath "$original_path" - <"$file_to_format" >"$next_file"
+	cat "$next_file" >"$file_to_format"
+}
+
+format_python_file() {
+	local original_path="$1"
+	local file_to_format="$2"
+	local next_file="$3"
+
+	require_cmd ruff
+	ruff format --stdin-filename "$original_path" - <"$file_to_format" >"$next_file"
+	cat "$next_file" >"$file_to_format"
+}
+
+format_rust_file() {
+	local original_path="$1"
+	local file_to_format="$2"
+	local next_file="$3"
+
+	require_cmd rustfmt
+	# rustfmt lacks a stdin filename flag, so the scratch path preserves the
+	# original extension while the hook still updates only the staged blob.
+	rustfmt --emit stdout "$file_to_format" >"$next_file"
+	cat "$next_file" >"$file_to_format"
+}
+
+try_apply_formatter_patch_to_worktree() {
+	local file="$1"
+	local original="$2"
+	local formatted="$3"
+	local patch="$4"
+	local diff_status
+
+	if diff -U0 --label "a/$file" --label "b/$file" "$original" "$formatted" >"$patch"; then
+		return 0
+	else
+		diff_status=$?
+		if [ "$diff_status" -ne 1 ]; then
+			return 1
+		fi
+	fi
+
+	# When a file has unstaged edits, apply only the formatter patch to the
+	# worktree. If it does not apply cleanly, the index is still formatted and the
+	# user's working-tree edits remain untouched.
+	if git apply --unidiff-zero --check "$patch" >/dev/null 2>&1; then
+		git apply --unidiff-zero "$patch"
+		return 0
+	fi
+
+	return 1
+}
+
+formatter_for_file() {
+	local file="$1"
+	case "$file" in
+		*.lua)
+			printf '%s\n' lua
+			;;
+		*.js | *.mjs | *.cjs | *.ts | *.mts | *.cts | *.css | *.scss | *.less | *.html | *.json | *.jsonc | *.yaml | *.yml | *.graphql | *.gql | *.hbs | *.handlebars | *.md | *.markdown | *.mdx)
+			printf '%s\n' prettier
+			;;
+		*.py | *.pyi)
+			printf '%s\n' python
+			;;
+		*.rs)
+			printf '%s\n' rust
+			;;
+		*)
+			return 1
+			;;
+	esac
+}
+
+format_staged_file() {
+	local file="$1"
+	local formatter="$2"
+	local mode tmp_dir tmp_original tmp_file tmp_next tmp_patch tmp_subdir worktree_matches_index hash
+
+	mode="$(git ls-files -s -- "$file" | awk 'NR == 1 { print $1 }')"
+	if [ -z "$mode" ]; then
+		return 0
+	fi
+
+	tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/precommit-format.XXXXXX")"
+	TEMP_DIRS[${#TEMP_DIRS[@]}]="$tmp_dir"
+	tmp_original="$tmp_dir/original"
+	tmp_file="$tmp_dir/$file"
+	tmp_next="$tmp_dir/formatted"
+	tmp_patch="$tmp_dir/format.patch"
+	tmp_subdir="$(dirname "$tmp_file")"
+	mkdir -p "$tmp_subdir"
+
+	git show ":$file" >"$tmp_original"
+	cp "$tmp_original" "$tmp_file"
+
+	worktree_matches_index=0
+	if [ -f "$file" ] && git diff --quiet -- "$file"; then
+		worktree_matches_index=1
+	fi
+
+	case "$formatter" in
+		lua)
+			format_lua_file "$file" "$tmp_file" "$tmp_next"
+			;;
+		prettier)
+			format_prettier_file "$file" "$tmp_file" "$tmp_next"
+			;;
+		python)
+			format_python_file "$file" "$tmp_file" "$tmp_next"
+			;;
+		rust)
+			format_rust_file "$file" "$tmp_file" "$tmp_next"
+			;;
+	esac
+
+	if cmp -s "$tmp_original" "$tmp_file"; then
+		return 0
+	fi
+
+	# Update the index directly from the formatted staged content. This preserves
+	# partially staged work without needing to stash and re-apply local edits.
+	hash="$(git hash-object -w --path="$file" "$tmp_file")"
+	git update-index --add --cacheinfo "$mode" "$hash" "$file"
+	record_formatted_file "$file"
+
+	if [ "$worktree_matches_index" -eq 1 ]; then
+		cat "$tmp_file" >"$file"
+		git update-index --refresh -- "$file" >/dev/null 2>&1 || true
+	elif ! try_apply_formatter_patch_to_worktree "$file" "$tmp_original" "$tmp_file" "$tmp_patch"; then
+		record_index_only_file "$file"
+	fi
+}
+
+staged_files=()
+while IFS= read -r -d '' file; do
+	staged_files[${#staged_files[@]}]="$file"
+done < <(git diff --cached --name-only -z --diff-filter=ACMR)
+
+if [ "${#staged_files[@]}" -eq 0 ]; then
+	exit 0
+fi
+
+format_target_files=()
+format_target_formatters=()
+for file in "${staged_files[@]}"; do
+	if formatter="$(formatter_for_file "$file")"; then
+		format_target_files[${#format_target_files[@]}]="$file"
+		format_target_formatters[${#format_target_formatters[@]}]="$formatter"
+	fi
+done
+
+if [ "${#format_target_files[@]}" -eq 0 ]; then
+	exit 0
+fi
+
+echo "pre-commit: formatting staged files"
+i=0
+while [ "$i" -lt "${#format_target_files[@]}" ]; do
+	file="${format_target_files[$i]}"
+	formatter="${format_target_formatters[$i]}"
+	format_staged_file "$file" "$formatter"
+	i=$((i + 1))
+done
+
+if [ "${#formatted_files[@]}" -gt 0 ]; then
+	echo "pre-commit: formatted ${#formatted_files[@]} staged file(s)"
+fi
+
+if [ "${#index_only_files[@]}" -gt 0 ]; then
+	cat >&2 <<EOF
+pre-commit: formatted staged content only for partially staged file(s).
+Your unstaged working-tree edits were left untouched:
+EOF
+	for file in "${index_only_files[@]}"; do
+		echo "  $file" >&2
+	done
+fi

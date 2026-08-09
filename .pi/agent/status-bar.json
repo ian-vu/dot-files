@@ -1,0 +1,63 @@
+{
+  "statusFilter": {
+    "mode": "only",
+    "shown": ["mcp", "mcp-auth"]
+  },
+  "segments": ["model", "thinking", "extensions", "context", "cost"],
+  "thresholds": {
+    "context": [
+      {
+        "threshold": 0,
+        "color": "success"
+      },
+      {
+        "threshold": 90000,
+        "color": "warning"
+      },
+      {
+        "threshold": 100000,
+        "color": "syntaxVariable"
+      },
+      {
+        "threshold": 120000,
+        "color": "error"
+      }
+    ],
+    "contextPercent": [
+      {
+        "threshold": 0,
+        "color": "success"
+      },
+      {
+        "threshold": 60,
+        "color": "warning"
+      },
+      {
+        "threshold": 80,
+        "color": "syntaxVariable"
+      },
+      {
+        "threshold": 92,
+        "color": "error"
+      }
+    ],
+    "cost": [
+      {
+        "threshold": 0,
+        "color": "syntaxFunction"
+      },
+      {
+        "threshold": 10,
+        "color": "warning"
+      },
+      {
+        "threshold": 20,
+        "color": "syntaxVariable"
+      },
+      {
+        "threshold": 25,
+        "color": "error"
+      }
+    ]
+  }
+}

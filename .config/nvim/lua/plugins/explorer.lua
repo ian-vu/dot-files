@@ -93,8 +93,8 @@ return {
 	},
 	{
 		"stevearc/oil.nvim", -- https://github.com/stevearc/oil.nvim
-		-- Optional dependencies
-		dependencies = { "nvim-tree/nvim-web-devicons" },
+		-- Oil prefers mini.icons when it is configured, and it gives folder-aware Material-style icons.
+		dependencies = { { "nvim-mini/mini.icons", opts = {} } },
 		lazy = false,
 		opts = {
 			-- Keymaps in oil buffer. Can be any value that `vim.keymap.set` accepts OR a table of keymap

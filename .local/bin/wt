@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+# =============================================================================
+# wt — reusable git worktree helper
+# =============================================================================
+# Thin entrypoint; behavior lives in ~/.config/ivu/wt/*.bash so each command area
+# can be maintained independently while preserving one CLI.
+
+set -euo pipefail
+
+WT_LIB="${XDG_CONFIG_HOME:-$HOME/.config}/ivu/wt"
+
+# Source modules in dependency order: shared helpers, display/help, then commands.
+source "$WT_LIB/core.bash"
+source "$WT_LIB/help.bash"
+source "$WT_LIB/git.bash"
+source "$WT_LIB/config.bash"
+source "$WT_LIB/repos.bash"
+source "$WT_LIB/branches.bash"
+source "$WT_LIB/worktrees.bash"
+source "$WT_LIB/completions.bash"
+
+main() {
+  local cmd="${1:-}"
+  [ $# -gt 0 ] && shift || true
+  case "$cmd" in
+    root)
+      case "${1:-}" in
+        help|--help|-h) cmd_doc 'wt root [path]' 'Print the main repo root, resolving linked worktrees back to their source repo.' ;;
+        *) repo_root "${1:-.}" || die "not inside a git worktree" ;;
+      esac
+      ;;
+    __complete)
+      local shell="${1:-}"; shift || true
+      case "$shell" in
+        zsh) complete_arg "$@" ;;
+        *) die "unsupported completion shell: $shell" ;;
+      esac
+      ;;
+    repos) repos_cmd "$@" ;;
+    branches)
+      case "${1:-}" in
+        help|--help|-h) help_branches ;;
+        *) branches_cmd "$@" ;;
+      esac
+      ;;
+    worktrees|wt) worktrees_cmd "$@" ;;
+    config) config_cmd "$@" ;;
+    help)
+      case "${1:-}" in
+        repos) help_repos ;;
+        branches) help_branches ;;
+        worktrees|wt) help_worktrees ;;
+        config) help_config ;;
+        *) usage ;;
+      esac
+      ;;
+    --help|-h|"") usage ;;
+    *) die "unknown command: $cmd" ;;
+  esac
+}
+
+main "$@"

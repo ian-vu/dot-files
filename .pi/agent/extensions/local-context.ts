@@ -18,6 +18,7 @@ type LocalContextFile = {
 	content: string;
 };
 
+
 function gitRoot(cwd: string): string | undefined {
 	try {
 		const output = execFileSync("git", ["-C", cwd, "rev-parse", "--show-toplevel"], {

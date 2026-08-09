@@ -121,6 +121,12 @@ return {
 				style = "wiki",
 			},
 
+			-- render-markdown.nvim owns visual markdown concealment; leaving Obsidian's
+			-- legacy UI on causes duplicate checkbox extmarks that hide following text.
+			ui = {
+				enable = false,
+			},
+
 			-- blink.cmp is auto-detected; no explicit config needed
 		},
 	},

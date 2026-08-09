@@ -42,8 +42,103 @@
 # # Just for example:
 # resize-overlay-duration = 4s 200ms
 
-font-family = "Maple Mono NF"
-font-size = 18
-window-decoration = none
+##############################################################################
+# Custom settings
+# Mirrors .config/kitty/kitty.conf as closely as Ghostty supports.
+# Ghostty has no direct equivalent for Kitty cursor trails, powerline tab bars,
+# command-finished notifications, URL color, or timed idle mouse hiding.
+##############################################################################
 
-config-file = theme-gruvbox-dark 
+##############################################################################
+# Font
+##############################################################################
+font-family = "Maple Mono NF"
+# Kitty names each face explicitly; Ghostty uses family plus style names.
+font-family-bold = "Maple Mono NF"
+font-style-bold = "Bold"
+font-family-italic = "Maple Mono NF"
+font-style-italic = "Italic"
+font-family-bold-italic = "Maple Mono NF"
+font-style-bold-italic = "Bold Italic"
+font-size = 14.5
+
+# Kitty uses `modify_font cell_height 120%`; Ghostty uses a delta.
+adjust-cell-height = 20%
+
+##############################################################################
+# Cursor
+##############################################################################
+cursor-style = block
+cursor-style-blink = false
+
+##############################################################################
+# Window
+##############################################################################
+# Ghostty cannot combine Kitty-style hidden decorations with a separate
+# powerline tab bar, so keep Ghostty's integrated titlebar tabs available.
+window-decoration = auto
+macos-titlebar-style = tabs
+window-theme = dark
+window-save-state = always
+
+background-opacity = 0.60
+background-blur = false
+unfocused-split-opacity = 1
+
+##############################################################################
+# Theme
+##############################################################################
+# Custom Ghostty theme file kept separate from behavioral config.
+theme = tokyonight-moon-kitty
+
+##############################################################################
+# Keyboard / Keybindings
+##############################################################################
+macos-option-as-alt = true
+
+# Match Kitty's clear_all_shortcuts and then add only the intended shortcuts.
+keybind = clear
+
+# Clipboard
+keybind = super+c=copy_to_clipboard
+keybind = super+v=paste_from_clipboard
+
+# Scrolling
+keybind = super+up=scroll_page_lines:-1
+keybind = super+down=scroll_page_lines:1
+keybind = super+page_up=scroll_page_up
+keybind = super+page_down=scroll_page_down
+keybind = super+home=scroll_to_top
+keybind = super+end=scroll_to_bottom
+
+# Windows
+keybind = super+n=new_window
+
+# Tabs
+keybind = super+w=close_tab
+keybind = super+physical:one=goto_tab:1
+keybind = super+physical:two=goto_tab:2
+keybind = super+physical:three=goto_tab:3
+keybind = super+physical:four=goto_tab:4
+keybind = super+physical:five=goto_tab:5
+keybind = super+physical:six=goto_tab:6
+keybind = super+physical:seven=goto_tab:7
+
+# Zoom
+keybind = super+equal=increase_font_size:0.5
+keybind = super+plus=increase_font_size:0.5
+keybind = super+minus=decrease_font_size:0.5
+keybind = super+shift+minus=decrease_font_size:0.5
+
+# Misc
+keybind = super+h=toggle_visibility
+keybind = super+q=quit
+
+##############################################################################
+# Clipboard, URLs, and Mouse
+##############################################################################
+copy-on-select = true
+link-url = true
+mouse-hide-while-typing = true
+
+# vim: ft=conf

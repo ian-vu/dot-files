@@ -14,6 +14,8 @@ tap "vjeantet/tap"
 tap "FelixKratz/formulae"
 # For TUI mongodb
 tap "kopecmaciej/vi-mongo"
+# Provides Ataraxy Labs command-line tools such as inspect.
+tap "ataraxy-labs/tap"
 
 #########################################################################################
 # Brews
@@ -102,12 +104,16 @@ brew "ydiff"
 brew "yq"
 # Shell extension to navigate your filesystem faster
 brew "zoxide"
-# The tfswitch command lets you switch between terraform versions.
-brew "warrensbox/tap/tfswitch"
 # Age is a simple, modern and secure file encryption tool, format, and Go library.
 brew "age"
 # A better git diff pager, for side by side diff
 brew "git-delta"
+# Semantic version control CLI with entity-level diffs and blame.
+brew "sem-cli"
+# Entity-level semantic merge driver for Git.
+brew "weave"
+# MCP server for Slack workspaces (korotovsky), used by the Pi MCP adapter.
+brew "slack-mcp-server"
 # Javascript package manager
 brew "yarn"
 # A command-line tool for displaying information about your systems
@@ -167,12 +173,17 @@ brew 'marp-cli'
 brew 'go-task'
 # AI cli
 brew 'fabric-ai'
+# Terminal agent multiplexer for coordinating coding agents.
+brew "herdr"
 # Feature-rich command-line audio/video downloader
 brew 'yt-dlp'
-
+# Entity-level code review CLI; HEAD avoids the tap's mismatched stable source checksum.
+brew "ataraxy-labs/tap/inspect", args: ["HEAD"], trusted: true
 #########################################################################################
 # Casks
 #########################################################################################
+# Switch between terraform versions
+cask "warrensbox/tap/tfswitch"
 # Command-line interface for 1Password
 cask "1password-cli"
 # Opensource IDE for exploring and testing api's
@@ -213,3 +224,5 @@ cask "yaak"
 cask "notion"
 # Calculator app
 cask "numi"
+# Transcription app ships as a macOS cask, not a formula.
+cask "opensuperwhisper"

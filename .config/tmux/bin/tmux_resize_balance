@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Resize the active pane toward half of the current window without using
+# select-layout, because select-layout reflows mixed/nested pane layouts.
+axis=${1:-}
+
+case "$axis" in
+  horizontal)
+    window_size=$(tmux display-message -p '#{window_width}')
+    target=$((window_size / 2))
+    tmux resize-pane -x "$target"
+    ;;
+  vertical)
+    # The sidebar is full-height, so it does not affect the vertical balance.
+    window_size=$(tmux display-message -p '#{window_height}')
+    target=$((window_size / 2))
+    tmux resize-pane -y "$target"
+    ;;
+  *)
+    echo "Usage: tmux_resize_balance horizontal|vertical" >&2
+    exit 2
+    ;;
+esac

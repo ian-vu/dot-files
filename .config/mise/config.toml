@@ -1,15 +1,29 @@
 [tools]
 python = "3.12" # [optional] will be used for the venv
 golang = "1.22"
-nodejs = "22"
 ruby = "3.3.4"
-node = "latest"
+# Single pinned Node entry. `nodejs` is a legacy alias for `node`, so the old
+# `nodejs = "22"` + `node = "latest"` pair pinned the same tool to two
+# conflicting versions and forced a remote "latest" lookup on every hook-env.
+node = "22"
 "npm:@tokscale/cli" = "latest"
 "npm:t3" = "latest"
 "npm:vercel" = "latest"
 "npm:@openai/codex" = "latest"
 "npm:@earendil-works/pi-coding-agent" = "latest"
+"npm:@usebruno/cli" = "latest"
+
+[tasks.update-pi]
+description = "Update pi when mise upgrade misses the npm latest alias"
+run = "mise install -q npm:@earendil-works/pi-coding-agent@latest && pi update"
 
 [settings]
+# Cache remote version lookups for 24h instead of the 1h default. The npm CLIs
+# above track `latest`, which makes `mise hook-env` (run at shell startup and on
+# every cd) refetch the newest version from the network when the cache lapses.
+# At the 1h default this produced an intermittent ~hourly slow shell startup;
+# 24h keeps auto-latest while limiting the network refetch to roughly once a day.
+fetch_remote_versions_cache = "24h"
+
 # Add support for files like .python-version, .node-version, etc.
 idiomatic_version_file_enable_tools = ["python", "node"]

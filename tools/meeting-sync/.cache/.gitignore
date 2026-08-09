@@ -1,0 +1,3 @@
+# Local temp cache of secrets fetched from 1Password. Never committed.
+*
+!.gitignore

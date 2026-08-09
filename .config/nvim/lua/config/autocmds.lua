@@ -1,3 +1,8 @@
+-- Bruno (https://usebruno.com) stores API requests as `.bru` files in its own
+-- "Bru Markup Language". There is no Tree-sitter grammar for it, so we register a
+-- custom `bru` filetype backed by a hand-written syntax file (after/syntax/bru.vim).
+vim.filetype.add({ extension = { bru = "bru" } })
+
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 

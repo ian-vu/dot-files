@@ -67,6 +67,8 @@ end, { desc = "Toggle autoformat on save" })
 
 -- misc
 vim.keymap.set({ "n", "v", "i", "x", "o" }, "<C-c>", "<esc>", { desc = "Esc" })
+-- Use :qa instead of :qa! so unsaved buffers still protect against accidental quits.
+vim.keymap.set({ "n", "v", "x", "o", "i", "s" }, "<C-q>", "<cmd>qa<cr>", { desc = "Quit all" })
 -- vim.keymap.set('n', '<leader>p', '<cmd>pu<cr>', { desc = 'Paste on new line' })
 
 vim.keymap.set({ "n", "v" }, "G", "Gzz", { noremap = true, desc = "Centre cursor in buffer" })
@@ -462,7 +464,8 @@ vim.keymap.set("n", "<leader>fb", function()
 	Snacks.picker.buffers()
 end, { desc = "Buffers" })
 vim.keymap.set("n", "<leader>ff", function()
-	Snacks.picker.files({ hidden = true, layout = { preview = false } })
+	-- Keep Find Files aligned with the picker defaults so hidden/gitignored scratch dirs like .ignore remain searchable.
+	Snacks.picker.files({ hidden = true, ignored = true, layout = { preview = false } })
 end, { desc = "Find Files" })
 vim.keymap.set("n", "<leader>fg", function()
 	Snacks.picker.git_files()
@@ -473,8 +476,19 @@ end, { desc = "Find Git Files" })
 vim.keymap.set("n", "<leader>fr", function()
 	Snacks.picker.recent({ filter = { cwd = true }, preview = false })
 end, { desc = "Recent" })
+-- Fuzzy find files in the personal notes vault (~/notes, an Obsidian vault)
+vim.keymap.set("n", "<leader>fn", function()
+	Snacks.picker.files({
+		cwd = vim.fn.expand("~/notes"),
+		hidden = true,
+		ignored = true,
+	})
+end, { desc = "[N]otes" })
 
 -- git
+vim.keymap.set("n", "<leader>gg", function()
+	Snacks.lazygit()
+end, { desc = "Lazygit" })
 vim.keymap.set("n", "<leader>gl", function()
 	Snacks.picker.git_log()
 end, { desc = "Git Log" })
@@ -542,6 +556,14 @@ end, { desc = "Grep Open Buffers" })
 vim.keymap.set("n", "<leader>sg", function()
 	Snacks.picker.grep()
 end, { desc = "Grep" })
+-- Live grep across the personal notes vault (~/notes, an Obsidian vault)
+vim.keymap.set("n", "<leader>sn", function()
+	Snacks.picker.grep({
+		cwd = vim.fn.expand("~/notes"),
+		hidden = true,
+		ignored = true,
+	})
+end, { desc = "[N]otes Grep" })
 vim.keymap.set({ "n", "x" }, "<leader>sw", function()
 	Snacks.picker.grep_word()
 end, { desc = "Visual selection or word" })

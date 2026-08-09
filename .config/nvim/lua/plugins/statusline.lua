@@ -30,7 +30,29 @@ return {
 
 			return {
 				options = {
-					theme = "auto",
+					-- Keep the statusline consistently blue instead of inheriting per-theme colors.
+					theme = {
+						normal = {
+							a = { fg = "#1b1d2b", bg = "#82aaff" },
+							b = { fg = "#1b1d2b", bg = "#82aaff" },
+							c = { fg = "#1b1d2b", bg = "#82aaff" },
+						},
+						insert = {
+							a = { fg = "#1b1d2b", bg = "#82aaff" },
+						},
+						visual = {
+							a = { fg = "#1b1d2b", bg = "#82aaff" },
+						},
+						replace = {
+							a = { fg = "#1b1d2b", bg = "#82aaff" },
+						},
+						command = {
+							a = { fg = "#1b1d2b", bg = "#82aaff" },
+						},
+						inactive = {
+							a = { fg = "#1b1d2b", bg = "#82aaff" },
+						},
+					},
 					globalstatus = true, -- single statusline across all splits
 					disabled_filetypes = { statusline = { "dashboard", "alpha", "starter" } },
 				},

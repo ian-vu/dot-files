@@ -1,0 +1,6 @@
+{
+	"pr-open": {
+		"command": ["gh", "pr", "view", "--web"],
+		"description": "Open the current branch's PR in a browser"
+	}
+}
