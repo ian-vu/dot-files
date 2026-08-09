@@ -28,31 +28,17 @@ return {
 
 			local icons = require("config.icons")
 
+			-- Derive the statusline palette from the active colorscheme ("auto"),
+			-- then make the middle (section c) transparent in every mode so it
+			-- blends with the editor background.
+			local theme = require("lualine.themes.auto")
+			for _, mode in pairs(theme) do
+				mode.c = vim.tbl_extend("force", mode.c or {}, { bg = "none" })
+			end
+
 			return {
 				options = {
-					-- Keep the statusline consistently blue instead of inheriting per-theme colors.
-					theme = {
-						normal = {
-							a = { fg = "#1b1d2b", bg = "#82aaff" },
-							b = { fg = "#1b1d2b", bg = "#82aaff" },
-							c = { fg = "#1b1d2b", bg = "#82aaff" },
-						},
-						insert = {
-							a = { fg = "#1b1d2b", bg = "#82aaff" },
-						},
-						visual = {
-							a = { fg = "#1b1d2b", bg = "#82aaff" },
-						},
-						replace = {
-							a = { fg = "#1b1d2b", bg = "#82aaff" },
-						},
-						command = {
-							a = { fg = "#1b1d2b", bg = "#82aaff" },
-						},
-						inactive = {
-							a = { fg = "#1b1d2b", bg = "#82aaff" },
-						},
-					},
+					theme = theme,
 					globalstatus = true, -- single statusline across all splits
 					disabled_filetypes = { statusline = { "dashboard", "alpha", "starter" } },
 				},
