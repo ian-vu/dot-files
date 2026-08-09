@@ -4,12 +4,12 @@ set -euo pipefail
 # Sidebar-aware zoom toggle for prefix+z.
 #
 # tmux's built-in zoom (resize-pane -Z) covers the whole window, hiding the
-# opensessions sidebar and stretching text across large monitors. This script
+# tmux-sidebar pane and stretching text across large monitors. This script
 # instead pseudo-zooms with resizes so the sidebar stays visible:
 #   - The focused pane grows to full height and up to @zoom_max_width_percent
 #     of the window width (default 75%), so text stays readable on wide screens.
-#   - The opensessions sidebar keeps its pre-zoom width; other panes in the
-#     window shrink to absorb the difference and act as padding.
+#   - The tmux-sidebar pane keeps its pre-zoom width; other panes in the window
+#     shrink to absorb the difference and act as padding.
 #   - Toggling again restores the exact pre-zoom layout, which was saved in the
 #     @keep_zoom_layout window option.
 # Windows without a sidebar pane, or zooming the sidebar itself, fall back to
@@ -22,9 +22,9 @@ if [[ -z "$pane" ]]; then
 fi
 window="$(tmux display-message -p -t "$pane" '#{window_id}')"
 
-# Locate the opensessions sidebar pane in this window by its pane title.
+# Locate the tmux-sidebar pane in this window by its pane title.
 sidebar="$(tmux list-panes -t "$window" -F '#{pane_id} #{pane_title}' \
-  | awk '$2 == "opensessions-sidebar" { print $1; exit }')"
+  | awk '$2 == "tmux-sidebar" { print $1; exit }')"
 
 if [[ -z "$sidebar" || "$pane" == "$sidebar" ]]; then
   tmux resize-pane -Z -t "$pane"
