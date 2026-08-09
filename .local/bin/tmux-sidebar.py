@@ -386,9 +386,9 @@ def build_rows(sessions):
                 rail = "╰" if i == len(members) - 1 else "│"
                 label = member.name
                 if not member.is_worktree and member.name == repo_name:
-                    # Home symbol for the repo's main checkout; single-cell
-                    # glyph so the row aligns like any session name.
-                    label = "⌂"
+                    # Home symbol for the repo's main checkout, suffixed with
+                    # "home" so the root row is labeled, not just a glyph.
+                    label = "⌂ home"
                 elif member.is_worktree:
                     # Worktree sessions follow the <repo>/wt/<name> naming
                     # convention; the repo is already the group header, so
