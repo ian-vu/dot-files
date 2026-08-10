@@ -37,6 +37,9 @@ _darcs
 # - ".*\.log"        ignores all .log files at any depth
 
 \.DS_Store
+# Python bytecode caches are generated locally and should not be stowed.
+__pycache__
+.*\.py[cod]
 # Self-contained tool projects live in tools/ and are run by absolute path
 # (or stowed to bespoke targets via their own just recipes), never symlinked
 # wholesale into $HOME by the root stow run.
