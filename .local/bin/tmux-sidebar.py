@@ -100,6 +100,25 @@ def tmux(*args):
         return None
 
 
+def switch_session(session):
+    """Switch exactly to `session`, then focus its pane right of the sidebar."""
+    tmux("switch-client", "-t", "=" + session)
+    out = tmux(
+        "list-panes",
+        "-t",
+        "=" + session,
+        "-F",
+        "#{pane_id}" + SEP + "#{pane_title}",
+    )
+    if not out:
+        return
+    for line in out.splitlines():
+        pane_id, _, title = line.partition(SEP)
+        if title == "tmux-sidebar":
+            tmux("select-pane", "-t", pane_id, "-R")
+            return
+
+
 def pid_alive(pid):
     try:
         os.kill(pid, 0)
@@ -733,7 +752,7 @@ def main():
                 if 0 <= row_idx < len(rows):
                     row = rows[row_idx]
                     if row[0] == "session":
-                        tmux("switch-client", "-t", row[1].name)
+                        switch_session(row[1].name)
                 continue
 
             # Resize mode: ←/→ nudge the pane width one column at a time and
@@ -767,7 +786,7 @@ def main():
             elif key == keys["switch"] and session_indices:
                 row = rows[focus_idx]
                 if row[0] == "session":
-                    tmux("switch-client", "-t", row[1].name)
+                    switch_session(row[1].name)
     finally:
         # Never leave the repair gate closed if the sidebar dies mid-resize.
         if resize_mode:

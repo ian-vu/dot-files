@@ -8,9 +8,12 @@
 # get a sidebar too, and a dead sidebar process respawns on the next visit.
 #
 # Targets are passed from hooks.conf format expansion; run-shell hooks without
-# explicit targets can resolve against another client's active window.
+# explicit targets can resolve against another client's active window. Passing
+# --focus-content also selects the pane immediately right of the sidebar after
+# ensuring it exists, which keeps session switches out of the sidebar pane.
 
 WINDOW_ID=${1:-$(tmux display-message -p '#{window_id}' 2>/dev/null)}
+FOCUS_CONTENT=${2:-}
 [ -n "$WINDOW_ID" ] || exit 0
 
 # Respect the toggle flag: when the user turned the sidebar off, stay off
@@ -21,8 +24,13 @@ ENABLED=$(tmux show -gqv @tmux_sidebar_enabled 2>/dev/null)
 # Already present? (The sidebar sets its own pane title on startup, but the
 # spawn below also sets it immediately so back-to-back hook fires cannot race
 # a second split before python gets to select-pane.)
-if tmux list-panes -t "$WINDOW_ID" -F '#{pane_title}' 2>/dev/null \
-    | grep -qx 'tmux-sidebar'; then
+SIDEBAR_PANE=$(
+  tmux list-panes -t "$WINDOW_ID" -F '#{pane_id} #{pane_title}' 2>/dev/null \
+    | awk '$2 == "tmux-sidebar" { print $1; exit }'
+)
+if [ -n "$SIDEBAR_PANE" ]; then
+  [ "$FOCUS_CONTENT" = "--focus-content" ] \
+    && tmux select-pane -t "$SIDEBAR_PANE" -R 2>/dev/null
   exit 0
 fi
 
@@ -48,6 +56,10 @@ ACTIVE_PANE=$(tmux display-message -t "$WINDOW_ID" -p '#{pane_id}' 2>/dev/null)
 SIDEBAR_PANE=$(tmux split-window -fhb -d -l "$WIDTH" -t "$WINDOW_ID" \
   -P -F '#{pane_id}' "python3 $HOME/.local/bin/tmux-sidebar.py" 2>/dev/null)
 [ -n "$SIDEBAR_PANE" ] && tmux select-pane -t "$SIDEBAR_PANE" -T 'tmux-sidebar' 2>/dev/null
-[ -n "$ACTIVE_PANE" ] && tmux select-pane -t "$ACTIVE_PANE" 2>/dev/null
+if [ "$FOCUS_CONTENT" = "--focus-content" ] && [ -n "$SIDEBAR_PANE" ]; then
+  tmux select-pane -t "$SIDEBAR_PANE" -R 2>/dev/null
+elif [ -n "$ACTIVE_PANE" ]; then
+  tmux select-pane -t "$ACTIVE_PANE" 2>/dev/null
+fi
 
 exit 0
