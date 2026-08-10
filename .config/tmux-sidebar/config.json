@@ -4,7 +4,8 @@
 		"down": "n",
 		"up": "e",
 		"switch": "enter",
-		"refresh": "r",
+		"kill": "x",
+		"clear": "r",
 		"resize": "w",
 		"quit": "q"
 	},

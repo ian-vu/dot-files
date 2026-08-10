@@ -39,7 +39,8 @@ DEFAULT_CONFIG = {
         "down": "j",
         "up": "k",
         "switch": "enter",
-        "refresh": "r",
+        "kill": "x",
+        "clear": "r",
         "resize": "w",
         "quit": "q",
     },
@@ -65,6 +66,7 @@ GREEN = "\x1b[32m"
 YELLOW = "\x1b[33m"
 CYAN = "\x1b[36m"
 EXTRA_DIM = "\x1b[2;90m"
+CURRENT_STYLE = "\x1b[38;2;27;29;43m\x1b[48;2;130;170;255m"
 MOUSE_ENABLE = "\x1b[?1000h\x1b[?1006h"
 MOUSE_DISABLE = "\x1b[?1006l\x1b[?1000l"
 
@@ -117,6 +119,12 @@ def switch_session(session):
         if title == "tmux-sidebar":
             tmux("select-pane", "-t", pane_id, "-R")
             return
+
+
+def kill_session(session):
+    """Kill exactly `session`."""
+    if session:
+        tmux("kill-session", "-t", "=" + session)
 
 
 def pid_alive(pid):
@@ -183,6 +191,30 @@ def read_status_files():
             continue
         by_session.setdefault(session, []).append(data)
     return by_session
+
+
+def clear_session_status(session):
+    """Delete the status files for every pane in `session` so the sidebar
+    drops stale symbols for that session. Files are named `<pane_id>.json`
+    with the leading % sigil stripped (see clear-bell.sh); list-panes -s
+    gives the session's pane ids. Used by the `r` key to reset a session
+    whose symbols are wrong (e.g. a "done" that won't clear, or a
+    running/waiting marker left behind by a crashed agent).
+    """
+    if not session:
+        return
+    out = tmux("list-panes", "-s", "-t", session, "-F", "#{pane_id}")
+    if not out:
+        return
+    for pane_id in out.splitlines():
+        pane_id = pane_id.strip()
+        if not pane_id:
+            continue
+        name = pane_id[1:] if pane_id.startswith("%") else pane_id
+        try:
+            os.unlink(os.path.join(STATUS_DIR, name + ".json"))
+        except OSError:
+            pass
 
 
 def list_sessions():
@@ -349,7 +381,7 @@ def collect(cfg):
 
     # list-clients, not an untargeted display-message: the latter resolves
     # against TMUX_PANE (this sidebar's own session), not the attached client,
-    # so the ▌ current marker would stick to whatever session hosts the pane.
+    # so the current-row background would stick to the session hosting the pane.
     current = (tmux("list-clients", "-F", "#{session_name}") or "").strip()
     current = current.splitlines()[0] if current else ""
     counts = {
@@ -450,12 +482,12 @@ def render(rows, current, counts, focus_idx, cfg, width, height, resize_width):
     # Header: title + running / unseen-done counts, right-aligned.
     right = ""
     if counts["running"]:
-        right += f"⚡{counts['running']}"
+        right += f"{YELLOW}⚡{counts['running']}{RESET}"
     if counts["done"]:
-        right += ("  " if right else "") + f"✓{counts['done']}"
+        right += ("  " if right else "") + f"{GREEN}✓{counts['done']}{RESET}"
     title = " sessions"
     pad = max(1, width - len(title) - visible_len(right) - 1)
-    lines.append(f"{DIM}{title}{RESET}{' ' * pad}{YELLOW}{right}{RESET}")
+    lines.append(f"{DIM}{title}{RESET}{' ' * pad}{right}")
     lines.append("")
 
     for idx, (kind, sess, label, rail) in enumerate(rows):
@@ -481,12 +513,15 @@ def render(rows, current, counts, focus_idx, cfg, width, height, resize_width):
             lines.append(f"  {DIM}{glyph} {name}{RESET}")
             continue
 
-        marker = "▌" if sess.name == current else ("›" if focused else " ")
+        marker = "›" if focused else " "
+        current_row = sess.name == current
+        row_style = CURRENT_STYLE if current_row else ""
+        row_reset = RESET + row_style
         glyph = GLYPHS[sess.state] + GLYPH_PAD[sess.state]
-        glyph_style = {
-            "waiting": RED + BOLD,
+        glyph_style = "" if current_row else {
+            "waiting": RED,
             "running": YELLOW,
-            "done": GREEN + BOLD,
+            "done": GREEN,
             "idle": DIM,
         }[sess.state]
 
@@ -497,33 +532,40 @@ def render(rows, current, counts, focus_idx, cfg, width, height, resize_width):
             suffix = format_elapsed(elapsed)
             # An agent running/blocked past the alert threshold is stuck or
             # forgotten; make it loud.
-            suffix_style = RED + BOLD if elapsed >= alert_secs else DIM
+            suffix_style = RED if elapsed >= alert_secs else DIM
+        if current_row:
+            suffix_style = ""
 
-        indent = f"{DIM}{rail}{RESET} " if rail else ""
+        indent_style = "" if current_row else DIM
+        indent = f"{indent_style}{rail}{row_reset} " if rail else ""
         # Columns: [marker 1][space][glyph 2][space][name] fixed so rows never shift.
         prefix_cells = 2 + (2 if rail else 0) + 3  # marker+space (+rail+space) +glyph+space
-        name_limit = width - prefix_cells - (len(suffix) + 1 if suffix else 0) - 1
+        suffix_cells = len(suffix) + 1 if suffix else 0
+        name_limit = width - prefix_cells - suffix_cells - 1
         # label, not sess.name: grouped main checkouts display as "root".
         name = truncate(label, name_limit)
 
-        # No background highlight (reverse video reads as a grey bar that
-        # fights the theme's transparent background); the current session and
-        # the ›-selected row get a bold bright name instead.
+        # The current session gets a quiet full-row background. Bold is reserved
+        # for the keyboard selection indicated by ›.
         name_style = ""
-        if sess.stale:
-            name_style = EXTRA_DIM
-        elif sess.name == current or focused:
+        if focused:
             name_style = BOLD
-        elif sess.state == "idle":
+        elif not current_row and sess.stale:
+            name_style = EXTRA_DIM
+        elif not current_row and sess.state == "idle":
             name_style = DIM
 
+        marker_style = ("" if current_row else CYAN) + (BOLD if focused else "")
         line = (
-            f"{CYAN}{marker}{RESET} {indent}{glyph_style}{glyph}{RESET} "
-            f"{name_style}{name}{RESET}"
+            f"{row_style}{marker_style}{marker}{row_reset} "
+            f"{indent}{glyph_style}{glyph}{row_reset} {name_style}{name}{row_reset}"
         )
         if suffix:
-            line += f" {suffix_style}{suffix}{RESET}"
-        lines.append(line)
+            line += f" {suffix_style}{suffix}{row_reset}"
+        if current_row:
+            line_cells = prefix_cells + len(name) + suffix_cells
+            line += " " * max(0, width - line_cells)
+        lines.append(line + RESET)
 
     # Footer pinned to the bottom. In resize mode it becomes a small inline
     # width indicator instead of a popup: ←/→ nudge one column at a time.
@@ -531,12 +573,13 @@ def render(rows, current, counts, focus_idx, cfg, width, height, resize_width):
     footer_rule = f"{DIM}{'─' * max(0, width - 2)}{RESET}"
     if resize_mode:
         footer = (
-            f" {BOLD}{YELLOW}width {resize_width}{RESET}"
+            f" {YELLOW}width {resize_width}{RESET}"
             f"{DIM}  ←/→ adjust  ⏎ done{RESET}"
         )
     else:
         footer = (
             f"{DIM} click/⏎ go  {keys['down']}/{keys['up']} move  "
+            f"{keys['kill']} kill  {keys['clear']} clear  "
             f"{keys['resize']} width  {keys['quit']} quit{RESET}"
         )
     while len(lines) < height - 2:
@@ -775,7 +818,15 @@ def main():
                 resize_mode = True
                 resize_width = terminal_width(cfg)
                 set_repair_pause(True)
-            elif key == keys["refresh"]:
+            elif key == keys["kill"] and session_indices:
+                row = rows[focus_idx]
+                if row[0] == "session":
+                    kill_session(row[1].name)
+                    next_poll = 0.0
+            elif key == keys["clear"]:
+                # Reset the current (client-active) session's symbols when they
+                # are wrong, then re-poll so the sidebar redraws immediately.
+                clear_session_status(current)
                 next_poll = 0.0
             elif key == keys["down"] and session_indices:
                 later = [i for i in session_indices if i > focus_idx]
