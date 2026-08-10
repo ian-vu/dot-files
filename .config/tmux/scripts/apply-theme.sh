@@ -50,19 +50,18 @@ tmux set -g @prefix_highlight_output_suffix ""
 # Status left
 # Offset the window list past the tmux-sidebar pane so it lines up with the
 # main pane instead of being covered by the sidebar. Width authority is the
-# @tmux_sidebar_width tmux option (seeded by sidebar-ensure.sh); fall back to
-# the width in ~/.config/tmux-sidebar/config.json, then 32. A thin ┃ in the
-# pane-border color is drawn in the column where the sidebar/main pane split
-# sits, so the status line visually continues the split border. The padding is
-# conditional at render time: it only shows when the current window contains a
-# pane titled "tmux-sidebar", so windows without the sidebar (or with it
-# toggled off) keep the window list flush left.
+# @tmux_sidebar_width tmux option (seeded here or by sidebar-ensure.sh); fall
+# back to the width in ~/.config/tmux-sidebar/config.json, then 32. The dynamic
+# padding format reads the option on every status redraw, so interactive width
+# changes take effect without reapplying the theme. A thin ┃ in the pane-border
+# color is drawn where the sidebar/main pane split sits. The padding only shows
+# when the current window contains a pane titled "tmux-sidebar".
 SIDEBAR_WIDTH=$(tmux show -gqv @tmux_sidebar_width 2>/dev/null)
 if [ -z "$SIDEBAR_WIDTH" ]; then
   SIDEBAR_WIDTH=$(jq -r '.width // 32' "$HOME/.config/tmux-sidebar/config.json" 2>/dev/null || echo 32)
+  tmux set -g @tmux_sidebar_width "$SIDEBAR_WIDTH"
 fi
-SIDEBAR_PAD="$(printf '%*s' "$SIDEBAR_WIDTH" '')#[fg=${THEME_BORDER}]┃#[fg=${THEME_LEFT_FG}]"
-tmux set -g status-left "#[bg=${THEME_BG},fg=${THEME_LEFT_FG},nobold,noitalics,nounderscore]#{?#{m:*tmux-sidebar*,#{P:#{pane_title}\|}},${SIDEBAR_PAD},}"
+tmux set -g status-left "#[bg=${THEME_BG},fg=${THEME_LEFT_FG},nobold,noitalics,nounderscore]#{?#{m:*tmux-sidebar*,#{P:#{pane_title}\|}},#{p-#{@tmux_sidebar_width}:x}#[fg=${THEME_BORDER}]┃#[fg=${THEME_LEFT_FG}],}"
 
 # Leave idle shell windows blank instead of showing the bare "zsh" command
 # name. Real programs (nvim, git, ...) still name the window via #W. A manually
