@@ -65,6 +65,8 @@ GREEN = "\x1b[32m"
 YELLOW = "\x1b[33m"
 CYAN = "\x1b[36m"
 EXTRA_DIM = "\x1b[2;90m"
+MOUSE_ENABLE = "\x1b[?1000h\x1b[?1006h"
+MOUSE_DISABLE = "\x1b[?1006l\x1b[?1000l"
 
 
 def load_config():
@@ -515,7 +517,7 @@ def render(rows, current, counts, focus_idx, cfg, width, height, resize_width):
         )
     else:
         footer = (
-            f"{DIM} ⏎ go  {keys['down']}/{keys['up']} move  "
+            f"{DIM} click/⏎ go  {keys['down']}/{keys['up']} move  "
             f"{keys['resize']} width  {keys['quit']} quit{RESET}"
         )
     while len(lines) < height - 2:
@@ -537,11 +539,24 @@ _input_buffer = b""
 
 
 def _pop_key():
-    """Pop one normalized key from the buffer, or None if incomplete."""
+    """Pop one normalized key or mouse event, or None if incomplete."""
     global _input_buffer
     if not _input_buffer:
         return None
     if _input_buffer[:1] == b"\x1b":
+        # SGR mouse sequence: ESC [ < button ; column ; row M/m. tmux
+        # forwards these through its default MouseDown1Pane binding once the
+        # application enables mouse reporting.
+        if _input_buffer.startswith(b"\x1b[<"):
+            match = re.match(rb"^\x1b\[<(\d+);(\d+);(\d+)([Mm])", _input_buffer)
+            if match:
+                _input_buffer = _input_buffer[match.end() :]
+                button, column, row, action = match.groups()
+                if action == b"M" and int(button) == 0:
+                    return ("mouse-down", int(column), int(row))
+                return "mouse"
+            if re.fullmatch(rb"\x1b\[<[0-9;]*", _input_buffer):
+                return None
         # CSI/SS3 arrow sequences: ESC [ C / ESC O C etc.
         if len(_input_buffer) >= 3 and _input_buffer[1:2] in (b"[", b"O"):
             seq, _input_buffer = _input_buffer[:3], _input_buffer[3:]
@@ -659,7 +674,9 @@ def main():
     resize_width = None
     try:
         tty.setcbreak(fd)
-        sys.stdout.write("\x1b[?25l")  # hide cursor
+        # tmux's default MouseDown1Pane binding forwards clicks to applications
+        # that request mouse input. SGR mode keeps coordinates unambiguous.
+        sys.stdout.write("\x1b[?25l" + MOUSE_ENABLE)  # hide cursor
         sys.stdout.flush()
 
         rows = []
@@ -708,6 +725,17 @@ def main():
             focused_pane = True
             keys = cfg["keys"]
 
+            if isinstance(key, tuple) and key[0] == "mouse-down":
+                # Screen rows are one-based: two header lines place rows[0]
+                # on terminal row 3. Labels and spacers intentionally ignore
+                # clicks; every visible session row switches immediately.
+                row_idx = key[2] - 3
+                if 0 <= row_idx < len(rows):
+                    row = rows[row_idx]
+                    if row[0] == "session":
+                        tmux("switch-client", "-t", row[1].name)
+                continue
+
             # Resize mode: ←/→ nudge the pane width one column at a time and
             # persist it to @tmux_sidebar_width; any other key exits the mode.
             if resize_mode:
@@ -745,7 +773,7 @@ def main():
         if resize_mode:
             tmux("set", "-gu", "@tmux_sidebar_repair_pause")
         termios.tcsetattr(fd, termios.TCSADRAIN, old_attrs)
-        sys.stdout.write("\x1b[?25h" + RESET)
+        sys.stdout.write(MOUSE_DISABLE + "\x1b[?25h" + RESET)
         sys.stdout.flush()
 
 
