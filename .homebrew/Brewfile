@@ -108,8 +108,6 @@ brew "zoxide"
 brew "age"
 # A better git diff pager, for side by side diff
 brew "git-delta"
-# Semantic version control CLI with entity-level diffs and blame.
-brew "sem-cli"
 # Entity-level semantic merge driver for Git.
 brew "weave"
 # MCP server for Slack workspaces (korotovsky), used by the Pi MCP adapter.

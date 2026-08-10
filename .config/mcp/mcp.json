@@ -19,12 +19,6 @@
       "auth": "oauth",
       "lifecycle": "lazy"
     },
-    "sem": {
-      "command": "/opt/homebrew/bin/sem",
-      "args": ["mcp"],
-      "lifecycle": "lazy",
-      "directTools": true
-    },
     "slack": {
       "command": "/opt/homebrew/bin/slack-mcp-server",
       "args": ["--transport", "stdio"],
