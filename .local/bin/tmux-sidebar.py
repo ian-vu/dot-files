@@ -26,6 +26,7 @@ import sys
 import termios
 import time
 import tty
+import unicodedata
 
 STATUS_DIR = "/tmp/tmux-sidebar"
 CONFIG_PATH = os.path.expanduser("~/.config/tmux-sidebar/config.json")
@@ -45,7 +46,6 @@ DEFAULT_CONFIG = {
         "quit": "q",
     },
     "tick_seconds": 1.0,
-    "stale_hours": 5,
     "elapsed_alert_minutes": 10,
 }
 
@@ -65,8 +65,8 @@ RED = "\x1b[31m"
 GREEN = "\x1b[32m"
 YELLOW = "\x1b[33m"
 CYAN = "\x1b[36m"
-EXTRA_DIM = "\x1b[2;90m"
-CURRENT_STYLE = "\x1b[38;2;27;29;43m\x1b[48;2;130;170;255m"
+WHITE = "\x1b[97m"
+CURRENT_STYLE = "\x1b[1;38;2;27;29;43;48;2;130;170;255m"
 MOUSE_ENABLE = "\x1b[?1000h\x1b[?1006h"
 MOUSE_DISABLE = "\x1b[?1006l\x1b[?1000l"
 
@@ -232,28 +232,12 @@ def list_sessions():
     return sessions
 
 
-def session_panes_info(session):
-    """(first_pane_cwd, max_pane_activity) for a session, single tmux call."""
-    out = tmux(
-        "list-panes",
-        "-s",
-        "-t",
-        session,
-        "-F",
-        "#{pane_current_path}" + SEP + "#{pane_activity}",
-    )
-    cwd = None
-    activity = 0
-    if out:
-        for line in out.splitlines():
-            path, _, act = line.partition(SEP)
-            if cwd is None and path:
-                cwd = path
-            try:
-                activity = max(activity, int(act))
-            except ValueError:
-                pass
-    return cwd, activity
+def session_cwd(session):
+    """Return the first pane's working directory for a session."""
+    out = tmux("list-panes", "-s", "-t", session, "-F", "#{pane_current_path}")
+    if not out:
+        return None
+    return next((path for path in out.splitlines() if path), None)
 
 
 # Worktree detection is cached because `git rev-parse` per session per tick
@@ -319,7 +303,6 @@ class Session:
         "cwd",
         "group",
         "is_worktree",
-        "stale",
     )
 
     def __init__(self, name):
@@ -329,7 +312,6 @@ class Session:
         self.cwd = None
         self.group = None
         self.is_worktree = False
-        self.stale = False
 
 
 def pane_focused(own_pane):
@@ -352,13 +334,12 @@ def pane_focused(own_pane):
     return own_pane in out.split()
 
 
-def collect(cfg):
+def collect():
     """One poll tick: build the full session model.
 
     Returns (sessions, current_session, counts) where counts is
     {running, done} for the header.
     """
-    now = time.time()
     status = read_status_files()
     sessions = []
     for name, _attached in list_sessions():
@@ -368,15 +349,8 @@ def collect(cfg):
             best = max(files, key=lambda f: STATE_PRIORITY.get(f.get("state"), 0))
             sess.state = best.get("state", "idle")
             sess.state_ts = best.get("ts", 0) or 0
-        cwd, activity = session_panes_info(name)
-        sess.cwd = cwd
-        sess.group, sess.is_worktree = repo_info(cwd)
-        # Sessions with an active status file are never dimmed.
-        sess.stale = (
-            sess.state == "idle"
-            and activity > 0
-            and now - activity > cfg["stale_hours"] * 3600
-        )
+        sess.cwd = session_cwd(name)
+        sess.group, sess.is_worktree = repo_info(sess.cwd)
         sessions.append(sess)
 
     # list-clients, not an untargeted display-message: the latter resolves
@@ -439,9 +413,8 @@ def build_rows(sessions):
                 rail = "╰" if i == len(members) - 1 else "│"
                 label = member.name
                 if not member.is_worktree and member.name == repo_name:
-                    # Home symbol for the repo's main checkout, suffixed with
-                    # "home" so the root row is labeled, not just a glyph.
-                    label = "⌂ home"
+                    # Repeat the root session name and put the home symbol after it.
+                    label = f"{member.name} ⌂"
                 elif member.is_worktree:
                     # Worktree sessions follow the <repo>/wt/<name> naming
                     # convention; the repo is already the group header, so
@@ -457,16 +430,30 @@ def build_rows(sessions):
 
 
 def visible_len(text):
-    """Length ignoring ANSI escapes (glyphs assumed single-cell)."""
-    return len(re.sub(r"\x1b\[[0-9;]*m", "", text))
+    """Terminal cell width, ignoring ANSI escapes."""
+    plain = re.sub(r"\x1b\[[0-9;]*m", "", text)
+    return sum(
+        2 if unicodedata.east_asian_width(char) in ("W", "F") else 1
+        for char in plain
+    )
 
 
 def truncate(name, limit):
+    """Truncate plain text to a terminal-cell width."""
     if limit <= 0:
         return ""
-    if len(name) <= limit:
+    if visible_len(name) <= limit:
         return name
-    return name[: max(0, limit - 1)] + "…"
+
+    result = []
+    used = 0
+    for char in name:
+        char_width = 2 if unicodedata.east_asian_width(char) in ("W", "F") else 1
+        if used + char_width + 1 > limit:
+            break
+        result.append(char)
+        used += char_width
+    return "".join(result) + "…"
 
 
 def render(rows, current, counts, focus_idx, cfg, width, height, resize_width):
@@ -479,14 +466,43 @@ def render(rows, current, counts, focus_idx, cfg, width, height, resize_width):
     now = time.time()
     lines = []
 
-    # Header: title + running / unseen-done counts, right-aligned.
-    right = ""
+    # Header: title + running / unseen-done counts, right-aligned. Keep the
+    # whole line within the pane: a wrapped header pushes the frame down and
+    # makes the top row disappear when the sidebar is narrow.
+    status = []
+    status_plain = []
     if counts["running"]:
-        right += f"{YELLOW}⚡{counts['running']}{RESET}"
+        status.append(f"{YELLOW}⚡{counts['running']}{RESET}")
+        status_plain.append(f"⚡{counts['running']}")
     if counts["done"]:
-        right += ("  " if right else "") + f"{GREEN}✓{counts['done']}{RESET}"
+        status.append(f"{GREEN}✓{counts['done']}{RESET}")
+        status_plain.append(f"✓{counts['done']}")
+
     title = " sessions"
-    pad = max(1, width - len(title) - visible_len(right) - 1)
+    right = "  ".join(status)
+    right_plain = "  ".join(status_plain)
+    needed = visible_len(title) + (1 if right else 0) + visible_len(right)
+    if needed > width and len(status) > 1:
+        # Drop the decorative gap before considering a more compact title.
+        right = "".join(status)
+        right_plain = "".join(status_plain)
+        needed = visible_len(title) + 1 + visible_len(right)
+    if needed > width:
+        title = "sessions"
+        needed = visible_len(title) + (1 if right else 0) + visible_len(right)
+    if needed > width and right:
+        # Preserve both the title and the state counts in very narrow panes by
+        # shortening the title before dropping any status glyphs.
+        available_title = max(0, width - visible_len(right) - 1)
+        if available_title:
+            title = truncate(title, available_title)
+            needed = visible_len(title) + 1 + visible_len(right)
+    if needed > width and right:
+        available = max(0, width - visible_len(title) - 1)
+        right_plain = truncate(right_plain, available)
+        right = f"{YELLOW}{right_plain}{RESET}"
+
+    pad = max(0, width - visible_len(title) - visible_len(right))
     lines.append(f"{DIM}{title}{RESET}{' ' * pad}{right}")
     lines.append("")
 
@@ -526,15 +542,14 @@ def render(rows, current, counts, focus_idx, cfg, width, height, resize_width):
         }[sess.state]
 
         suffix = ""
-        suffix_style = DIM
+        suffix_style = "" if current_row else DIM
         if sess.state in ("running", "waiting") and sess.state_ts:
             elapsed = now - sess.state_ts
             suffix = format_elapsed(elapsed)
             # An agent running/blocked past the alert threshold is stuck or
-            # forgotten; make it loud.
-            suffix_style = RED if elapsed >= alert_secs else DIM
-        if current_row:
-            suffix_style = ""
+            # forgotten; make it loud without overriding the current-row theme.
+            if elapsed >= alert_secs and not current_row:
+                suffix_style = RED
 
         indent_style = "" if current_row else DIM
         indent = f"{indent_style}{rail}{row_reset} " if rail else ""
@@ -545,15 +560,16 @@ def render(rows, current, counts, focus_idx, cfg, width, height, resize_width):
         # label, not sess.name: grouped main checkouts display as "root".
         name = truncate(label, name_limit)
 
-        # The current session gets a quiet full-row background. Bold is reserved
-        # for the keyboard selection indicated by ›.
-        name_style = ""
-        if focused:
-            name_style = BOLD
-        elif not current_row and sess.stale:
-            name_style = EXTRA_DIM
-        elif not current_row and sess.state == "idle":
+        # Match the theme's active window with bold dark text. Other agent rows
+        # use a solid white name, while idle rows recede until selected.
+        if current_row:
+            name_style = ""
+        elif focused:
+            name_style = (WHITE if sess.state != "idle" else "") + BOLD
+        elif sess.state == "idle":
             name_style = DIM
+        else:
+            name_style = WHITE
 
         marker_style = ("" if current_row else CYAN) + (BOLD if focused else "")
         line = (
@@ -563,30 +579,38 @@ def render(rows, current, counts, focus_idx, cfg, width, height, resize_width):
         if suffix:
             line += f" {suffix_style}{suffix}{row_reset}"
         if current_row:
-            line_cells = prefix_cells + len(name) + suffix_cells
+            line_cells = prefix_cells + visible_len(name) + suffix_cells
             line += " " * max(0, width - line_cells)
         lines.append(line + RESET)
 
     # Footer pinned to the bottom. In resize mode it becomes a small inline
     # width indicator instead of a popup: ←/→ nudge one column at a time.
+    # Truncate it to the pane width so it cannot wrap and scroll the header off
+    # the top of a narrow sidebar.
     keys = cfg["keys"]
     footer_rule = f"{DIM}{'─' * max(0, width - 2)}{RESET}"
     if resize_mode:
-        footer = (
-            f" {YELLOW}width {resize_width}{RESET}"
-            f"{DIM}  ←/→ adjust  ⏎ done{RESET}"
-        )
+        footer_text = f" width {resize_width}  ←/→ adjust  ⏎ done"
+        footer = f" {YELLOW}{truncate(footer_text, max(0, width - 1))}{RESET}"
     else:
-        footer = (
-            f"{DIM} click/⏎ go  {keys['down']}/{keys['up']} move  "
+        footer_text = (
+            f" click/⏎ go  {keys['down']}/{keys['up']} move  "
             f"{keys['kill']} kill  {keys['clear']} clear  "
-            f"{keys['resize']} width  {keys['quit']} quit{RESET}"
+            f"{keys['resize']} width  {keys['quit']} quit"
         )
-    while len(lines) < height - 2:
-        lines.append("")
-    lines = lines[: height - 2]
-    lines.append(f" {footer_rule}")
-    lines.append(footer)
+        footer = f"{DIM}{truncate(footer_text, max(0, width - 1))}{RESET}"
+
+    # Reserve the header and footer before clipping session rows. This keeps
+    # the header visible even when a very short pane cannot fit a session row.
+    if height <= 1:
+        lines = lines[:1]
+    elif height == 2:
+        lines = [lines[0], footer]
+    else:
+        content_height = height - 3
+        content = lines[1 : 1 + content_height]
+        content.extend([""] * (content_height - len(content)))
+        lines = [lines[0], *content, f" {footer_rule}", footer]
 
     # Home, then each line followed by clear-to-eol. No newline after the last
     # line: writing past the bottom row would scroll the frame up by one.
@@ -749,7 +773,7 @@ def main():
             now = time.time()
             if now >= next_poll or resized[0]:
                 resized[0] = False
-                sessions, current, counts = collect(cfg)
+                sessions, current, counts = collect()
                 rows = build_rows(sessions)
                 focused_pane = pane_focused(own_pane)
                 next_poll = now + cfg["tick_seconds"]

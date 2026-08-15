@@ -161,6 +161,21 @@ export default function (pi: ExtensionAPI) {
     });
   });
 
+  pi.on("tool_execution_end", async (event) => {
+    // ask_user_question's tool_execution_start writes "running" and the prompt
+    // event then overrides it with "waiting". The tool only ends once the user
+    // submits an answer, so flip ❗ back to ⚡ here - otherwise the sidebar stays
+    // on "waiting" through the agent's post-answer thinking until the next
+    // tool_execution_start fires (which may never happen if the turn ends with
+    // a text response).
+    if (event.toolName !== "ask_user_question") return;
+    agentActive = true;
+    enqueueSideEffect(async () => {
+      await markRunning();
+      writeSidebarStatus("running");
+    });
+  });
+
   pi.on("message_end", async (event) => {
     if (event.message.role !== "assistant") return;
     latestAssistantSnippet =
@@ -172,6 +187,10 @@ export default function (pi: ExtensionAPI) {
       // A pending question means Pi is blocked on the user: the sidebar shows
       // ❗ regardless of whether the client is viewing the pane, so write
       // "waiting" here and skip the done/delete handling in the marker path.
+      // Reset the dedup guard so each new question resets the sidebar's elapsed
+      // timer; without this, a second question asked with no intervening tool
+      // (only thinking between answers) would no-op and keep the old timestamp.
+      lastSidebarState = undefined;
       writeSidebarStatus("waiting");
       await markWaitingForAttention({ updateSidebar: false });
       await notify("question", askUserPromptMessage());
