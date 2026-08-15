@@ -58,3 +58,6 @@ Gemfile.lock
 
 # Pi extension LSP dependencies are installed only for local editor support.
 /.pi/agent/extensions/node_modules/
+
+# Legacy pi-subagents run artifacts are generated locally.
+/.pi-subagents/

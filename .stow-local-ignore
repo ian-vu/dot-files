@@ -64,6 +64,7 @@ AGENTS.md
 
 # Pi local runtime state and extension LSP project files are repo/local-only; use
 # `stow --no-folding .` so these nested ignores are not bypassed by dir folding.
+^/\.pi-subagents
 ^/\.pi/agent/auth\.json
 ^/\.pi/agent/sessions
 ^/\.pi/agent/npm
