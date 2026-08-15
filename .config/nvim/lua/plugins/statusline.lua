@@ -53,29 +53,29 @@ return {
 					},
 
 					lualine_c = {
-						{
-							"diff",
-							symbols = {
-								added = icons.git.added,
-								modified = icons.git.modified,
-								removed = icons.git.removed,
-							},
-							source = function()
-								-- Sum gitsigns diff counts across all loaded buffers
-								local added, modified, removed = 0, 0, 0
-								for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-									if vim.api.nvim_buf_is_loaded(buf) then
-										local signs = vim.b[buf].gitsigns_status_dict
-										if signs then
-											added = added + (signs.added or 0)
-											modified = modified + (signs.changed or 0)
-											removed = removed + (signs.removed or 0)
-										end
-									end
-								end
-								return { added = added, modified = modified, removed = removed }
-							end,
-						},
+						-- {
+						-- 	"diff",
+						-- 	symbols = {
+						-- 		added = icons.git.added,
+						-- 		modified = icons.git.modified,
+						-- 		removed = icons.git.removed,
+						-- 	},
+						-- 	source = function()
+						-- 		-- Sum gitsigns diff counts across all loaded buffers
+						-- 		local added, modified, removed = 0, 0, 0
+						-- 		for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+						-- 			if vim.api.nvim_buf_is_loaded(buf) then
+						-- 				local signs = vim.b[buf].gitsigns_status_dict
+						-- 				if signs then
+						-- 					added = added + (signs.added or 0)
+						-- 					modified = modified + (signs.changed or 0)
+						-- 					removed = removed + (signs.removed or 0)
+						-- 				end
+						-- 			end
+						-- 		end
+						-- 		return { added = added, modified = modified, removed = removed }
+						-- 	end,
+						-- },
 						-- Util.lualine.root_dir(),
 						-- { "filetype", icon_only = true, separator = "", padding = { left = 1, right = 0 } },
 						-- { Util.lualine.pretty_path() },
