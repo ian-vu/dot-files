@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """tmux-sidebar: minimal always-visible tmux session list with Pi agent status.
 
-One instance runs per tmux window (spawned by sidebar-ensure.sh). Every tick
-(~1s) it rebuilds session state by polling tmux and reading the status files
-Pi's tmux-notify extension writes to /tmp/tmux-sidebar/<pane_id>.json, so all
-instances render identical state without any coordination. Only the keyboard
-focus row is per-instance.
+One renderer runs per tmux window (spawned by sidebar-ensure.sh), but only one
+renderer holds the collector lock. That collector polls tmux, reads the status
+files Pi's tmux-notify extension writes to /tmp/tmux-sidebar/<pane_id>.json,
+and atomically publishes a shared snapshot. Other renderers read that cache;
+hidden renderers block until their window is selected. Keyboard focus and
+terminal rendering remain per-instance.
 
 Status protocol (see .ignore/reports/tmux-sidebar-spec.md):
   - state "running" / "waiting" / "done"; idle is the absence of a file.
@@ -16,6 +17,7 @@ Status protocol (see .ignore/reports/tmux-sidebar-spec.md):
 Python 3 stdlib only: subprocess polling, raw-terminal input, ANSI redraws.
 """
 
+import fcntl
 import json
 import os
 import re
@@ -29,6 +31,10 @@ import tty
 import unicodedata
 
 STATUS_DIR = "/tmp/tmux-sidebar"
+COLLECTOR_LOCK_PATH = os.path.join(STATUS_DIR, ".collector.lock")
+CACHE_PATH = os.path.join(STATUS_DIR, ".collector-cache.json")
+CACHE_VERSION = 1
+HIBERNATING_OPTION = "@tmux_sidebar_hibernating"
 CONFIG_PATH = os.path.expanduser("~/.config/tmux-sidebar/config.json")
 # The unit separator cannot appear in session names, so it is a safe delimiter
 # for multi-field tmux format queries.
@@ -138,11 +144,12 @@ def pid_alive(pid):
         return True
 
 
-def read_status_files():
-    """Read all status files; reap running/waiting files with dead pids.
+def read_status_files(pane_session=None):
+    """Read status files and reap running/waiting files with dead pids.
 
     Returns {session_name: [entry, ...]}. Session names are re-resolved from
-    the live pane when possible so renamed sessions stay correct.
+    the pane map collected in the same global tmux query. The fallback query
+    keeps direct callers compatible.
     """
     entries = []
     try:
@@ -151,7 +158,8 @@ def read_status_files():
         return {}
 
     for name in names:
-        if not name.endswith(".json"):
+        # Dotfiles are collector internals, not Pi pane status entries.
+        if name.startswith(".") or not name.endswith(".json"):
             continue
         path = os.path.join(STATUS_DIR, name)
         try:
@@ -175,14 +183,15 @@ def read_status_files():
     if not entries:
         return {}
 
-    # Re-resolve session names from live panes in one tmux call so renamed
-    # sessions attribute their status files correctly.
-    pane_session = {}
-    out = tmux("list-panes", "-a", "-F", "#{pane_id}" + SEP + "#{session_name}")
-    if out:
-        for line in out.splitlines():
-            pane_id, _, session = line.partition(SEP)
-            pane_session[pane_id] = session
+    # Re-resolve session names from live panes so renamed sessions attribute
+    # their status files correctly. The collector normally supplies this map.
+    if pane_session is None:
+        pane_session = {}
+        out = tmux("list-panes", "-a", "-F", "#{pane_id}" + SEP + "#{session_name}")
+        if out:
+            for line in out.splitlines():
+                pane_id, _, session = line.partition(SEP)
+                pane_session[pane_id] = session
 
     by_session = {}
     for data in entries:
@@ -217,27 +226,53 @@ def clear_session_status(session):
             pass
 
 
-def list_sessions():
-    """[(name, attached_count)] in tmux natural order."""
-    out = tmux("list-sessions", "-F", "#{session_name}" + SEP + "#{session_attached}")
-    if not out:
-        return []
-    sessions = []
-    for line in out.splitlines():
-        name, _, attached = line.partition(SEP)
-        try:
-            sessions.append((name, int(attached)))
-        except ValueError:
-            sessions.append((name, 0))
-    return sessions
+def collect_pane_inventory():
+    """Collect session order, cwd, and pane ownership in one tmux query."""
+    out = tmux(
+        "list-panes",
+        "-a",
+        "-F",
+        "#{pane_id}" + SEP + "#{session_name}" + SEP + "#{pane_current_path}",
+    )
+    session_names = []
+    session_cwds = {}
+    pane_session = {}
+    for line in (out or "").splitlines():
+        fields = line.split(SEP, 2)
+        if len(fields) != 3:
+            continue
+        pane_id, session, cwd = fields
+        pane_session[pane_id] = session
+        if session not in session_cwds:
+            session_names.append(session)
+            session_cwds[session] = cwd or None
+        elif not session_cwds[session] and cwd:
+            session_cwds[session] = cwd
+    return session_names, session_cwds, pane_session
 
 
-def session_cwd(session):
-    """Return the first pane's working directory for a session."""
-    out = tmux("list-panes", "-s", "-t", session, "-F", "#{pane_current_path}")
-    if not out:
-        return None
-    return next((path for path in out.splitlines() if path), None)
+def collect_client_state():
+    """Return current session, focused panes, and client-visible windows."""
+    out = tmux(
+        "list-clients",
+        "-F",
+        "#{session_name}" + SEP + "#{pane_id}" + SEP + "#{window_id}",
+    )
+    current = ""
+    focused_panes = set()
+    visible_windows = set()
+    for line in (out or "").splitlines():
+        fields = line.split(SEP, 2)
+        if len(fields) != 3:
+            continue
+        session, pane_id, window_id = fields
+        if not current:
+            current = session
+        if pane_id:
+            focused_panes.add(pane_id)
+        if window_id:
+            visible_windows.add(window_id)
+    return current, focused_panes, visible_windows
 
 
 # Worktree detection is cached because `git rev-parse` per session per tick
@@ -314,55 +349,176 @@ class Session:
         self.is_worktree = False
 
 
-def pane_focused(own_pane):
-    """True when this sidebar pane is the pane the attached client is on -
-    i.e. keys typed by the user actually reach the sidebar. Drives whether
-    the › focus marker renders at all.
-
-    Compare against the client's current pane, not this pane's
-    pane_active/window_active flags: those are per-session state, so a
-    sidebar left focused in a background session would keep claiming focus
-    while the client is viewing another session."""
-    if not own_pane:
-        return False
-    # list-clients, not display-message: an untargeted display-message from
-    # this process defaults to TMUX_PANE (this very pane), which would always
-    # report focused.
-    out = tmux("list-clients", "-F", "#{pane_id}")
-    if not out:
-        return False
-    return own_pane in out.split()
-
-
 def collect():
-    """One poll tick: build the full session model.
-
-    Returns (sessions, current_session, counts) where counts is
-    {running, done} for the header.
-    """
-    status = read_status_files()
+    """Build one global snapshot using one pane and one client query."""
+    session_names, session_cwds, pane_session = collect_pane_inventory()
+    status = read_status_files(pane_session)
     sessions = []
-    for name, _attached in list_sessions():
+    for name in session_names:
         sess = Session(name)
         files = status.get(name, [])
         if files:
             best = max(files, key=lambda f: STATE_PRIORITY.get(f.get("state"), 0))
             sess.state = best.get("state", "idle")
             sess.state_ts = best.get("ts", 0) or 0
-        sess.cwd = session_cwd(name)
+        sess.cwd = session_cwds.get(name)
         sess.group, sess.is_worktree = repo_info(sess.cwd)
         sessions.append(sess)
 
-    # list-clients, not an untargeted display-message: the latter resolves
-    # against TMUX_PANE (this sidebar's own session), not the attached client,
-    # so the current-row background would stick to the session hosting the pane.
-    current = (tmux("list-clients", "-F", "#{session_name}") or "").strip()
-    current = current.splitlines()[0] if current else ""
+    # Client state cannot be derived from this process's TMUX_PANE: that would
+    # make every renderer report its own session and focus.
+    current, focused_panes, visible_windows = collect_client_state()
     counts = {
         "running": sum(1 for s in sessions if s.state in ("running", "waiting")),
         "done": sum(1 for s in sessions if s.state == "done"),
     }
-    return sessions, current, counts
+    return sessions, current, counts, focused_panes, visible_windows
+
+
+def snapshot_payload(snapshot):
+    """Convert a runtime snapshot to its versioned JSON representation."""
+    sessions, current, counts, focused_panes, visible_windows = snapshot
+    return {
+        "version": CACHE_VERSION,
+        "collected_at": time.time(),
+        "sessions": [
+            {
+                "name": sess.name,
+                "state": sess.state,
+                "state_ts": sess.state_ts,
+                "cwd": sess.cwd,
+                "group": sess.group,
+                "is_worktree": sess.is_worktree,
+            }
+            for sess in sessions
+        ],
+        "current": current,
+        "counts": counts,
+        "focused_panes": sorted(focused_panes),
+        "visible_windows": sorted(visible_windows),
+    }
+
+
+def snapshot_from_payload(payload):
+    """Validate and rebuild a runtime snapshot from the shared cache."""
+    if not isinstance(payload, dict) or payload.get("version") != CACHE_VERSION:
+        raise ValueError("unsupported collector cache")
+    raw_sessions = payload.get("sessions")
+    if not isinstance(raw_sessions, list):
+        raise ValueError("invalid sessions")
+    sessions = []
+    for item in raw_sessions:
+        if not isinstance(item, dict) or not isinstance(item.get("name"), str):
+            raise ValueError("invalid session")
+        state = item.get("state", "idle")
+        if state not in STATE_PRIORITY:
+            raise ValueError("invalid state")
+        sess = Session(item["name"])
+        sess.state = state
+        sess.state_ts = float(item.get("state_ts", 0) or 0)
+        for field in ("cwd", "group"):
+            value = item.get(field)
+            if value is not None and not isinstance(value, str):
+                raise ValueError("invalid session path")
+            setattr(sess, field, value)
+        sess.is_worktree = bool(item.get("is_worktree", False))
+        sessions.append(sess)
+
+    current = payload.get("current", "")
+    counts = payload.get("counts", {})
+    focused_panes = payload.get("focused_panes", [])
+    visible_windows = payload.get("visible_windows", [])
+    if not isinstance(current, str) or not isinstance(counts, dict):
+        raise ValueError("invalid collector state")
+    if not all(isinstance(value, str) for value in focused_panes):
+        raise ValueError("invalid focused panes")
+    if not all(isinstance(value, str) for value in visible_windows):
+        raise ValueError("invalid visible windows")
+    normalized_counts = {
+        "running": int(counts.get("running", 0)),
+        "done": int(counts.get("done", 0)),
+    }
+    return sessions, current, normalized_counts, set(focused_panes), set(visible_windows)
+
+
+def open_collector_lock():
+    """Open the stable lock inode shared by every renderer."""
+    os.makedirs(STATUS_DIR, mode=0o700, exist_ok=True)
+    return os.open(COLLECTOR_LOCK_PATH, os.O_RDWR | os.O_CREAT, 0o600)
+
+
+def try_claim_collector(lock_fd):
+    """Claim collector leadership without blocking another renderer."""
+    try:
+        fcntl.flock(lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        return True
+    except BlockingIOError:
+        return False
+
+
+def publish_snapshot(snapshot):
+    """Atomically replace the cache so readers never see partial JSON."""
+    payload = snapshot_payload(snapshot)
+    temp_path = os.path.join(STATUS_DIR, f".collector-cache.{os.getpid()}.tmp")
+    try:
+        fd = os.open(temp_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+        with os.fdopen(fd, "w", encoding="utf-8") as fh:
+            json.dump(payload, fh, ensure_ascii=False, separators=(",", ":"))
+        os.replace(temp_path, CACHE_PATH)
+    finally:
+        try:
+            os.unlink(temp_path)
+        except OSError:
+            pass
+
+
+def read_snapshot():
+    """Read a complete shared snapshot, or None if no valid cache exists."""
+    try:
+        with open(CACHE_PATH, encoding="utf-8") as fh:
+            return snapshot_from_payload(json.load(fh))
+    except (OSError, ValueError, TypeError):
+        return None
+
+
+def drain_fd(fd):
+    """Drain pending wake bytes without blocking."""
+    while True:
+        try:
+            if not os.read(fd, 4096):
+                return
+        except BlockingIOError:
+            return
+        except OSError:
+            return
+
+
+def hibernate_renderer(own_pane, own_window, wake_read):
+    """Block a hidden follower until tmux selects its window or input arrives.
+
+    Returns True after actually blocking and waking. False means a final live
+    check found the renderer visible (or could not determine visibility), so
+    the caller should keep it active and retry on the normal cache tick.
+
+    The pane option is set before the final visibility check. The selection
+    hook can therefore signal the self-pipe without racing the transition into
+    select(), while the final list-clients query handles selection just before
+    the option was set.
+    """
+    drain_fd(wake_read)
+    tmux("set-option", "-p", "-t", own_pane, HIBERNATING_OPTION, "1")
+    try:
+        clients = tmux("list-clients", "-F", "#{window_id}")
+        if clients is None:
+            return False
+        if own_window in set(clients.splitlines()):
+            return False
+        ready, _, _ = select.select([sys.stdin, wake_read], [], [])
+        if wake_read in ready:
+            drain_fd(wake_read)
+        return True
+    finally:
+        tmux("set-option", "-pu", "-t", own_pane, HIBERNATING_OPTION)
 
 
 def build_rows(sessions):
@@ -668,14 +824,19 @@ def _pop_key():
     return ch.decode(errors="replace")
 
 
-def read_key(timeout):
-    """Return one normalized key within timeout, or None on tick timeout."""
+def read_key(timeout, wake_fd=None):
+    """Return one normalized key within timeout, or None on tick/wake."""
     global _input_buffer
     key = _pop_key()
     if key is not None:
         return key
-    ready, _, _ = select.select([sys.stdin], [], [], timeout)
-    if not ready:
+    inputs = [sys.stdin]
+    if wake_fd is not None:
+        inputs.append(wake_fd)
+    ready, _, _ = select.select(inputs, [], [], timeout)
+    if wake_fd is not None and wake_fd in ready:
+        drain_fd(wake_fd)
+    if sys.stdin not in ready:
         return None
     _input_buffer += os.read(sys.stdin.fileno(), 64)
     # A bare ESC might be the head of an arrow sequence whose tail is still in
@@ -736,8 +897,12 @@ def main():
     # title. Target TMUX_PANE explicitly: an untargeted select-pane titles the
     # client's *current* pane, which is the user's pane, not this one.
     own_pane = os.environ.get("TMUX_PANE")
+    own_window = ""
     if own_pane:
         tmux("select-pane", "-t", own_pane, "-T", "tmux-sidebar")
+        own_window = (
+            tmux("display-message", "-p", "-t", own_pane, "#{window_id}") or ""
+        ).strip()
 
     if not sys.stdin.isatty():
         print("tmux-sidebar must run inside a tmux pane", file=sys.stderr)
@@ -745,11 +910,23 @@ def main():
 
     fd = sys.stdin.fileno()
     old_attrs = termios.tcgetattr(fd)
+    lock_fd = open_collector_lock()
+    wake_read, wake_write = os.pipe()
+    os.set_blocking(wake_read, False)
+    os.set_blocking(wake_write, False)
     resized = [True]
+
+    def wake_renderer(_sig, _frame):
+        try:
+            os.write(wake_write, b"w")
+        except (BlockingIOError, OSError):
+            pass
 
     def on_resize(_sig, _frame):
         resized[0] = True
+        wake_renderer(_sig, _frame)
 
+    signal.signal(signal.SIGUSR1, wake_renderer)
     signal.signal(signal.SIGWINCH, on_resize)
 
     focus_idx = 0
@@ -758,6 +935,7 @@ def main():
     # observed terminal size lags resize-pane by a frame; reading it back per
     # keypress would make rapid ←/→ presses fight the previous resize.
     resize_width = None
+    is_collector = False
     try:
         tty.setcbreak(fd)
         # tmux's default MouseDown1Pane binding forwards clicks to applications
@@ -767,16 +945,44 @@ def main():
 
         rows = []
         next_poll = 0.0
+        have_snapshot = False
         focused_pane = False
         sessions, current, counts = [], "", {"running": 0, "done": 0}
+        focused_panes, visible_windows = set(), set()
         while True:
             now = time.time()
-            if now >= next_poll or resized[0]:
-                resized[0] = False
-                sessions, current, counts = collect()
+            if now >= next_poll:
+                if not is_collector:
+                    is_collector = try_claim_collector(lock_fd)
+                if is_collector:
+                    snapshot = collect()
+                    sessions, current, counts, focused_panes, visible_windows = snapshot
+                    have_snapshot = True
+                    try:
+                        publish_snapshot(snapshot)
+                    except OSError:
+                        # Keep rendering the live in-memory snapshot. Followers
+                        # retain their last valid cache until publication works.
+                        pass
+                else:
+                    snapshot = read_snapshot()
+                    if snapshot is not None:
+                        sessions, current, counts, focused_panes, visible_windows = snapshot
+                        have_snapshot = True
                 rows = build_rows(sessions)
-                focused_pane = pane_focused(own_pane)
+                focused_pane = own_pane in focused_panes
                 next_poll = now + cfg["tick_seconds"]
+
+            resized[0] = False
+            is_visible = not own_window or own_window in visible_windows
+            if have_snapshot and not is_collector and not is_visible:
+                if hibernate_renderer(own_pane, own_window, wake_read):
+                    next_poll = 0.0
+                    continue
+                # The cache can lag a just-selected window by one collector
+                # tick. Keep this renderer active instead of immediately
+                # re-entering hibernation against the same stale snapshot.
+                is_visible = True
 
             # Clamp focus to session rows only (group headers are labels).
             session_indices = [i for i, r in enumerate(rows) if r[0] == "session"]
@@ -788,22 +994,25 @@ def main():
             elif not session_indices:
                 focus_idx = 0
 
-            frame = render(
-                rows,
-                current,
-                counts,
-                # Hide the › marker while the pane is unfocused - a persistent
-                # cursor row in every sidebar is noise when keys don't reach it.
-                focus_idx if focused_pane else None,
-                cfg,
-                terminal_width(cfg),
-                terminal_height(),
-                resize_width if resize_mode else None,
-            )
-            sys.stdout.write(frame)
-            sys.stdout.flush()
+            # A hidden collector still gathers and publishes state, but it does
+            # not redraw a pane no client can see.
+            if is_visible:
+                frame = render(
+                    rows,
+                    current,
+                    counts,
+                    # Hide the › marker while the pane is unfocused - a persistent
+                    # cursor row in every sidebar is noise when keys don't reach it.
+                    focus_idx if focused_pane else None,
+                    cfg,
+                    terminal_width(cfg),
+                    terminal_height(),
+                    resize_width if resize_mode else None,
+                )
+                sys.stdout.write(frame)
+                sys.stdout.flush()
 
-            key = read_key(max(0.05, next_poll - time.time()))
+            key = read_key(max(0.05, next_poll - time.time()), wake_read)
             if key is None:
                 continue
             # Any keypress implies the pane has focus; reflect it immediately
@@ -866,6 +1075,11 @@ def main():
         # Never leave the repair gate closed if the sidebar dies mid-resize.
         if resize_mode:
             tmux("set", "-gu", "@tmux_sidebar_repair_pause")
+        if own_pane:
+            tmux("set-option", "-pu", "-t", own_pane, HIBERNATING_OPTION)
+        os.close(lock_fd)
+        os.close(wake_read)
+        os.close(wake_write)
         termios.tcsetattr(fd, termios.TCSADRAIN, old_attrs)
         sys.stdout.write(MOUSE_DISABLE + "\x1b[?25h" + RESET)
         sys.stdout.flush()

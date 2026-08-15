@@ -23,12 +23,19 @@ ENABLED=$(tmux show -gqv @tmux_sidebar_enabled 2>/dev/null)
 
 # Already present? (The sidebar sets its own pane title on startup, but the
 # spawn below also sets it immediately so back-to-back hook fires cannot race
-# a second split before python gets to select-pane.)
-SIDEBAR_PANE=$(
-  tmux list-panes -t "$WINDOW_ID" -F '#{pane_id} #{pane_title}' 2>/dev/null \
-    | awk '$2 == "tmux-sidebar" { print $1; exit }'
+# a second split before python gets to select-pane.) Include pane_pid so a
+# selected window can wake a hidden renderer blocked in hibernation.
+SIDEBAR_INFO=$(
+  tmux list-panes -t "$WINDOW_ID" -F '#{pane_id} #{pane_title} #{pane_pid}' 2>/dev/null \
+    | awk '$2 == "tmux-sidebar" { print $1 " " $3; exit }'
 )
+SIDEBAR_PANE=${SIDEBAR_INFO%% *}
+SIDEBAR_PID=${SIDEBAR_INFO#* }
 if [ -n "$SIDEBAR_PANE" ]; then
+  HIBERNATING=$(tmux show-options -pqv -t "$SIDEBAR_PANE" @tmux_sidebar_hibernating 2>/dev/null)
+  if [ "$HIBERNATING" = "1" ] && [ -n "$SIDEBAR_PID" ]; then
+    kill -USR1 "$SIDEBAR_PID" 2>/dev/null || true
+  fi
   [ "$FOCUS_CONTENT" = "--focus-content" ] \
     && tmux select-pane -t "$SIDEBAR_PANE" -R 2>/dev/null
   exit 0
