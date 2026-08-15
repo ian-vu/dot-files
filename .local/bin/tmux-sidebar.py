@@ -58,10 +58,6 @@ DEFAULT_CONFIG = {
 # Aggregation priority: a blocked agent (waiting) outranks a working one.
 STATE_PRIORITY = {"waiting": 3, "running": 2, "done": 1, "idle": 0}
 GLYPHS = {"waiting": "❗", "running": "⚡", "done": "✓", "idle": "○"}
-# ⚡ and ❗ are East-Asian-Wide (2 terminal cells); ✓ and ○ are 1. Pad the
-# narrow ones so the glyph column is always 2 cells and names never shift
-# when a session's state changes.
-GLYPH_PAD = {"waiting": "", "running": "", "done": " ", "idle": " "}
 
 # ANSI styles (plain codes; no curses dependency).
 RESET = "\x1b[0m"
@@ -680,16 +676,16 @@ def render(rows, current, counts, focus_idx, cfg, width, height, resize_width):
                     break
                 child_states.append(s2.state)
             agg = max(child_states, key=lambda s: STATE_PRIORITY[s], default="idle")
-            glyph = GLYPHS[agg] + GLYPH_PAD[agg]
+            glyph = GLYPHS[agg]
             name = truncate(label, width - 6)
-            lines.append(f"  {DIM}{glyph} {name}{RESET}")
+            lines.append(f"  {DIM}{name} {glyph}{RESET}")
             continue
 
         marker = "›" if focused else " "
         current_row = sess.name == current
         row_style = CURRENT_STYLE if current_row else ""
         row_reset = RESET + row_style
-        glyph = GLYPHS[sess.state] + GLYPH_PAD[sess.state]
+        glyph = GLYPHS[sess.state]
         glyph_style = "" if current_row else {
             "waiting": RED,
             "running": YELLOW,
@@ -697,21 +693,23 @@ def render(rows, current, counts, focus_idx, cfg, width, height, resize_width):
             "idle": DIM,
         }[sess.state]
 
-        suffix = ""
-        suffix_style = "" if current_row else DIM
+        elapsed_label = ""
+        elapsed_style = "" if current_row else DIM
         if sess.state in ("running", "waiting") and sess.state_ts:
             elapsed = now - sess.state_ts
-            suffix = format_elapsed(elapsed)
+            elapsed_label = f"[{format_elapsed(elapsed)}]"
             # An agent running/blocked past the alert threshold is stuck or
             # forgotten; make it loud without overriding the current-row theme.
             if elapsed >= alert_secs and not current_row:
-                suffix_style = RED
+                elapsed_style = RED
 
         indent_style = "" if current_row else DIM
         indent = f"{indent_style}{rail}{row_reset} " if rail else ""
-        # Columns: [marker 1][space][glyph 2][space][name] fixed so rows never shift.
-        prefix_cells = 2 + (2 if rail else 0) + 3  # marker+space (+rail+space) +glyph+space
-        suffix_cells = len(suffix) + 1 if suffix else 0
+        # Keep the state and optional elapsed time directly after the session name.
+        prefix_cells = 2 + (2 if rail else 0)  # marker+space (+rail+space)
+        suffix_cells = 1 + visible_len(glyph)
+        if elapsed_label:
+            suffix_cells += 1 + visible_len(elapsed_label)
         name_limit = width - prefix_cells - suffix_cells - 1
         # label, not sess.name: grouped main checkouts display as "root".
         name = truncate(label, name_limit)
@@ -730,10 +728,10 @@ def render(rows, current, counts, focus_idx, cfg, width, height, resize_width):
         marker_style = ("" if current_row else CYAN) + (BOLD if focused else "")
         line = (
             f"{row_style}{marker_style}{marker}{row_reset} "
-            f"{indent}{glyph_style}{glyph}{row_reset} {name_style}{name}{row_reset}"
+            f"{indent}{name_style}{name}{row_reset} {glyph_style}{glyph}{row_reset}"
         )
-        if suffix:
-            line += f" {suffix_style}{suffix}{row_reset}"
+        if elapsed_label:
+            line += f" {elapsed_style}{elapsed_label}{row_reset}"
         if current_row:
             line_cells = prefix_cells + visible_len(name) + suffix_cells
             line += " " * max(0, width - line_cells)
