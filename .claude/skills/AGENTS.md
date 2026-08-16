@@ -7,7 +7,7 @@ Some skills in this directory are vendored from upstream repositories instead of
 Vendored sources are listed in the repo-only manifest:
 
 ```text
-.config/ivu/dotfiles-vendored-skills.tsv
+.claude/skills/.vendored-skills.tsv
 ```
 
 Refresh vendored skills with:

@@ -10,7 +10,7 @@ if [[ -z "$repo_root" ]]; then
   fi
 fi
 
-manifest="$repo_root/.config/ivu/dotfiles-vendored-skills.tsv"
+manifest="$repo_root/.claude/skills/.vendored-skills.tsv"
 
 if [[ ! -f "$manifest" ]]; then
   echo "Manifest not found: $manifest" >&2

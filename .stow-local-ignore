@@ -58,7 +58,7 @@ CLAUDE.md
 AGENTS.md
 \.luarc\.json
 ^/\.worktrees
-^/\.config/ivu/dotfiles-vendored-skills\.tsv
+^/\.claude/skills/\.vendored-skills\.tsv
 # Pi project settings stay in the repo for the agent, not symlinked into $HOME.
 ^/\.pi/settings\.json
 
