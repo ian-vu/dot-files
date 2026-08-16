@@ -21,6 +21,11 @@ relink: unlink link
 link-dry:
     stow --simulate --no-folding .
 
+# Refresh skills tracked in the vendored-skills manifest from their upstream sources.
+[group('skills')]
+update-vendored-skills:
+    .local/bin/update-vendored-skills
+
 # Install dev-only types used by LSP when editing Pi extensions in this repo.
 [group('pi')]
 pi-extension-lsp:
