@@ -21,6 +21,7 @@ let pinned = false;
 let shuttingDown = false;
 let latestContext: ExtensionContext | undefined;
 let checkTimer: NodeJS.Timeout | undefined;
+let timerGeneration = 0;
 let configuredIdleLimitMs = DEFAULT_IDLE_LIMIT_MS;
 
 export default function (pi: ExtensionAPI) {
@@ -56,8 +57,10 @@ export default function (pi: ExtensionAPI) {
 	pi.on("thinking_level_select", async () => markActivity("thinking_level_select"));
 
 	pi.on("session_shutdown", async (_event, ctx) => {
+		timerGeneration++;
 		if (checkTimer) clearInterval(checkTimer);
 		checkTimer = undefined;
+		latestContext = undefined;
 		if (ctx.hasUI) ctx.ui.setStatus(EXTENSION_NAME, undefined);
 	});
 
@@ -105,11 +108,17 @@ export default function (pi: ExtensionAPI) {
 
 function installTimer(pi: ExtensionAPI, ctx: ExtensionContext, idleLimitMs: number, checkIntervalMs: number): void {
 	if (checkTimer) clearInterval(checkTimer);
+	const generation = ++timerGeneration;
 
-	// The timer is intentionally coarse: it avoids keeping otherwise idle Pi
-	// sessions busy while still reclaiming day-old abandoned processes.
+	// clearInterval cannot cancel a callback already queued by the event loop.
+	// The generation check prevents that callback from using a context Pi made
+	// stale during session replacement or reload.
 	checkTimer = setInterval(() => {
-		void checkIdleAndShutdown(pi, latestContext ?? ctx, idleLimitMs);
+		if (generation !== timerGeneration) return;
+		void checkIdleAndShutdown(pi, latestContext ?? ctx, idleLimitMs).catch((error: unknown) => {
+			if (generation !== timerGeneration || isStaleContextError(error)) return;
+			console.error(`[${EXTENSION_NAME}] idle check failed`, error);
+		});
 	}, checkIntervalMs);
 	checkTimer.unref?.();
 }
@@ -152,10 +161,18 @@ async function shutdownWithNotice(pi: ExtensionAPI, ctx: ExtensionContext, idleL
 	try {
 		latestContext = ctx;
 		ctx.shutdown();
-	} catch {
+	} catch (error: unknown) {
+		if (isStaleContextError(error)) {
+			shuttingDown = false;
+			return;
+		}
 		process.exitCode = 0;
 		process.kill(process.pid, "SIGTERM");
 	}
+}
+
+function isStaleContextError(error: unknown): boolean {
+	return error instanceof Error && error.message.startsWith("This extension ctx is stale");
 }
 
 function markActivity(reason: string): void {
