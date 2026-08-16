@@ -2,12 +2,12 @@
   "tools": {
     "read": {
       "enabled": true,
-      "compact_lines": 0,
+      "compact_lines": 3,
       "show_muted_text": false
     },
     "bash": {
       "enabled": true,
-      "compact_lines": 2,
+      "compact_lines": 3,
       "show_muted_text": true
     }
   }
