@@ -112,9 +112,14 @@ plugins=(
 ) #vi-mode)
 
 
-# Completion paths must be present before Oh My Zsh runs compinit. Bun's
-# completion is then autoloaded only when requested instead of sourced here.
-fpath=("$HOME/.bun" /opt/homebrew/share/zsh/completions $fpath)
+# Completion paths must be present before Oh My Zsh runs compinit. Bun and
+# Homebrew completions are then autoloaded only when requested.
+fpath=(
+  "$HOME/.bun"
+  /opt/homebrew/share/zsh/site-functions
+  /opt/homebrew/share/zsh/completions
+  $fpath
+)
 
 source $ZSH/oh-my-zsh.sh
 
