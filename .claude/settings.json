@@ -124,7 +124,9 @@
   },
   "enabledPlugins": {
     "planning-with-files@planning-with-files": false,
-    "code-review-graph@code-review-graph": true
+    "code-review-graph@code-review-graph": true,
+    "vercel@claude-plugins-official": true,
+    "vercel-plugin@vercel": true
   },
   "extraKnownMarketplaces": {
     "code-review-graph": {
@@ -137,6 +139,12 @@
       "source": {
         "source": "github",
         "repo": "mksglu/context-mode"
+      }
+    },
+    "claude-plugins-official": {
+      "source": {
+        "source": "github",
+        "repo": "anthropics/claude-plugins-official"
       }
     }
   },
