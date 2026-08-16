@@ -618,9 +618,7 @@ def render(rows, current, counts, focus_idx, cfg, width, height, resize_width):
     now = time.time()
     lines = []
 
-    # Header: title + running / unseen-done counts, right-aligned. Keep the
-    # whole line within the pane: a wrapped header pushes the frame down and
-    # makes the top row disappear when the sidebar is narrow.
+    # Keep running / unseen-done counts right-aligned without a header label.
     status = []
     status_plain = []
     if counts["running"]:
@@ -630,32 +628,17 @@ def render(rows, current, counts, focus_idx, cfg, width, height, resize_width):
         status.append(f"{GREEN}✓{counts['done']}{RESET}")
         status_plain.append(f"✓{counts['done']}")
 
-    title = " sessions"
     right = "  ".join(status)
     right_plain = "  ".join(status_plain)
-    needed = visible_len(title) + (1 if right else 0) + visible_len(right)
-    if needed > width and len(status) > 1:
-        # Drop the decorative gap before considering a more compact title.
+    if visible_len(right) > width and len(status) > 1:
         right = "".join(status)
         right_plain = "".join(status_plain)
-        needed = visible_len(title) + 1 + visible_len(right)
-    if needed > width:
-        title = "sessions"
-        needed = visible_len(title) + (1 if right else 0) + visible_len(right)
-    if needed > width and right:
-        # Preserve both the title and the state counts in very narrow panes by
-        # shortening the title before dropping any status glyphs.
-        available_title = max(0, width - visible_len(right) - 1)
-        if available_title:
-            title = truncate(title, available_title)
-            needed = visible_len(title) + 1 + visible_len(right)
-    if needed > width and right:
-        available = max(0, width - visible_len(title) - 1)
-        right_plain = truncate(right_plain, available)
+    if visible_len(right) > width:
+        right_plain = truncate(right_plain, width)
         right = f"{YELLOW}{right_plain}{RESET}"
 
-    pad = max(0, width - visible_len(title) - visible_len(right))
-    lines.append(f"{DIM}{title}{RESET}{' ' * pad}{right}")
+    pad = max(0, width - visible_len(right))
+    lines.append(f"{' ' * pad}{right}")
     lines.append("")
 
     for idx, (kind, sess, label, rail) in enumerate(rows):
@@ -677,8 +660,9 @@ def render(rows, current, counts, focus_idx, cfg, width, height, resize_width):
                 child_states.append(s2.state)
             agg = max(child_states, key=lambda s: STATE_PRIORITY[s], default="idle")
             glyph = GLYPHS[agg]
-            name = truncate(label, width - 6)
-            lines.append(f"  {DIM}{name} {glyph}{RESET}")
+            prefix = f"{glyph} " if glyph else ""
+            name = truncate(label, width - 3 - visible_len(prefix))
+            lines.append(f"  {DIM}{prefix}{name}{RESET}")
             continue
 
         marker = "›" if focused else " "
@@ -697,20 +681,29 @@ def render(rows, current, counts, focus_idx, cfg, width, height, resize_width):
         elapsed_style = "" if current_row else DIM
         if sess.state in ("running", "waiting") and sess.state_ts:
             elapsed = now - sess.state_ts
-            elapsed_label = f"[{format_elapsed(elapsed)}]"
+            elapsed_label = f"[~{format_elapsed(elapsed)}]"
             # An agent running/blocked past the alert threshold is stuck or
             # forgotten; make it loud without overriding the current-row theme.
             if elapsed >= alert_secs and not current_row:
                 elapsed_style = RED
+        elif sess.state == "done" and sess.state_ts:
+            elapsed_label = f"[{format_elapsed(now - sess.state_ts)} ago]"
 
         indent_style = "" if current_row else DIM
         indent = f"{indent_style}{rail}{row_reset} " if rail else ""
-        # Keep the state and optional elapsed time directly after the session name.
+        # Keep the state before the session name and align age at the right edge.
         prefix_cells = 2 + (2 if rail else 0)  # marker+space (+rail+space)
-        suffix_cells = 1 + visible_len(glyph)
-        if elapsed_label:
-            suffix_cells += 1 + visible_len(elapsed_label)
-        name_limit = width - prefix_cells - suffix_cells - 1
+        if glyph:
+            prefix_cells += visible_len(glyph) + 1
+        suffix_cells = visible_len(elapsed_label)
+        suffix_gap = 1 if elapsed_label else 0
+        right_margin = 1
+        # Hide age before sacrificing the entire name in unusually narrow panes.
+        if elapsed_label and width - prefix_cells - suffix_gap - suffix_cells - right_margin < 1:
+            elapsed_label = ""
+            suffix_cells = 0
+            suffix_gap = 0
+        name_limit = width - prefix_cells - suffix_gap - suffix_cells - right_margin
         # label, not sess.name: grouped main checkouts display as "root".
         name = truncate(label, name_limit)
 
@@ -726,14 +719,16 @@ def render(rows, current, counts, focus_idx, cfg, width, height, resize_width):
             name_style = WHITE
 
         marker_style = ("" if current_row else CYAN) + (BOLD if focused else "")
-        line = (
-            f"{row_style}{marker_style}{marker}{row_reset} "
-            f"{indent}{name_style}{name}{row_reset} {glyph_style}{glyph}{row_reset}"
-        )
+        line = f"{row_style}{marker_style}{marker}{row_reset} {indent}"
+        if glyph:
+            line += f"{glyph_style}{glyph}{row_reset} "
+        line += f"{name_style}{name}{row_reset}"
+        line_cells = prefix_cells + visible_len(name)
         if elapsed_label:
-            line += f" {elapsed_style}{elapsed_label}{row_reset}"
+            gap = max(suffix_gap, width - right_margin - suffix_cells - line_cells)
+            line += f"{' ' * gap}{elapsed_style}{elapsed_label}{row_reset}"
+            line_cells += gap + suffix_cells
         if current_row:
-            line_cells = prefix_cells + visible_len(name) + suffix_cells
             line += " " * max(0, width - line_cells)
         lines.append(line + RESET)
 
