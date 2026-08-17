@@ -19,7 +19,6 @@ let lastActivityReason = "extension loaded";
 let disabled = false;
 let pinned = false;
 let shuttingDown = false;
-let latestContext: ExtensionContext | undefined;
 let checkTimer: NodeJS.Timeout | undefined;
 let timerGeneration = 0;
 let configuredIdleLimitMs = DEFAULT_IDLE_LIMIT_MS;
@@ -30,7 +29,6 @@ export default function (pi: ExtensionAPI) {
 	configuredIdleLimitMs = idleLimitMs;
 
 	pi.on("session_start", async (_event, ctx) => {
-		latestContext = ctx;
 		startedAt = Date.now();
 		lastActivityAt = Date.now();
 		lastActivityReason = "session_start";
@@ -40,34 +38,32 @@ export default function (pi: ExtensionAPI) {
 		setStatus(ctx, idleLimitMs);
 	});
 
-	pi.on("input", async () => markActivity("input"));
-	pi.on("user_bash", async () => markActivity("user_bash"));
-	pi.on("before_agent_start", async () => markActivity("before_agent_start"));
-	pi.on("agent_start", async () => markActivity("agent_start"));
-	pi.on("agent_end", async () => markActivity("agent_end"));
-	pi.on("turn_start", async () => markActivity("turn_start"));
-	pi.on("turn_end", async () => markActivity("turn_end"));
-	pi.on("message_start", async () => markActivity("message_start"));
-	pi.on("message_end", async () => markActivity("message_end"));
-	pi.on("tool_execution_start", async () => markActivity("tool_execution_start"));
-	pi.on("tool_execution_end", async () => markActivity("tool_execution_end"));
-	pi.on("tool_call", async () => markActivity("tool_call"));
-	pi.on("tool_result", async () => markActivity("tool_result"));
-	pi.on("model_select", async () => markActivity("model_select"));
-	pi.on("thinking_level_select", async () => markActivity("thinking_level_select"));
+	pi.on("input", async (_event, ctx) => markActivity("input", ctx));
+	pi.on("user_bash", async (_event, ctx) => markActivity("user_bash", ctx));
+	pi.on("before_agent_start", async (_event, ctx) => markActivity("before_agent_start", ctx));
+	pi.on("agent_start", async (_event, ctx) => markActivity("agent_start", ctx));
+	pi.on("agent_end", async (_event, ctx) => markActivity("agent_end", ctx));
+	pi.on("turn_start", async (_event, ctx) => markActivity("turn_start", ctx));
+	pi.on("turn_end", async (_event, ctx) => markActivity("turn_end", ctx));
+	pi.on("message_start", async (_event, ctx) => markActivity("message_start", ctx));
+	pi.on("message_end", async (_event, ctx) => markActivity("message_end", ctx));
+	pi.on("tool_execution_start", async (_event, ctx) => markActivity("tool_execution_start", ctx));
+	pi.on("tool_execution_end", async (_event, ctx) => markActivity("tool_execution_end", ctx));
+	pi.on("tool_call", async (_event, ctx) => markActivity("tool_call", ctx));
+	pi.on("tool_result", async (_event, ctx) => markActivity("tool_result", ctx));
+	pi.on("model_select", async (_event, ctx) => markActivity("model_select", ctx));
+	pi.on("thinking_level_select", async (_event, ctx) => markActivity("thinking_level_select", ctx));
 
 	pi.on("session_shutdown", async (_event, ctx) => {
 		timerGeneration++;
 		if (checkTimer) clearInterval(checkTimer);
 		checkTimer = undefined;
-		latestContext = undefined;
 		if (ctx.hasUI) ctx.ui.setStatus(EXTENSION_NAME, undefined);
 	});
 
 	pi.registerCommand("idle-shutdown", {
 		description: "Manage auto shutdown for Pi sessions idle for a day",
 		handler: async (args, ctx) => {
-			latestContext = ctx;
 			const action = args.trim().split(/\s+/, 1)[0] || "status";
 
 			switch (action) {
@@ -115,7 +111,7 @@ function installTimer(pi: ExtensionAPI, ctx: ExtensionContext, idleLimitMs: numb
 	// stale during session replacement or reload.
 	checkTimer = setInterval(() => {
 		if (generation !== timerGeneration) return;
-		void checkIdleAndShutdown(pi, latestContext ?? ctx, idleLimitMs).catch((error: unknown) => {
+		void checkIdleAndShutdown(pi, ctx, idleLimitMs).catch((error: unknown) => {
 			if (generation !== timerGeneration || isStaleContextError(error)) return;
 			console.error(`[${EXTENSION_NAME}] idle check failed`, error);
 		});
@@ -159,7 +155,6 @@ async function shutdownWithNotice(pi: ExtensionAPI, ctx: ExtensionContext, idleL
 	} catch {}
 
 	try {
-		latestContext = ctx;
 		ctx.shutdown();
 	} catch (error: unknown) {
 		if (isStaleContextError(error)) {
@@ -175,11 +170,19 @@ function isStaleContextError(error: unknown): boolean {
 	return error instanceof Error && error.message.startsWith("This extension ctx is stale");
 }
 
-function markActivity(reason: string): void {
+function markActivity(reason: string, ctx: ExtensionContext): void {
 	if (shuttingDown) return;
 	lastActivityAt = Date.now();
 	lastActivityReason = reason;
-	if (latestContext) setStatus(latestContext, configuredIdleLimitMs);
+
+	// Session replacement can invalidate an event context while handlers from the
+	// old event are still draining. Activity tracking remains valid; its cosmetic
+	// status refresh can wait for the replacement session's session_start event.
+	try {
+		setStatus(ctx, configuredIdleLimitMs);
+	} catch (error: unknown) {
+		if (!isStaleContextError(error)) throw error;
+	}
 }
 
 function restorePinnedState(ctx: ExtensionContext): void {
