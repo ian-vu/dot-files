@@ -233,6 +233,22 @@ create_worktree_for_strategy() {
   esac
 }
 
+validate_existing_worktree() {
+  # A directory name alone is not proof of a reusable worktree: stale checkouts
+  # and slash-to-dash branch collisions must fail before setup changes files.
+  local existing_common_dir repo_common_dir existing_branch
+  existing_common_dir=$(git -C "$WORKTREE_PATH" rev-parse --path-format=absolute --git-common-dir 2>/dev/null) \
+    || die "path exists but is not a valid git worktree: $WORKTREE_PATH; move it aside or remove it, then retry"
+  repo_common_dir=$(git -C "$REPO_ROOT" rev-parse --path-format=absolute --git-common-dir)
+  [ "$existing_common_dir" = "$repo_common_dir" ] \
+    || die "path belongs to a different git repository: $WORKTREE_PATH"
+
+  existing_branch=$(git -C "$WORKTREE_PATH" symbolic-ref --quiet --short HEAD 2>/dev/null) \
+    || die "existing worktree is not on a branch: $WORKTREE_PATH"
+  [ "$existing_branch" = "$BRANCH" ] \
+    || die "existing worktree at $WORKTREE_PATH checks out '$existing_branch', not '$BRANCH'"
+}
+
 setup_files() {
   COPIED=0
   LINKED=0
@@ -428,6 +444,7 @@ worktrees_add_cmd() {
       CREATED=true
     fi
   else
+    validate_existing_worktree
     info "worktree already exists at $WORKTREE_PATH"
   fi
 
