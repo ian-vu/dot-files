@@ -70,6 +70,8 @@ CYAN = "\x1b[36m"
 WHITE = "\x1b[97m"
 ORANGE = "\x1b[38;2;255;150;108m"
 CURRENT_STYLE = "\x1b[1;38;2;27;29;43;48;2;130;170;255m"
+# Keep keyboard selection distinct from the blue current-session highlight.
+FOCUSED_STYLE = "\x1b[48;2;59;66;97m"
 PROMPT_STYLE = "\x1b[48;2;27;29;43m"
 MOUSE_ENABLE = "\x1b[?1000h\x1b[?1006h"
 MOUSE_DISABLE = "\x1b[?1006l\x1b[?1000l"
@@ -583,6 +585,14 @@ def build_rows(sessions):
     return rows
 
 
+def current_row_index(rows, current):
+    """Row index of the client's current session, or None if absent."""
+    for idx, (kind, sess, _label, _rail) in enumerate(rows):
+        if kind == "session" and sess.name == current:
+            return idx
+    return None
+
+
 def visible_len(text):
     """Terminal cell width, ignoring ANSI escapes."""
     plain = re.sub(r"\x1b\[[0-9;]*m", "", text)
@@ -722,10 +732,13 @@ def render(
 
         marker = "›" if focused else " "
         current_row = sess.name == current
-        row_style = CURRENT_STYLE if current_row else ""
+        themed_current = current_row and not focused
+        row_style = (
+            FOCUSED_STYLE if focused else CURRENT_STYLE if current_row else ""
+        )
         row_reset = RESET + row_style
         glyph = GLYPHS[sess.state]
-        glyph_style = "" if current_row else {
+        glyph_style = "" if themed_current else {
             "waiting": RED,
             "running": YELLOW,
             "done": GREEN,
@@ -733,18 +746,18 @@ def render(
         }[sess.state]
 
         elapsed_label = ""
-        elapsed_style = "" if current_row else DIM
+        elapsed_style = "" if themed_current else DIM
         if sess.state in ("running", "waiting") and sess.state_ts:
             elapsed = now - sess.state_ts
             elapsed_label = f"[~{format_elapsed(elapsed)}]"
             # An agent running/blocked past the alert threshold is stuck or
             # forgotten; make it loud without overriding the current-row theme.
-            if elapsed >= alert_secs and not current_row:
+            if elapsed >= alert_secs and not themed_current:
                 elapsed_style = RED
         elif sess.state == "done" and sess.state_ts:
             elapsed_label = f"[{format_elapsed(now - sess.state_ts)} ago]"
 
-        indent_style = "" if current_row else DIM
+        indent_style = "" if themed_current else DIM
         indent = f"{indent_style}{rail}{row_reset} " if rail else ""
         # Keep the state before the session name and align age at the right edge.
         prefix_cells = 2 + (2 if rail else 0)  # marker+space (+rail+space)
@@ -764,7 +777,7 @@ def render(
 
         # Match the theme's active window with bold dark text. Other agent rows
         # use a solid white name, while idle rows recede until selected.
-        if current_row:
+        if themed_current:
             name_style = ""
         elif focused:
             name_style = (WHITE if sess.state != "idle" else "") + BOLD
@@ -773,7 +786,7 @@ def render(
         else:
             name_style = WHITE
 
-        marker_style = ("" if current_row else CYAN) + (BOLD if focused else "")
+        marker_style = ("" if themed_current else CYAN) + (BOLD if focused else "")
         line = f"{row_style}{marker_style}{marker}{row_reset} {indent}"
         if glyph:
             line += f"{glyph_style}{glyph}{row_reset} "
@@ -783,7 +796,7 @@ def render(
             gap = max(suffix_gap, width - right_margin - suffix_cells - line_cells)
             line += f"{' ' * gap}{elapsed_style}{elapsed_label}{row_reset}"
             line_cells += gap + suffix_cells
-        if current_row:
+        if current_row or focused:
             line += " " * max(0, width - line_cells)
         lines.append(line + RESET)
 
@@ -1037,7 +1050,14 @@ def main():
                         sessions, current, counts, focused_panes, visible_windows = snapshot
                         have_snapshot = True
                 rows = build_rows(sessions)
+                was_focused = focused_pane
                 focused_pane = own_pane in focused_panes
+                # Entering the sidebar should start the cursor on the current
+                # session, not wherever it was left last time.
+                if focused_pane and not was_focused:
+                    idx = current_row_index(rows, current)
+                    if idx is not None:
+                        focus_idx = idx
                 next_poll = now + cfg["tick_seconds"]
 
             resized[0] = False
@@ -1084,8 +1104,14 @@ def main():
             if key is None:
                 continue
             # Any keypress implies the pane has focus; reflect it immediately
-            # instead of waiting up to a full tick for the next poll.
-            focused_pane = True
+            # instead of waiting up to a full tick for the next poll. On this
+            # transition, also snap the cursor to the current session so the
+            # first key operates from there.
+            if not focused_pane:
+                focused_pane = True
+                idx = current_row_index(rows, current)
+                if idx is not None:
+                    focus_idx = idx
             keys = cfg["keys"]
 
             if pending_kill is not None:
