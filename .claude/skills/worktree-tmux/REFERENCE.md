@@ -1,47 +1,38 @@
 # `wt` Reference
 
-Full command catalog, metadata schema, and edge cases for the worktree-tmux
-skill. `wt` lives at `~/.local/bin/wt` (stowed from `~/dot-files/.local/bin/wt`,
-modules in `~/.config/ivu/wt/*.bash`).
+`wt` lives at `~/.local/bin/wt`, stowed from `~/dot-files/.local/bin/wt`. Its
+modules live in `~/.config/ivu/wt/*.bash`.
 
-## Command catalog
+## Commands
 
-### `wt root [path]`
-Print the main repo root, resolving linked worktrees back to their source repo.
-Use this to normalize a path inside a worktree to the main repo root before
-calling `wt worktrees add --repo`.
+### Repository and branch discovery
 
-### `wt repos`
-Cached repo discovery under `~/dev` (configurable via `--dev-dir`).
-- `list [--dev-dir DIR] [--format plain|fzf|json]` — print cached repos. `fzf` includes pin markers.
-- `refresh [--dev-dir DIR]` — rescan and update the cache.
-- `pin list` — pinned repo paths in picker order.
-- `pin toggle <repo>` — pin/unpin a repo path relative to the dev dir.
+- `wt root [path]` - resolve a checkout or linked worktree to its main repository root.
+- `wt repos list [--dev-dir DIR] [--format plain|fzf|json]` - scan for repositories. `fzf` output includes pin markers.
+- `wt repos pin list` - list pinned repository paths.
+- `wt repos pin toggle <repo>` - pin or unpin a path relative to the dev directory.
+- `wt branches [--repo PATH] [--fetch] [--format plain|json]` - list deduplicated local and remote branches. Plain `--fetch` prints known branches before fetching, then appends newly found branches.
 
-### `wt branches [--fetch]`
-List local + remote branches, deduplicated and picker-friendly. `--fetch`
-prints current branches immediately, then appends newly fetched ones.
+### Worktrees
 
-### `wt worktrees`
-- `list [--repo PATH] [--merged] [--format plain|fzf|json]`
-  - `json`: `[{worktree_dir, branch, merged, worktree_path}]`
-  - `fzf`: merged worktrees get a `✓ ` prefix marker.
-  - `--merged` filters to merged branches only.
-- `add <branch|pr-url> [--session NAME] [--base REF] [--fetch] [--repo PATH] [--format text|json]`
-  - Creates/sets up a worktree using `.ivu.yml` (`copy_paths`, `symlinks`).
-  - Branch slashes → dashes in the worktree dir name (`feat/auth` → `feat-auth`).
-  - `--base REF`: create from an explicit base (local ref, `origin/<branch>`, or a remote branch name that gets fetched). Defaults to `origin/<base_branch>` for new branches.
-  - `--session NAME`: pass-through tmux session-name override (validated: no whitespace, no `:`). Does not affect git setup.
-  - `--fetch`: refresh remote refs first. Existing local branches already fast-forward to origin by default; `--fetch` only matters for branches with no cached remote-tracking ref.
-  - PR URL (`https://github.com/owner/repo/pull/123`): resolved to head branch via `gh`. Cross-repo PRs add a `pr-<owner>` remote and fetch the head ref.
-  - `--format json`: emit full metadata (see schema below). `--format text` (default): print the worktree path only.
-- `rm <worktree-dir-or-path> [--repo PATH]` — remove a worktree and prune stale git metadata. Accepts a dir name (resolved under the worktree root), or an absolute/`~`-prefixed path.
+- `wt worktrees list [--repo PATH] [--merged] [--format plain|fzf|json]`
+  - JSON fields: `worktree_dir`, `branch`, `merged`, `worktree_path`.
+  - `--merged` returns only worktrees whose branch content is merged into the configured base.
+- `wt worktrees add <branch|pr-url> [--session NAME] [--base REF] [--fetch] [--repo PATH] [--format text|json]`
+  - Branch slashes become dashes in the worktree directory.
+  - `--session NAME` passes a tmux session override through JSON metadata. Names cannot contain whitespace or `:`.
+  - `--base REF` creates a new branch from a local ref, `origin/<branch>`, or a branch fetched from origin.
+  - Existing local branches fast-forward to `origin/<branch>` only when the local branch is an ancestor; diverged local commits are preserved.
+  - A GitHub PR URL is resolved through `gh`. Fork PRs add a `pr-<owner>` remote and create a local branch from the fetched head.
+  - Text output is the worktree path; JSON output contains the full metadata below.
+- `wt worktrees rm <worktree-dir-or-path> [--repo PATH]`
+  - A name resolves under the configured worktree root.
+  - Absolute and `~/`-prefixed paths are accepted.
+  - Removal prunes stale git worktree metadata.
 
-### `wt config`
-- `init [--repo PATH]` — create `.ivu.yml` from `~/.config/ivu/template.yml` if missing.
-- `get <key> [--repo PATH]` — read a key under `worktree.*` from repo config.
+## Add metadata
 
-## `wt worktrees add --format json` metadata schema
+`wt worktrees add <branch> --format json` returns:
 
 ```json
 {
@@ -64,63 +55,60 @@ prints current branches immediately, then appends newly fetched ones.
 }
 ```
 
-| Field | Meaning |
-| --- | --- |
-| `repo_root` | Main repo root (source of the worktree). |
-| `repo_safe_name` | Repo basename sanitized for session names (`.`/`:` → `-`). |
-| `worktree_dir` | Worktree directory name (branch slashes → dashes). |
-| `worktree_path` | Absolute path to the worktree. Use as tmux session cwd. |
-| `worktree_root` | Raw `dir` config value (the configured worktree container). |
-| `session_name` | Explicit tmux session name if `--session` was passed, else `""`. |
-| `startup_cmd` | Command to run in the first pane (from `.ivu.yml`). |
-| `suppress_tmux_startup_hook` | If true, skip the default git session layout (nvim + lazygit + shell). |
-| `created` | Whether the worktree dir was newly created this run. |
-| `config_created` | Whether `.ivu.yml` was auto-created from the template this run. |
-| `copied` / `linked` | Counts of `copy_paths` / `symlinks` applied. |
-| `base_source` / `base_ref` | Present only when `--base` was used. |
+`base_source` and `base_ref` appear only with `--base`. If `session_name` is
+empty, derive it as `<repo_safe_name>/wt/<worktree_dir>`.
 
-### Session name derivation
-- If `session_name` is non-empty, use it verbatim.
-- Otherwise: `<repo_safe_name>/wt/<worktree_dir>`.
+## `.ivu.yml`
 
-## `.ivu.yml` reference
-
-Per-repo config at the repo root (`.ivu.yml` or `.ivu.yaml`). Template:
-`~/.config/ivu/template.yml`. Read via `yq` under the `worktree.*` key.
+The config is `.ivu.yml` or `.ivu.yaml` at the main repository root. A missing
+config is copied from `~/.config/ivu/template.yml` by the first worktree add.
 
 ```yaml
 worktree:
-  dir: ~/.worktrees        # relative → anchored to repo root; ~ or / → shared root nested under repo name
-  base_branch:            # auto-detected from origin/HEAD when empty (main/master/develop)
-  copy_paths:             # files copied (independent per worktree)
+  dir: ~/.worktrees
+  base_branch:
+  copy_paths:
     # - .env
-  symlinks:               # files/dirs symlinked (stay in sync with main repo)
+  symlinks:
     - .claude/settings.local.json
     - .pi/settings.json
-  startup_cmd: ""         # run in the first tmux pane via send-keys
-  suppress_tmux_startup_hook: true   # true → skip default nvim+lazygit+shell layout
+  startup_cmd: ""
+  suppress_tmux_startup_hook: true
 ```
 
-`dir` resolution:
-- Relative (`dir: .worktrees`) → `<repo_root>/<dir>/<worktree_dir>`.
-- `~/`-prefixed (`dir: ~/.worktrees`) → `~/.worktrees/<repo_safe_name>/<worktree_dir>`.
-- Absolute (`dir: /srv/wt`) → `/srv/wt/<repo_safe_name>/<worktree_dir>`.
+Path resolution:
 
-Shared roots nest under `repo_safe_name` so multiple repos sharing one root
-don't collide. Relative roots also add the worktree container to
-`.git/info/exclude` so it stays out of `git status`.
+- Relative `dir` → `<repo_root>/<dir>/<worktree_dir>`
+- `~/`-prefixed `dir` → `<expanded_dir>/<repo_safe_name>/<worktree_dir>`
+- Absolute `dir` → `<dir>/<repo_safe_name>/<worktree_dir>`
+
+Relative worktree containers are added to `.git/info/exclude`. `copy_paths` are
+independent copies; `symlinks` point back to the main checkout.
+
+## Tmux lifecycle
+
+For headless or agent-driven use:
+
+- Create sessions with `tmux new-session -d`.
+- Add `-P -F '#{pane_id}'` and send `startup_cmd` to the returned pane ID.
+- Prefix session targets with `=` for exact matching, such as `tmux has-session -t "=$SESSION"`.
+- Set `TMUX_NO_STARTUP_HOOK=1` on `tmux new-session` when metadata says `suppress_tmux_startup_hook: true`.
+- Do not switch the client unless requested.
+
+The interactive `prefix + w` popup dispatches to `tmux_worktree_add` and
+`tmux_worktree_rm`. The add wrapper creates or replaces the session and then
+switches the active client.
 
 ## Edge cases
 
-- **Branch already checked out elsewhere**: `wt` reuses the existing checkout instead of erroring, and skips file setup for it. `created` will be `false`.
-- **Stale worktree record**: if a worktree dir is gone (e.g. removed via LazyGit), `wt` prunes it before creating.
-- **Stale tmux session with missing cwd**: when reusing a session whose pane cwd no longer exists, replace the session (rename to `<session>-stale-$$`, create fresh, kill stale) so tools like lazygit don't panic on git refresh.
-- **Forked PR**: `wt` adds a `pr-<fork_owner>` remote and fetches the head ref, then creates a local tracking branch so the standard local strategy applies.
-- **`tmux send-keys` target**: target a **pane id**, not a bare session name, when the session name contains slashes — tmux treats an exact slash-containing session target ambiguously. Capture the pane id from `tmux new-session -d -P -F '#{pane_id}'`.
-- **Interactive human path**: `prefix + w` opens the `tmux_worktree` floating popup (`~/.config/tmux/bin/worktree/tmux_worktree`), which dispatches to `tmux_worktree_add` / `tmux_worktree_rm`. Those scripts own the spinner, stale-session replacement, and `switch-client`. Prefer them only when you want the full interactive lifecycle; for agent/headless use, drive `wt` + `tmux new-session -d` directly.
+- A branch already checked out elsewhere is reused. File setup is skipped and `created` is false.
+- A missing checkout recorded by git is pruned before recreation.
+- An existing target directory is accepted only when it is a worktree for the same repository and requested branch. Non-worktree directories, other repositories, detached heads, and slash-to-dash branch collisions fail before file setup.
+- Existing local branches are never force-updated when they have diverged from origin.
+- An existing tmux session is replaced when the worktree was recreated or a pane working directory disappeared.
+- Custom session names cannot be derived during removal, so match sessions by `#{session_path}` before also checking the default name.
 
-## Dependency requirements
+## Dependencies
 
-`wt` shells out to: `git`, `yq` (config parsing), `python3` (JSON emit/parse),
-`gh` (PR URL resolution), `fzf` (interactive pickers). Ensure these are on
-`PATH` (or `~/.local/bin/wt` falls back to `wt` from `PATH`).
+The core CLI requires `git` and `python3`. Configured repositories require `yq`.
+PR URLs require `gh`. The interactive tmux popup requires `tmux` and `fzf`.
