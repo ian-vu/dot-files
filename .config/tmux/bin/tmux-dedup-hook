@@ -9,23 +9,46 @@
 # fragile (collides if the set of preceding hooks changes). Appending after
 # dedup is order-independent and self-cleaning on reload.
 #
-# Usage: tmux-dedup-hook <hook-name> <marker>
-#   <hook-name>  tmux hook, e.g. session-created
-#   <marker>     literal substring identifying our entries (e.g. sessions/save.sh)
+# Usage: tmux-dedup-hook [--window] <hook-name> <marker>
+#   --window    inspect global window hooks instead of global server/session hooks
+#   <hook-name> tmux hook, e.g. session-created
+#   <marker>    literal substring identifying our entries (e.g. sessions/save.sh)
 
 set -eu
+
+SCOPE=global
+if [ "${1:-}" = "--window" ]; then
+  SCOPE=window
+  shift
+fi
 
 hook="$1"
 marker="$2"
 
+show_hooks() {
+  if [ "$SCOPE" = "window" ]; then
+    tmux show-hooks -gw
+  else
+    tmux show-hooks -g
+  fi
+}
+
+unset_hook() {
+  if [ "$SCOPE" = "window" ]; then
+    tmux set-hook -guw "$1"
+  else
+    tmux set-hook -gu "$1"
+  fi
+}
+
 # show-hooks prints `name[idx] command`. Filter to our hook + marker, extract
 # the index, then unset each from the highest down so removals don't renumber
 # lower indices we still have to remove.
-tmux show-hooks -g 2>/dev/null \
+show_hooks 2>/dev/null \
   | grep -F "$marker" \
   | grep -E "^${hook}\[[0-9]+\]" \
   | sed -E "s|^${hook}\[([0-9]+)\].*|\1|" \
   | sort -rn \
   | while read -r idx; do
-      tmux set-hook -gu "${hook}[${idx}]"
+      unset_hook "${hook}[${idx}]"
     done
