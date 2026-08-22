@@ -68,7 +68,9 @@ GREEN = "\x1b[32m"
 YELLOW = "\x1b[33m"
 CYAN = "\x1b[36m"
 WHITE = "\x1b[97m"
+ORANGE = "\x1b[38;2;255;150;108m"
 CURRENT_STYLE = "\x1b[1;38;2;27;29;43;48;2;130;170;255m"
+PROMPT_STYLE = "\x1b[48;2;27;29;43m"
 MOUSE_ENABLE = "\x1b[?1000h\x1b[?1006h"
 MOUSE_DISABLE = "\x1b[?1006l\x1b[?1000l"
 
@@ -608,11 +610,64 @@ def truncate(name, limit):
     return "".join(result) + "…"
 
 
-def render(rows, current, counts, focus_idx, cfg, width, height, resize_width):
-    """resize_width is the in-progress resize target, or None outside
-    resize mode (it drives the footer's width indicator). focus_idx is None
-    when the sidebar pane itself is not focused: the › marker only makes
-    sense while keys actually reach this pane."""
+def prompt_box(title, message, hint, width):
+    """Build an orange floating prompt sized to the sidebar pane."""
+    box_width = max(2, width - 2)
+    inner_width = box_width - 2
+
+    def content(text, style=""):
+        side_padding = 1 if inner_width >= 2 else 0
+        text_width = max(0, inner_width - side_padding * 2)
+        text = truncate(text, text_width)
+        trailing = " " * max(0, text_width - visible_len(text) + side_padding)
+        return (
+            f"{PROMPT_STYLE}{ORANGE}│{RESET}"
+            f"{PROMPT_STYLE}{style}{' ' * side_padding}{text}{trailing}{RESET}"
+            f"{PROMPT_STYLE}{ORANGE}│{RESET}"
+        )
+
+    horizontal = "─" * inner_width
+    return [
+        f"{PROMPT_STYLE}{ORANGE}╭{horizontal}╮{RESET}",
+        content(title, BOLD + WHITE),
+        content(message, WHITE),
+        content(hint, DIM + WHITE),
+        f"{PROMPT_STYLE}{ORANGE}╰{horizontal}╯{RESET}",
+    ]
+
+
+def overlay_prompt(lines, box, width):
+    """Center a prompt over rendered content without leaving stale cells."""
+    if not lines:
+        return lines
+    visible_box = box[: len(lines)]
+    top = max(0, (len(lines) - len(visible_box)) // 2)
+    box_width = visible_len(visible_box[0])
+    left = max(0, (width - box_width) // 2)
+    right = max(0, width - left - box_width)
+    for offset, box_line in enumerate(visible_box):
+        lines[top + offset] = f"{' ' * left}{box_line}{' ' * right}"
+    return lines
+
+
+def render(
+    rows,
+    current,
+    counts,
+    focus_idx,
+    cfg,
+    width,
+    height,
+    resize_width,
+    confirm_session,
+):
+    """Render the sidebar, including any active resize or kill prompt.
+
+    resize_width is the in-progress resize target, or None outside resize
+    mode. confirm_session is the session awaiting a y/n kill response.
+    focus_idx is None when the sidebar pane itself is not focused: the ›
+    marker only makes sense while keys actually reach this pane.
+    """
     resize_mode = resize_width is not None
     alert_secs = cfg["elapsed_alert_minutes"] * 60
     now = time.time()
@@ -732,22 +787,17 @@ def render(rows, current, counts, focus_idx, cfg, width, height, resize_width):
             line += " " * max(0, width - line_cells)
         lines.append(line + RESET)
 
-    # Footer pinned to the bottom. In resize mode it becomes a small inline
-    # width indicator instead of a popup: ←/→ nudge one column at a time.
-    # Truncate it to the pane width so it cannot wrap and scroll the header off
-    # the top of a narrow sidebar.
+    # Keep the normal controls pinned to the bottom. Active interactions are
+    # drawn as floating prompts over the content instead of hiding in this
+    # narrow footer.
     keys = cfg["keys"]
     footer_rule = f"{DIM}{'─' * max(0, width - 2)}{RESET}"
-    if resize_mode:
-        footer_text = f" width {resize_width}  ←/→ adjust  ⏎ done"
-        footer = f" {YELLOW}{truncate(footer_text, max(0, width - 1))}{RESET}"
-    else:
-        footer_text = (
-            f" click/⏎ go  {keys['down']}/{keys['up']} move  "
-            f"{keys['kill']} kill  {keys['clear']} clear  "
-            f"{keys['resize']} width  {keys['quit']} quit"
-        )
-        footer = f"{DIM}{truncate(footer_text, max(0, width - 1))}{RESET}"
+    footer_text = (
+        f" click/⏎ go  {keys['down']}/{keys['up']} move  "
+        f"{keys['kill']} kill  {keys['clear']} clear  "
+        f"{keys['resize']} width  {keys['quit']} quit"
+    )
+    footer = f"{DIM}{truncate(footer_text, max(0, width - 1))}{RESET}"
 
     # Reserve the header and footer before clipping session rows. This keeps
     # the header visible even when a very short pane cannot fit a session row.
@@ -760,6 +810,29 @@ def render(rows, current, counts, focus_idx, cfg, width, height, resize_width):
         content = lines[1 : 1 + content_height]
         content.extend([""] * (content_height - len(content)))
         lines = [lines[0], *content, f" {footer_rule}", footer]
+
+    if confirm_session is not None:
+        lines = overlay_prompt(
+            lines,
+            prompt_box(
+                "Kill session?",
+                confirm_session,
+                "y confirm · n/Esc cancel",
+                width,
+            ),
+            width,
+        )
+    elif resize_mode:
+        lines = overlay_prompt(
+            lines,
+            prompt_box(
+                "Resize sidebar",
+                f"Width: {resize_width}",
+                "←/→ adjust · Enter/Esc done",
+                width,
+            ),
+            width,
+        )
 
     # Home, then each line followed by clear-to-eol. No newline after the last
     # line: writing past the bottom row would scroll the frame up by one.
@@ -928,6 +1001,7 @@ def main():
     # observed terminal size lags resize-pane by a frame; reading it back per
     # keypress would make rapid ←/→ presses fight the previous resize.
     resize_width = None
+    pending_kill = None
     is_collector = False
     try:
         tty.setcbreak(fd)
@@ -1001,6 +1075,7 @@ def main():
                     terminal_width(cfg),
                     terminal_height(),
                     resize_width if resize_mode else None,
+                    pending_kill,
                 )
                 sys.stdout.write(frame)
                 sys.stdout.flush()
@@ -1012,6 +1087,16 @@ def main():
             # instead of waiting up to a full tick for the next poll.
             focused_pane = True
             keys = cfg["keys"]
+
+            if pending_kill is not None:
+                response = key.lower() if isinstance(key, str) else key
+                if response == "y":
+                    kill_session(pending_kill)
+                    pending_kill = None
+                    next_poll = 0.0
+                elif response in ("n", "escape"):
+                    pending_kill = None
+                continue
 
             if isinstance(key, tuple) and key[0] == "mouse-down":
                 # Screen rows are one-based: two header lines place rows[0]
@@ -1047,8 +1132,7 @@ def main():
             elif key == keys["kill"] and session_indices:
                 row = rows[focus_idx]
                 if row[0] == "session":
-                    kill_session(row[1].name)
-                    next_poll = 0.0
+                    pending_kill = row[1].name
             elif key == keys["clear"]:
                 # Reset the current (client-active) session's symbols when they
                 # are wrong, then re-poll so the sidebar redraws immediately.
