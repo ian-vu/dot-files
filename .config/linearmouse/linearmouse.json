@@ -1,0 +1,89 @@
+{
+  "$schema" : "https:\/\/schema.linearmouse.app\/0.11.4",
+  "schemes" : [
+    {
+      "buttons" : {
+        "mappings" : [
+          {
+            "action" : "mouse.button.back",
+            "button" : 3,
+            "command" : false,
+            "control" : false,
+            "option" : false,
+            "shift" : false
+          },
+          {
+            "action" : "mouse.button.left",
+            "button" : 4,
+            "command" : false,
+            "control" : false,
+            "option" : false,
+            "shift" : false
+          }
+        ]
+      },
+      "if" : {
+        "device" : {
+          "category" : "mouse",
+          "productID" : "0x2041",
+          "productName" : "Kensington Slimblade Trackball",
+          "vendorID" : "0x47d"
+        }
+      },
+      "pointer" : {
+        "acceleration" : 3,
+        "speed" : 0.13
+      },
+      "scrolling" : {
+        "acceleration" : {
+          "vertical" : 2.2
+        },
+        "speed" : {
+          "vertical" : 10
+        }
+      }
+    },
+    {
+      "if" : {
+        "device" : {
+          "category" : "trackpad",
+          "productID" : "0x0",
+          "productName" : "Apple Internal Keyboard \/ Trackpad",
+          "serialNumber" : "FM7HBZ0AYGW0000DZU+ALEM",
+          "vendorID" : "0x0"
+        }
+      },
+      "scrolling" : {
+        "acceleration" : {
+          "vertical" : 1
+        }
+      }
+    },
+    {
+      "buttons" : {
+        "mappings" : [
+          {
+            "action" : "mouse.button.left",
+            "button" : 4,
+            "command" : false,
+            "control" : false,
+            "option" : false,
+            "shift" : false
+          }
+        ]
+      },
+      "if" : {
+        "device" : {
+          "category" : "mouse",
+          "productID" : "0x133",
+          "productName" : "DEFT Pro TrackBall",
+          "serialNumber" : "56CAFA2BBF9B",
+          "vendorID" : "0x56e"
+        }
+      },
+      "pointer" : {
+        "speed" : 0.062
+      }
+    }
+  ]
+}
