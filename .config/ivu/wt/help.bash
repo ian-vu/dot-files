@@ -52,14 +52,14 @@ usage() {
   cmd_doc 'branches [--fetch]' 'List local + remote branches, deduplicated and picker-friendly.'
   cmd_doc 'worktrees' 'List, create/setup, or remove git worktrees using .ivu config.'
   subcmd_doc 'list [--repo PATH] [--merged] [--format plain|fzf|json]' 'List worktree directories.'
-  subcmd_doc 'add <branch|pr-url> [--session NAME] [--base REF] [--fetch] [--repo PATH] [--format text|json]' 'Create/setup a worktree. Existing branches fast-forward to origin; --fetch also discovers branches never fetched locally.'
+  subcmd_doc 'add <branch|pr-url> [--session NAME] [--base REF] [--fetch] [--repo PATH] [--format text|json]' 'Create/setup a worktree. New branches fetch the latest origin base; --fetch also discovers branches never fetched locally.'
   subcmd_doc 'rm <worktree-dir-or-path> [--repo PATH]' 'Remove a worktree.'
   cmd_doc 'config' 'Create or read .ivu.yml/.ivu.yaml worktree settings.'
   subcmd_doc 'init [--repo PATH]' 'Create .ivu.yml from the template if needed.'
   subcmd_doc 'get <key> [--repo PATH]' 'Read a key under worktree.* from repo config.'
 
   section "Common examples"
-  cmd_doc 'wt worktrees add feat/auth' 'Create/setup a worktree for feat/auth, fast-forwarding the branch to origin first.'
+  cmd_doc 'wt worktrees add feat/auth' 'Create/setup feat/auth, fetching the configured origin base first when the branch is new.'
   cmd_doc 'wt worktrees add feat/auth --fetch' 'Also fetch to discover feat/auth when no cached remote-tracking ref exists yet.'
   cmd_doc 'wt worktrees add feat/auth --base release/1.2' 'Create feat/auth from local release/1.2, or origin/release/1.2 if local is missing.'
   cmd_doc 'wt worktrees add feat/auth --session auth-fix --format json' 'Include a tmux session-name override for wrappers while keeping git setup unchanged.'
@@ -92,7 +92,7 @@ help_branches() {
 help_worktrees() {
   section "wt worktrees"
   cmd_doc 'wt worktrees list [--repo PATH] [--merged] [--format plain|fzf|json]' 'List worktree directories and optional merge status.'
-  cmd_doc 'wt worktrees add <branch|pr-url> [--session NAME] [--base REF] [--fetch] [--repo PATH] [--format text|json]' 'Create/setup a worktree using .ivu config, copy_paths, and symlinks. Existing local branches fast-forward to origin so the worktree reflects the latest pushed commit; --fetch additionally discovers branches with no cached remote-tracking ref. A GitHub PR url is resolved to its head branch via gh (forks add a remote). --session passes a tmux session-name override through JSON metadata.'
+  cmd_doc 'wt worktrees add <branch|pr-url> [--session NAME] [--base REF] [--fetch] [--repo PATH] [--format text|json]' 'Create/setup a worktree using .ivu config, copy_paths, and symlinks. New branches fetch the configured origin base before creation. Existing local branches fast-forward to origin when safe; --fetch additionally discovers branches with no cached remote-tracking ref. A GitHub PR url is resolved to its head branch via gh (forks add a remote). --session passes a tmux session-name override through JSON metadata.'
   cmd_doc 'wt worktrees rm <worktree-dir-or-path> [--repo PATH]' 'Remove a worktree and prune stale git metadata.'
 }
 

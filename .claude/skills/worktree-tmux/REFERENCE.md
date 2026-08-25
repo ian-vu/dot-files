@@ -21,6 +21,7 @@ modules live in `~/.config/ivu/wt/*.bash`.
 - `wt worktrees add <branch|pr-url> [--session NAME] [--base REF] [--fetch] [--repo PATH] [--format text|json]`
   - Branch slashes become dashes in the worktree directory.
   - `--session NAME` passes a tmux session override through JSON metadata. Names cannot contain whitespace or `:`.
+  - New branches fetch the configured base from origin and start from the refreshed `origin/<base_branch>` ref.
   - `--base REF` creates a new branch from a local ref, `origin/<branch>`, or a branch fetched from origin.
   - Existing local branches fast-forward to `origin/<branch>` only when the local branch is an ancestor; diverged local commits are preserved.
   - A GitHub PR URL is resolved through `gh`. Fork PRs add a `pr-<owner>` remote and create a local branch from the fetched head.

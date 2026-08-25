@@ -206,12 +206,10 @@ fetch_for_strategy() {
       git -C "$REPO_ROOT" fetch origin "$BRANCH" --quiet || true
       ;;
     new)
-      # New branches need a local origin/<base> commit. Avoid the network when
-      # the base ref is cached, unless the caller explicitly asked to refresh.
-      if [ "${FETCH_BEFORE_ADD:-false}" = true ] \
-        || ! git -C "$REPO_ROOT" rev-parse --verify --quiet "origin/$BASE_BRANCH^{commit}" >/dev/null; then
-        git -C "$REPO_ROOT" fetch origin "$BASE_BRANCH" --quiet || true
-      fi
+      # Refresh the configured base before creating a branch so origin/<base>
+      # represents the latest pushed commit rather than a cached local ref.
+      git -C "$REPO_ROOT" fetch origin "$BASE_BRANCH" --quiet \
+        || die "failed to fetch base branch: origin/$BASE_BRANCH"
       ;;
   esac
 }
@@ -430,12 +428,7 @@ worktrees_add_cmd() {
           explicit_base) info "resolving base '$BASE_SOURCE'" ;;
           local_with_remote) info "fast-forwarding '$BRANCH' to origin" ;;
           remote) info "fetching '$BRANCH' from origin" ;;
-          new)
-            if [ "${FETCH_BEFORE_ADD:-false}" = true ] \
-              || ! git -C "$REPO_ROOT" rev-parse --verify --quiet "origin/$BASE_BRANCH^{commit}" >/dev/null; then
-              info "fetching base '$BASE_BRANCH'"
-            fi
-            ;;
+          new) info "fetching base '$BASE_BRANCH'" ;;
         esac
         fetch_for_strategy
       fi
