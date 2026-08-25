@@ -528,9 +528,9 @@ def build_rows(sessions):
     Row: (kind, session_or_None, label, rail) where kind is "session",
     "group", or "spacer" (blank gap line between every row; inside a group
     the spacer carries the │ rail so the group still reads connected). A group
-    renders only when >=2 sessions share a repo root AND at least one is a
-    linked worktree - two plain sessions that happen to sit in the same repo
-    stay separate rows. Inside a group, the repo's own session - the
+    renders whenever it contains a linked worktree, including a lone worktree;
+    plain sessions that happen to sit in the same repo stay separate rows.
+    Inside a group, the repo's own session - the
     non-worktree one whose name matches the repo directory - renders as
     "root" (the header already carries the repo name); other sessions that
     merely have their cwd in the main checkout keep their names. Grouped
@@ -551,11 +551,7 @@ def build_rows(sessions):
 
     for sess in sessions:
         members = group_members.get(sess.group) if sess.group else None
-        grouped = (
-            members
-            and len(members) >= 2
-            and any(m.is_worktree for m in members)
-        )
+        grouped = members and any(m.is_worktree for m in members)
         if grouped:
             if sess.group in emitted_groups:
                 continue
