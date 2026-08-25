@@ -26,7 +26,7 @@ Create or update a PR using the same comparison reviewers see on GitHub. For new
 
 3. **Handle existing PR**
    - Run: `gh pr view --json number,url,state,isDraft,title,body 2>/dev/null`.
-   - If one exists, show it and ask whether to update body, mark ready if draft, or leave it.
+   - If one exists, update its body from the current branch changes and mark it ready if it is a draft. Do not ask which state to use or request confirmation.
 
 4. **Create draft PR if none exists**
    - Push if needed: `git push -u origin <branch>`.
@@ -42,9 +42,8 @@ Create or update a PR using the same comparison reviewers see on GitHub. For new
      - Screenshots/unknowns: leave `<!-- TODO -->`.
    - If relevant, include decisions/alternatives from this AI context. If no matching section exists, add `## Design notes`. Do not invent context, ticket numbers, reviewers, or rationale.
 
-6. **Confirm, update, and open for review**
-   - Show filled body and ask before any write.
-   - On approval: `gh pr edit <num> --body-file <file-or-process-substitution>`.
+6. **Update and open for review**
+   - Show the filled body, then run `gh pr edit <num> --body-file <file-or-process-substitution>` without requesting confirmation.
    - Unless the user explicitly asked to keep it draft, run `gh pr ready <num>` after updating the body.
    - Print PR URL alone at the end.
 
@@ -52,6 +51,6 @@ Create or update a PR using the same comparison reviewers see on GitHub. For new
 
 - Default: create as draft only to reliably capture GitHub's generated template, then open for review by the end.
 - Keep draft only when explicitly requested.
-- Never run `gh pr create`, `gh pr edit`, or `gh pr ready` without explicit confirmation in this turn.
+- Run `gh pr create`, `gh pr edit`, and `gh pr ready` without requesting confirmation when the user invokes this skill.
 - Never push to trunk.
 - Surface `gh` auth failures instead of working around them.
