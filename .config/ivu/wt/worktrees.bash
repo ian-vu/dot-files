@@ -206,10 +206,17 @@ fetch_for_strategy() {
       git -C "$REPO_ROOT" fetch origin "$BRANCH" --quiet || true
       ;;
     new)
-      # Refresh the configured base before creating a branch so origin/<base>
-      # represents the latest pushed commit rather than a cached local ref.
-      git -C "$REPO_ROOT" fetch origin "$BASE_BRANCH" --quiet \
-        || die "failed to fetch base branch: origin/$BASE_BRANCH"
+      if [ "$LOCAL_BASE" = true ]; then
+        # The tmux workflow creates immediately from the local base and syncs the
+        # new branch after its session starts, so the popup does not wait on I/O.
+        git -C "$REPO_ROOT" rev-parse --verify --quiet "$BASE_BRANCH^{commit}" >/dev/null \
+          || die "local base branch not found: $BASE_BRANCH"
+      else
+        # Refresh the configured base before creating a branch so origin/<base>
+        # represents the latest pushed commit rather than a cached local ref.
+        git -C "$REPO_ROOT" fetch origin "$BASE_BRANCH" --quiet \
+          || die "failed to fetch base branch: origin/$BASE_BRANCH"
+      fi
       ;;
   esac
 }
@@ -226,7 +233,9 @@ create_worktree_for_strategy() {
       git -C "$REPO_ROOT" worktree add "$WORKTREE_PATH" -b "$BRANCH" --track "origin/$BRANCH" --quiet
       ;;
     new)
-      git -C "$REPO_ROOT" worktree add "$WORKTREE_PATH" -b "$BRANCH" --no-track "origin/$BASE_BRANCH" --quiet
+      local base_ref="origin/$BASE_BRANCH"
+      [ "$LOCAL_BASE" = true ] && base_ref="$BASE_BRANCH"
+      git -C "$REPO_ROOT" worktree add "$WORKTREE_PATH" -b "$BRANCH" --no-track "$base_ref" --quiet
       ;;
   esac
 }
@@ -287,6 +296,7 @@ emit_add_json() {
   WORKTREE_DIR_VALUE="$WORKTREE_DIR" WORKTREE_PATH_VALUE="$WORKTREE_PATH" RAW_WT_DIR_VALUE="$RAW_WT_DIR" \
   STARTUP_CMD_VALUE="$STARTUP_CMD" SUPPRESS_VALUE="$SUPPRESS_TMUX_STARTUP_HOOK" BASE_BRANCH_VALUE="$BASE_BRANCH" \
   BASE_SOURCE_VALUE="${BASE_SOURCE:-}" BASE_REF_VALUE="${BASE_REF:-}" SESSION_NAME_VALUE="${SESSION_NAME:-}" \
+  BASE_SYNC_PENDING_VALUE="$BASE_SYNC_PENDING" BASE_SYNC_BRANCH_VALUE="$BASE_SYNC_BRANCH" \
   python3 -c 'import json, os
 payload = {
   "repo_root": os.environ["REPO_ROOT_VALUE"],
@@ -299,6 +309,8 @@ payload = {
   "startup_cmd": os.environ["STARTUP_CMD_VALUE"],
   "suppress_tmux_startup_hook": os.environ["SUPPRESS_VALUE"].lower() == "true",
   "session_name": os.environ["SESSION_NAME_VALUE"],
+  "base_sync_pending": os.environ["BASE_SYNC_PENDING_VALUE"] == "true",
+  "base_sync_branch": os.environ["BASE_SYNC_BRANCH_VALUE"],
   "created": os.environ["CREATED_VALUE"] == "true",
   "config_created": os.environ["CONFIG_CREATED_VALUE"] == "true",
   "copied": int(os.environ["COPIED_VALUE"]),
@@ -345,6 +357,7 @@ worktrees_add_cmd() {
   BASE_REF=""
   SESSION_NAME=""
   FETCH_BEFORE_ADD=false
+  LOCAL_BASE=false
   [ $# -gt 0 ] || die "branch required"
   BRANCH="$1"; shift
   while [ $# -gt 0 ]; do
@@ -354,6 +367,7 @@ worktrees_add_cmd() {
       --base) BASE_SOURCE="${2:-}"; [ -n "$BASE_SOURCE" ] || die "--base requires a ref"; shift 2 ;;
       --session|--session-name) SESSION_NAME="${2:-}"; [ -n "$SESSION_NAME" ] || die "$1 requires a name"; shift 2 ;;
       --fetch) FETCH_BEFORE_ADD=true; shift ;;
+      --local-base) LOCAL_BASE=true; shift ;;
       *) die "unknown worktrees add option: $1" ;;
     esac
   done
@@ -366,6 +380,7 @@ worktrees_add_cmd() {
   SESSION_NAME="${SESSION_NAME%"${SESSION_NAME##*[![:space:]]}"}"
   [ -n "$BRANCH" ] || die "branch required"
   [ -z "$SESSION_NAME" ] || validate_session_name "$SESSION_NAME"
+  [ -z "$BASE_SOURCE" ] || [ "$LOCAL_BASE" = false ] || die "--local-base cannot be combined with --base"
   reject_unsupported_url_input "$BRANCH"
   case "$BRANCH" in
     https://github.com/*/pull/*|http://github.com/*/pull/*) ;;
@@ -399,6 +414,8 @@ worktrees_add_cmd() {
   CREATED=false
   COPIED=0
   LINKED=0
+  BASE_SYNC_PENDING=false
+  BASE_SYNC_BRANCH=""
   local expected_worktree_path="$WORKTREE_PATH" existing_checkout="" should_setup_files=true
 
   info "preparing worktree '$BRANCH'"
@@ -428,7 +445,15 @@ worktrees_add_cmd() {
           explicit_base) info "resolving base '$BASE_SOURCE'" ;;
           local_with_remote) info "fast-forwarding '$BRANCH' to origin" ;;
           remote) info "fetching '$BRANCH' from origin" ;;
-          new) info "fetching base '$BASE_BRANCH'" ;;
+          new)
+            if [ "$LOCAL_BASE" = true ]; then
+              info "using local base '$BASE_BRANCH' (fetch deferred to session)"
+              BASE_SYNC_PENDING=true
+              BASE_SYNC_BRANCH="$BASE_BRANCH"
+            else
+              info "fetching base '$BASE_BRANCH'"
+            fi
+            ;;
         esac
         fetch_for_strategy
       fi

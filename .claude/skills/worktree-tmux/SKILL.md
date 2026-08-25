@@ -27,12 +27,21 @@ wt worktrees add <branch|pr-url> [--session NAME] [--base REF] \
   [--fetch] [--repo PATH] --format json
 ```
 
+The interactive tmux wrapper adds `--local-base` so new worktrees are created
+from the cached local base immediately. It fetches and merges `origin/<base>` in
+the new session before running `startup_cmd`.
+
+```bash
+wt worktrees add <branch|pr-url> --local-base --format json
+```
+
 Read these fields from the JSON:
 
 - `worktree_path`: tmux working directory
 - `repo_safe_name` and `worktree_dir`: default session name
 - `session_name`: optional override
 - `startup_cmd` and `suppress_tmux_startup_hook`: session setup
+- `base_sync_pending` and `base_sync_branch`: deferred base synchronization requested by `--local-base`
 - `created`: whether this invocation created the worktree
 
 Before creating a tmux session:
@@ -41,7 +50,8 @@ Before creating a tmux session:
 2. If `created` is true, replace an exact-name stale session.
 3. Also replace a session if any of its pane working directories no longer exists.
 4. Create the replacement detached from `worktree_path`.
-5. Send a non-empty `startup_cmd` to the captured pane ID.
+5. If `base_sync_pending` is true, send `git fetch origin <base_sync_branch> && git merge --no-edit origin/<base_sync_branch>` to the captured pane ID.
+6. Send a non-empty `startup_cmd` to the captured pane ID.
 
 For a GitHub PR:
 

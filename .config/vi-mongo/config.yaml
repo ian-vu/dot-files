@@ -1,35 +1,35 @@
 version: v0.2.1
 log:
-  path: /tmp/vi-mongo.log
-  level: info
-  prettyPrint: true
+    path: /tmp/vi-mongo.log
+    level: info
+    prettyPrint: true
 editor:
-  command: nvim
-  env: EDITOR
+    command: nvim
+    env: EDITOR
 ui:
-  databasePanelWidth: 30
+    databasePanelWidth: 30
 showConnectionPage: true
 showWelcomePage: false
 currentConnection: local
 connections:
-  - url: mongodb://localhost:27017/
-    host: localhost
-    port: 27017
-    database: ""
-    username: ""
-    password: ""
-    name: local
-    timeout: 5
-    options: {}
-  - url: mongodb://pl-0-ap-southeast-2.x2gdr.mongodb.net:1027,pl-0-ap-southeast-2.x2gdr.mongodb.net:1028,pl-0-ap-southeast-2.x2gdr.mongodb.net:1029/?ssl=true&replicaSet=atlas-7uikz7-shard-0&authMechanism=MONGODB-OIDC
-    host: pl-0-ap-southeast-2.x2gdr.mongodb.net
-    port: 1027
-    database: ""
-    username: ""
-    password: ""
-    name: staging au
-    timeout: 5
-    options: {}
+    - url: mongodb://localhost:27017/
+      host: localhost
+      port: 27017
+      database: ""
+      username: ""
+      password: ""
+      name: local
+      timeout: 5
+      options: {}
+    - url: mongodb://pl-0-ap-southeast-2.x2gdr.mongodb.net:1027,pl-0-ap-southeast-2.x2gdr.mongodb.net:1028,pl-0-ap-southeast-2.x2gdr.mongodb.net:1029/?ssl=true&replicaSet=atlas-7uikz7-shard-0&authMechanism=MONGODB-OIDC
+      host: pl-0-ap-southeast-2.x2gdr.mongodb.net
+      port: 1027
+      database: ""
+      username: ""
+      password: ""
+      name: staging au
+      timeout: 5
+      options: {}
 styles:
-  betterSymbols: true
-  currentStyle: dark-blue.yaml
+    betterSymbols: true
+    currentStyle: dark-blue.yaml

@@ -108,7 +108,7 @@ complete_options() {
     repos-refresh) printf '%s\n' '--dev-dir:repository search root' ;;
     branches) printf '%s\n' '--repo:repository path' '--fetch:fetch before listing' '--format:output format' ;;
     worktrees-list) printf '%s\n' '--repo:repository path' '--merged:only merged worktrees' '--format:output format' ;;
-    worktrees-add) printf '%s\n' '--base:base ref for new branch' '--session:tmux session name override' '--session-name:tmux session name override' '--fetch:refresh refs before adding' '--repo:repository path' '--format:output format' ;;
+    worktrees-add) printf '%s\n' '--base:base ref for new branch' '--session:tmux session name override' '--session-name:tmux session name override' '--fetch:refresh refs before adding' '--local-base:create from local base and defer sync' '--repo:repository path' '--format:output format' ;;
     worktrees-rm) printf '%s\n' '--repo:repository path' ;;
     config) printf '%s\n' '--repo:repository path' ;;
   esac

@@ -9,7 +9,7 @@ Tmux UI for the reusable `wt` git worktree CLI. Bound to `prefix + w`.
 ```
 tmux_worktree (popup + picker loop)
   ├── mode: repo     → tmux_worktree_pick_repo → wt repos ...
-  ├── mode: branch   → wt branches → fzf → tmux_worktree_add → wt worktrees add → tmux session
+  ├── mode: branch   → wt branches → fzf → tmux_worktree_add → wt worktrees add --local-base → tmux session
   └── mode: worktree → wt worktrees list → fzf → tmux_worktree_rm → wt worktrees rm
 ```
 
@@ -18,7 +18,7 @@ tmux_worktree (popup + picker loop)
 | Script                         | Responsibility                                                                                                                                           |
 | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `tmux_worktree`                | Entry point. Opens popup, accepts optional direct input, runs picker loop. Owns all fzf UI and mode transitions. Dispatches to add/rm.                   |
-| `tmux_worktree_add`            | Tmux session wrapper. Calls `wt worktrees add --format json`, then creates/switches the tmux session. Accepts an optional session-name override. No fzf. |
+| `tmux_worktree_add`            | Tmux session wrapper. Calls `wt worktrees add --local-base --format json`, then creates/switches the tmux session. Accepts an optional session-name override. No fzf. |
 | `tmux_worktree_rm`             | Tmux removal wrapper. Kills the default session and any custom-named session rooted at the worktree path, then calls `wt worktrees rm`. No fzf.          |
 | `tmux_worktree_pick_repo`      | fzf repo picker backed by `wt repos list/refresh/pin`. Returns absolute path on stdout.                                                                  |
 | `tmux_worktree_list_branches`  | Compatibility wrapper around `wt branches`.                                                                                                              |
@@ -38,7 +38,8 @@ tmux_worktree (popup + picker loop)
 - Per-repo config lives in `.ivu.yml` or `.ivu.yaml` (see `~/.config/ivu/template.yml`). `wt` reads and initializes this file so tmux and non-tmux workflows share behavior.
 - Session names default to the `<repo>/wt/<worktree_dir>` convention parsed by `format-session.sh`; direct input or `wt worktrees add --session NAME --format json` can pass through an explicit session name.
 - `tmux_worktree` uses `exec` when handing off to `tmux_worktree_add` so the popup lifecycle (spinners, session switch) stays in one process.
-- `tmux_worktree_add` sends `startup_cmd` to the pane id returned by `tmux new-session`; this avoids tmux treating an exact session target as “no pane” and silently skipping the startup command.
+- `tmux_worktree_add` uses `wt worktrees add --local-base`, so new branches start from the cached local base without waiting for the network. After the session starts, it sends `git fetch origin <base> && git merge --no-edit origin/<base>` to the first pane before `startup_cmd`.
+- `tmux_worktree_add` sends commands to the pane id returned by `tmux new-session`; this avoids tmux treating an exact session target as “no pane” and silently skipping them.
 - Prefix+w opens the floating picker immediately. In branch mode, type a branch/PR URL, or type a session name followed by the branch/PR URL, then press Enter.
 - `tmux_worktree --pane-path PATH` is used by the tmux binding so repo detection follows the pane that launched the popup.
 - Tmux scripts prefer `~/.local/bin/wt` over `wt` from `PATH` so existing tmux servers keep working even if their environment is stale.

@@ -18,10 +18,10 @@ modules live in `~/.config/ivu/wt/*.bash`.
 - `wt worktrees list [--repo PATH] [--merged] [--format plain|fzf|json]`
   - JSON fields: `worktree_dir`, `branch`, `merged`, `worktree_path`.
   - `--merged` returns only worktrees whose branch content is merged into the configured base.
-- `wt worktrees add <branch|pr-url> [--session NAME] [--base REF] [--fetch] [--repo PATH] [--format text|json]`
+- `wt worktrees add <branch|pr-url> [--session NAME] [--base REF] [--fetch] [--local-base] [--repo PATH] [--format text|json]`
   - Branch slashes become dashes in the worktree directory.
   - `--session NAME` passes a tmux session override through JSON metadata. Names cannot contain whitespace or `:`.
-  - New branches fetch the configured base from origin and start from the refreshed `origin/<base_branch>` ref.
+  - New branches fetch the configured base from origin and start from the refreshed `origin/<base_branch>` ref. `--local-base` skips that fetch, starts from the local `<base_branch>`, and marks JSON metadata for a later synchronization.
   - `--base REF` creates a new branch from a local ref, `origin/<branch>`, or a branch fetched from origin.
   - Existing local branches fast-forward to `origin/<branch>` only when the local branch is an ancestor; diverged local commits are preserved.
   - A GitHub PR URL is resolved through `gh`. Fork PRs add a `pr-<owner>` remote and create a local branch from the fetched head.
@@ -47,6 +47,8 @@ modules live in `~/.config/ivu/wt/*.bash`.
   "startup_cmd": "",
   "suppress_tmux_startup_hook": true,
   "session_name": "",
+  "base_sync_pending": false,
+  "base_sync_branch": "",
   "created": true,
   "config_created": false,
   "copied": 0,
@@ -97,8 +99,9 @@ For headless or agent-driven use:
 - Do not switch the client unless requested.
 
 The interactive `prefix + w` popup dispatches to `tmux_worktree_add` and
-`tmux_worktree_rm`. The add wrapper creates or replaces the session and then
-switches the active client.
+`tmux_worktree_rm`. The add wrapper creates new branches from the local base,
+starts the session, fetches and merges `origin/<base_branch>` in its first pane,
+then switches the active client.
 
 ## Edge cases
 

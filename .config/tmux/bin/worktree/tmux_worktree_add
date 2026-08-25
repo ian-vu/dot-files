@@ -99,9 +99,9 @@ PY
 
 ensure_worktree() {
   if [ -n "$SESSION_OVERRIDE" ]; then
-    "$WT_BIN" worktrees add "$BRANCH" --repo "$REPO_ROOT" --format json --session "$SESSION_OVERRIDE" > "$META_FILE" || return 1
+    "$WT_BIN" worktrees add "$BRANCH" --repo "$REPO_ROOT" --format json --session "$SESSION_OVERRIDE" --local-base > "$META_FILE" || return 1
   else
-    "$WT_BIN" worktrees add "$BRANCH" --repo "$REPO_ROOT" --format json > "$META_FILE" || return 1
+    "$WT_BIN" worktrees add "$BRANCH" --repo "$REPO_ROOT" --format json --local-base > "$META_FILE" || return 1
   fi
   local path
   # Treat malformed wt metadata as a setup failure so the popup shows the real
@@ -124,6 +124,8 @@ WORKTREE_DIR=$(json_get worktree_dir)
 REPO_SAFE_NAME=$(json_get repo_safe_name)
 STARTUP_CMD=$(json_get startup_cmd)
 SUPPRESS_HOOK=$(json_get suppress_tmux_startup_hook)
+BASE_SYNC_PENDING=$(json_get base_sync_pending)
+BASE_SYNC_BRANCH=$(json_get base_sync_branch)
 CONFIG_CREATED=$(json_get config_created)
 CREATED=$(json_get created)
 SESSION=$(json_get session_name)
@@ -187,6 +189,22 @@ create_session() {
   if [ -z "$start_pane" ]; then
     echo "tmux did not return a startup pane for session: $SESSION" >&2
     return 1
+  fi
+
+  if [ "$BASE_SYNC_PENDING" = "true" ]; then
+    if [ -z "$BASE_SYNC_BRANCH" ]; then
+      echo "wt did not return base_sync_branch metadata" >&2
+      return 1
+    fi
+    local quoted_branch quoted_remote_ref
+    printf -v quoted_branch '%q' "$BASE_SYNC_BRANCH"
+    printf -v quoted_remote_ref '%q' "origin/$BASE_SYNC_BRANCH"
+    # Fetch after the session exists so worktree creation stays local and fast.
+    # The merge runs in the worktree branch and --no-edit avoids opening an
+    # editor when origin/base has moved ahead of the local base.
+    tmux send-keys -t "$start_pane" \
+      "git fetch origin $quoted_branch && git merge --no-edit $quoted_remote_ref" Enter \
+      || return 1
   fi
 
   if [ -n "$STARTUP_CMD" ]; then
