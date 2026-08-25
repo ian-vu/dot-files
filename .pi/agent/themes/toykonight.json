@@ -61,12 +61,12 @@
     "syntaxType": "cyan",
     "syntaxOperator": "magenta",
     "syntaxPunctuation": "fg_dark",
-    "thinkingOff": "fg_gutter",
-    "thinkingMinimal": "comment",
-    "thinkingLow": "cyan",
+    "thinkingOff": "blue",
+    "thinkingMinimal": "blue",
+    "thinkingLow": "blue",
     "thinkingMedium": "blue",
-    "thinkingHigh": "magenta",
-    "thinkingXhigh": "orange",
+    "thinkingHigh": "blue",
+    "thinkingXhigh": "blue",
     "bashMode": "orange"
   }
 }
