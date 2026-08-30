@@ -108,6 +108,15 @@ def tmux(*args):
         return None
 
 
+def pane_session_name(pane):
+    """Return the session containing `pane`, or an empty string on failure."""
+    if not pane:
+        return ""
+    return (
+        tmux("display-message", "-p", "-t", pane, "#{session_name}") or ""
+    ).strip()
+
+
 def switch_session(session):
     """Switch exactly to `session`, then focus its pane right of the sidebar."""
     tmux("switch-client", "-t", "=" + session)
@@ -252,27 +261,23 @@ def collect_pane_inventory():
 
 
 def collect_client_state():
-    """Return current session, focused panes, and client-visible windows."""
+    """Return focused panes and client-visible windows."""
     out = tmux(
         "list-clients",
         "-F",
-        "#{session_name}" + SEP + "#{pane_id}" + SEP + "#{window_id}",
+        "#{pane_id}" + SEP + "#{window_id}",
     )
-    current = ""
     focused_panes = set()
     visible_windows = set()
     for line in (out or "").splitlines():
-        fields = line.split(SEP, 2)
-        if len(fields) != 3:
+        pane_id, separator, window_id = line.partition(SEP)
+        if not separator:
             continue
-        session, pane_id, window_id = fields
-        if not current:
-            current = session
         if pane_id:
             focused_panes.add(pane_id)
         if window_id:
             visible_windows.add(window_id)
-    return current, focused_panes, visible_windows
+    return focused_panes, visible_windows
 
 
 # Worktree detection is cached because `git rev-parse` per session per tick
@@ -365,19 +370,17 @@ def collect():
         sess.group, sess.is_worktree = repo_info(sess.cwd)
         sessions.append(sess)
 
-    # Client state cannot be derived from this process's TMUX_PANE: that would
-    # make every renderer report its own session and focus.
-    current, focused_panes, visible_windows = collect_client_state()
+    focused_panes, visible_windows = collect_client_state()
     counts = {
         "running": sum(1 for s in sessions if s.state in ("running", "waiting")),
         "done": sum(1 for s in sessions if s.state == "done"),
     }
-    return sessions, current, counts, focused_panes, visible_windows
+    return sessions, counts, focused_panes, visible_windows
 
 
 def snapshot_payload(snapshot):
     """Convert a runtime snapshot to its versioned JSON representation."""
-    sessions, current, counts, focused_panes, visible_windows = snapshot
+    sessions, counts, focused_panes, visible_windows = snapshot
     return {
         "version": CACHE_VERSION,
         "collected_at": time.time(),
@@ -392,7 +395,6 @@ def snapshot_payload(snapshot):
             }
             for sess in sessions
         ],
-        "current": current,
         "counts": counts,
         "focused_panes": sorted(focused_panes),
         "visible_windows": sorted(visible_windows),
@@ -424,11 +426,10 @@ def snapshot_from_payload(payload):
         sess.is_worktree = bool(item.get("is_worktree", False))
         sessions.append(sess)
 
-    current = payload.get("current", "")
     counts = payload.get("counts", {})
     focused_panes = payload.get("focused_panes", [])
     visible_windows = payload.get("visible_windows", [])
-    if not isinstance(current, str) or not isinstance(counts, dict):
+    if not isinstance(counts, dict):
         raise ValueError("invalid collector state")
     if not all(isinstance(value, str) for value in focused_panes):
         raise ValueError("invalid focused panes")
@@ -438,7 +439,7 @@ def snapshot_from_payload(payload):
         "running": int(counts.get("running", 0)),
         "done": int(counts.get("done", 0)),
     }
-    return sessions, current, normalized_counts, set(focused_panes), set(visible_windows)
+    return sessions, normalized_counts, set(focused_panes), set(visible_windows)
 
 
 def open_collector_lock():
@@ -582,7 +583,7 @@ def build_rows(sessions):
 
 
 def current_row_index(rows, current):
-    """Row index of the client's current session, or None if absent."""
+    """Row index of this sidebar's session, or None if absent."""
     for idx, (kind, sess, _label, _rail) in enumerate(rows):
         if kind == "session" and sess.name == current:
             return idx
@@ -973,11 +974,15 @@ def main():
     # client's *current* pane, which is the user's pane, not this one.
     own_pane = os.environ.get("TMUX_PANE")
     own_window = ""
+    own_session = ""
     if own_pane:
         tmux("select-pane", "-t", own_pane, "-T", "tmux-sidebar")
         own_window = (
             tmux("display-message", "-p", "-t", own_pane, "#{window_id}") or ""
         ).strip()
+        # A sidebar belongs to its window's session, so its highlighted row is
+        # local and stable rather than whichever client the collector saw first.
+        own_session = pane_session_name(own_pane)
 
     if not sys.stdin.isatty():
         print("tmux-sidebar must run inside a tmux pane", file=sys.stderr)
@@ -1023,7 +1028,7 @@ def main():
         next_poll = 0.0
         have_snapshot = False
         focused_pane = False
-        sessions, current, counts = [], "", {"running": 0, "done": 0}
+        sessions, counts = [], {"running": 0, "done": 0}
         focused_panes, visible_windows = set(), set()
         while True:
             now = time.time()
@@ -1032,7 +1037,7 @@ def main():
                     is_collector = try_claim_collector(lock_fd)
                 if is_collector:
                     snapshot = collect()
-                    sessions, current, counts, focused_panes, visible_windows = snapshot
+                    sessions, counts, focused_panes, visible_windows = snapshot
                     have_snapshot = True
                     try:
                         publish_snapshot(snapshot)
@@ -1043,15 +1048,22 @@ def main():
                 else:
                     snapshot = read_snapshot()
                     if snapshot is not None:
-                        sessions, current, counts, focused_panes, visible_windows = snapshot
+                        sessions, counts, focused_panes, visible_windows = snapshot
                         have_snapshot = True
+                session_names = {session.name for session in sessions}
+                if own_session not in session_names:
+                    # Refresh only after a rename/removal or an initial lookup
+                    # failure; normal session switches need no highlight update.
+                    refreshed_session = pane_session_name(own_pane)
+                    if refreshed_session:
+                        own_session = refreshed_session
                 rows = build_rows(sessions)
                 was_focused = focused_pane
                 focused_pane = own_pane in focused_panes
                 # Entering the sidebar should start the cursor on the current
                 # session, not wherever it was left last time.
                 if focused_pane and not was_focused:
-                    idx = current_row_index(rows, current)
+                    idx = current_row_index(rows, own_session)
                     if idx is not None:
                         focus_idx = idx
                 next_poll = now + cfg["tick_seconds"]
@@ -1082,7 +1094,7 @@ def main():
             if is_visible:
                 frame = render(
                     rows,
-                    current,
+                    own_session,
                     counts,
                     # Hide the › marker while the pane is unfocused - a persistent
                     # cursor row in every sidebar is noise when keys don't reach it.
@@ -1105,7 +1117,7 @@ def main():
             # first key operates from there.
             if not focused_pane:
                 focused_pane = True
-                idx = current_row_index(rows, current)
+                idx = current_row_index(rows, own_session)
                 if idx is not None:
                     focus_idx = idx
             keys = cfg["keys"]
@@ -1156,9 +1168,9 @@ def main():
                 if row[0] == "session":
                     pending_kill = row[1].name
             elif key == keys["clear"]:
-                # Reset the current (client-active) session's symbols when they
-                # are wrong, then re-poll so the sidebar redraws immediately.
-                clear_session_status(current)
+                # Reset this sidebar's session symbols when they are wrong,
+                # then re-poll so the sidebar redraws immediately.
+                clear_session_status(own_session)
                 next_poll = 0.0
             elif key == keys["down"] and session_indices:
                 later = [i for i in session_indices if i > focus_idx]
