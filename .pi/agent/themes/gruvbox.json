@@ -63,13 +63,13 @@
     "syntaxType": "aqua",
     "syntaxOperator": "orange",
     "syntaxPunctuation": "comment",
-    "thinkingOff": "fg_gutter",
-    "thinkingMinimal": "comment",
-    "thinkingLow": "aqua",
+    "thinkingOff": "blue",
+    "thinkingMinimal": "blue",
+    "thinkingLow": "blue",
     "thinkingMedium": "blue",
-    "thinkingHigh": "yellow",
-    "thinkingXhigh": "orange",
-    "thinkingMax": "red",
+    "thinkingHigh": "blue",
+    "thinkingXhigh": "blue",
+    "thinkingMax": "blue",
     "bashMode": "orange"
   }
 }

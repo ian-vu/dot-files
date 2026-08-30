@@ -75,19 +75,24 @@ function formatModelName(id: string | undefined): string {
 }
 
 function thinkingColor(level: string): ThemeColor {
+  // Keep Pi's thinking* theme tokens reserved for the editor borders. The
+  // footer uses these existing palette tokens so its label can vary without
+  // making the borders above and below the prompt vary with it.
   switch (level) {
     case "off":
-      return "thinkingOff";
+      return "dim";
     case "minimal":
-      return "thinkingMinimal";
+      return "muted";
     case "low":
-      return "thinkingLow";
+      return "mdListBullet";
     case "medium":
-      return "thinkingMedium";
+      return "toolTitle";
     case "high":
-      return "thinkingHigh";
+      return "syntaxKeyword";
     case "xhigh":
-      return "thinkingXhigh";
+      return "syntaxVariable";
+    case "max":
+      return "error";
     default:
       return "thinkingText";
   }
