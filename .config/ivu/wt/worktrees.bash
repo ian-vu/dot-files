@@ -115,6 +115,42 @@ remote_tracking_branch_exists() {
   git -C "$REPO_ROOT" show-ref --verify --quiet "refs/remotes/origin/$branch"
 }
 
+fetch_pr_head() {
+  local remote_ref="$PR_SOURCE_REF" fetched_oid
+  # A PR URL identifies a commit, not just a branch name. Refresh the source
+  # branch and verify that it still points at the commit gh resolved.
+  git -C "$REPO_ROOT" fetch "$PR_SOURCE_REMOTE" "$BRANCH" --quiet \
+    || die "failed to fetch PR branch '$BRANCH' from $PR_SOURCE_REMOTE"
+  fetched_oid=$(git -C "$REPO_ROOT" rev-parse --verify --quiet "$remote_ref^{commit}") \
+    || die "fetched PR branch is unavailable: $remote_ref"
+  [ "$fetched_oid" = "$PR_HEAD_OID" ] \
+    || die "PR head changed while fetching $BRANCH; paste the URL again"
+}
+
+sync_local_pr_branch_to_head() {
+  local local_oid
+  local_oid=$(git -C "$REPO_ROOT" rev-parse --verify --quiet "refs/heads/$BRANCH") \
+    || return 0
+  [ "$local_oid" = "$PR_HEAD_OID" ] && return 0
+  git -C "$REPO_ROOT" merge-base --is-ancestor "$local_oid" "$PR_HEAD_OID" \
+    || die "local branch '$BRANCH' diverges from the pasted PR URL"
+  git -C "$REPO_ROOT" branch -f "$BRANCH" "$PR_HEAD_OID" \
+    || die "cannot fast-forward local branch '$BRANCH' to the pasted PR URL"
+}
+
+sync_pr_worktree_to_head() {
+  local current_oid
+  current_oid=$(git -C "$WORKTREE_PATH" rev-parse --verify --quiet HEAD) \
+    || die "cannot read worktree HEAD: $WORKTREE_PATH"
+  [ "$current_oid" = "$PR_HEAD_OID" ] && return 0
+  [ -z "$(git -C "$WORKTREE_PATH" status --porcelain)" ] \
+    || die "worktree '$WORKTREE_PATH' has changes and is behind the pasted PR URL"
+  git -C "$WORKTREE_PATH" merge-base --is-ancestor "$current_oid" "$PR_HEAD_OID" \
+    || die "worktree '$WORKTREE_PATH' diverges from the pasted PR URL"
+  git -C "$WORKTREE_PATH" merge --ff-only "$PR_HEAD_OID" --quiet \
+    || die "cannot fast-forward worktree to the pasted PR URL"
+}
+
 checked_out_worktree_path_for_branch() {
   local branch="$1" target line path=""
   target="refs/heads/$branch"
@@ -322,16 +358,47 @@ if os.environ["BASE_SOURCE_VALUE"]:
 print(json.dumps(payload))'
 }
 
+github_repo_slug_from_remote() {
+  local remote="$1" path=""
+  case "$remote" in
+    git@github.com:*) path="${remote#git@github.com:}" ;;
+    ssh://git@github.com/*) path="${remote#ssh://git@github.com/}" ;;
+    https://github.com/*|http://github.com/*) path="${remote#*github.com/}" ;;
+    *) return 1 ;;
+  esac
+  path="${path%.git}"
+  path="${path%/}"
+  printf '%s\n' "$path"
+}
+
+validate_pr_repo() {
+  local url="$1" url_repo origin_url origin_repo
+  url_repo="${url#*github.com/}"
+  url_repo="${url_repo%%/pull/*}"
+  origin_url=$(git -C "$REPO_ROOT" remote get-url origin 2>/dev/null || true)
+  origin_repo=$(github_repo_slug_from_remote "$origin_url" || true)
+  if [ -n "$origin_repo" ] && [ "$url_repo" != "$origin_repo" ]; then
+    die "PR URL repository '$url_repo' does not match origin '$origin_repo'"
+  fi
+}
+
 # Resolve a GitHub PR URL (e.g. https://github.com/owner/repo/pull/123 or .../pull/123/files)
-# to the head branch name via gh. For cross-repository PRs (forks), register a remote and
+# to the exact head commit via gh. For cross-repository PRs (forks), register a remote and
 # fetch the head ref so the regular branch strategy can find it.
 resolve_pr_url() {
   local url="$1"
   require_cmd gh
-  local json head_ref is_cross fork_owner fork_repo
-  json=$(gh pr view "$url" --json headRefName,isCrossRepository,headRepositoryOwner,headRepository 2>/dev/null) \
+  validate_pr_repo "$url"
+  local json head_ref head_oid is_cross fork_owner fork_repo
+  json=$(gh pr view "$url" --json headRefName,headRefOid,isCrossRepository,headRepositoryOwner,headRepository 2>/dev/null) \
     || die "failed to resolve PR url via gh: $url"
   head_ref=$(printf '%s' "$json" | python3 -c 'import json,sys;print(json.load(sys.stdin)["headRefName"])')
+  head_oid=$(printf '%s' "$json" | python3 -c 'import json,sys;print(json.load(sys.stdin)["headRefOid"])')
+  [ -n "$head_ref" ] || die "could not resolve branch from PR url: $url"
+  [ -n "$head_oid" ] || die "could not resolve commit from PR url: $url"
+  PR_HEAD_OID="$head_oid"
+  PR_SOURCE_REMOTE="origin"
+  PR_SOURCE_REF="origin/$head_ref"
   is_cross=$(printf '%s' "$json" | python3 -c 'import json,sys;print("true" if json.load(sys.stdin)["isCrossRepository"] else "false")')
   if [ "$is_cross" = true ]; then
     fork_owner=$(printf '%s' "$json" | python3 -c 'import json,sys;print(json.load(sys.stdin)["headRepositoryOwner"]["login"])')
@@ -341,14 +408,10 @@ resolve_pr_url() {
       info "adding fork remote '$remote' for $fork_owner/$fork_repo"
       git -C "$REPO_ROOT" remote add "$remote" "https://github.com/$fork_owner/$fork_repo.git"
     fi
-    info "fetching $head_ref from $remote"
-    git -C "$REPO_ROOT" fetch "$remote" "$head_ref" --quiet || die "failed to fetch $head_ref from $remote"
-    # Create a local tracking branch so the standard local strategy picks it up.
-    if ! git -C "$REPO_ROOT" show-ref --verify --quiet "refs/heads/$head_ref"; then
-      git -C "$REPO_ROOT" branch "$head_ref" "$remote/$head_ref" >/dev/null 2>&1 || true
-    fi
+    PR_SOURCE_REMOTE="$remote"
+    PR_SOURCE_REF="$remote/$head_ref"
   fi
-  printf '%s\n' "$head_ref"
+  BRANCH="$head_ref"
 }
 
 worktrees_add_cmd() {
@@ -378,6 +441,9 @@ worktrees_add_cmd() {
   BASE_SOURCE="${BASE_SOURCE%"${BASE_SOURCE##*[![:space:]]}"}"
   SESSION_NAME="${SESSION_NAME#"${SESSION_NAME%%[![:space:]]*}"}"
   SESSION_NAME="${SESSION_NAME%"${SESSION_NAME##*[![:space:]]}"}"
+  PR_HEAD_OID=""
+  PR_SOURCE_REMOTE=""
+  PR_SOURCE_REF=""
   [ -n "$BRANCH" ] || die "branch required"
   [ -z "$SESSION_NAME" ] || validate_session_name "$SESSION_NAME"
   [ -z "$BASE_SOURCE" ] || [ "$LOCAL_BASE" = false ] || die "--local-base cannot be combined with --base"
@@ -398,10 +464,17 @@ worktrees_add_cmd() {
   case "$BRANCH" in
     https://github.com/*/pull/*|http://github.com/*/pull/*)
       info "resolving PR url via gh"
-      BRANCH=$(resolve_pr_url "$BRANCH")
-      [ -n "$BRANCH" ] || die "could not resolve branch from PR url"
+      resolve_pr_url "$BRANCH"
       validate_branch_name "$BRANCH"
-      info "resolved to branch '$BRANCH'"
+      fetch_pr_head
+      if [ "$PR_SOURCE_REMOTE" != origin ] \
+        && ! git -C "$REPO_ROOT" show-ref --verify --quiet "refs/heads/$BRANCH"; then
+        # Fork PRs need a local branch so the regular worktree strategy can
+        # create the checkout from the fork head instead of the base branch.
+        git -C "$REPO_ROOT" branch "$BRANCH" "$PR_SOURCE_REF" \
+          || die "failed to create local branch for PR URL: $BRANCH"
+      fi
+      info "resolved to branch '$BRANCH' at $PR_HEAD_OID"
       ;;
     *)
       validate_branch_name "$BRANCH"
@@ -434,6 +507,9 @@ worktrees_add_cmd() {
       info "branch already checked out at $WORKTREE_PATH"
     else
       prepare_worktree_parent
+      if [ -n "$PR_HEAD_OID" ]; then
+        sync_local_pr_branch_to_head
+      fi
       info "resolving branch strategy"
       if [ -n "$BASE_SOURCE" ]; then
         STRATEGY="explicit_base"
@@ -464,6 +540,10 @@ worktrees_add_cmd() {
   else
     validate_existing_worktree
     info "worktree already exists at $WORKTREE_PATH"
+  fi
+
+  if [ -n "$PR_HEAD_OID" ]; then
+    sync_pr_worktree_to_head
   fi
 
   if [ "$should_setup_files" = true ]; then

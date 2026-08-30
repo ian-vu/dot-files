@@ -150,6 +150,12 @@ session_has_missing_cwd() {
   return 1
 }
 
+session_has_wrong_root() {
+  local session_path
+  session_path=$(tmux display-message -p -t "$1" -F '#{session_path}' 2>/dev/null || true)
+  [ -n "$session_path" ] && [ "$session_path" != "$WORKTREE_PATH" ]
+}
+
 replace_existing_session() {
   local reason="$1"
   STALE_SESSION="$SESSION-stale-$$"
@@ -162,6 +168,8 @@ if tmux has-session -t "=$SESSION" 2>/dev/null; then
     replace_existing_session "worktree was recreated" || die "Failed to replace stale session"
   elif session_has_missing_cwd "$SESSION"; then
     replace_existing_session "pane cwd disappeared" || die "Failed to replace stale session"
+  elif session_has_wrong_root "$SESSION"; then
+    replace_existing_session "session root does not match worktree" || die "Failed to replace stale session"
   else
     printf "${GREEN}✓${RESET} Switching to %s\n" "$SESSION"
     sleep 0.3

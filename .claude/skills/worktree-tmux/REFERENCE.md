@@ -24,7 +24,7 @@ modules live in `~/.config/ivu/wt/*.bash`.
   - New branches fetch the configured base from origin and start from the refreshed `origin/<base_branch>` ref. `--local-base` skips that fetch, starts from the local `<base_branch>`, and marks JSON metadata for a later synchronization.
   - `--base REF` creates a new branch from a local ref, `origin/<branch>`, or a branch fetched from origin.
   - Existing local branches fast-forward to `origin/<branch>` only when the local branch is an ancestor; diverged local commits are preserved.
-  - A GitHub PR URL is resolved through `gh`. Fork PRs add a `pr-<owner>` remote and create a local branch from the fetched head.
+  - A GitHub PR URL is resolved through `gh` to its exact head commit. Existing clean PR worktrees fast-forward to that commit; fork PRs add a `pr-<owner>` remote and create a local branch from the fetched head.
   - Text output is the worktree path; JSON output contains the full metadata below.
 - `wt worktrees rm <worktree-dir-or-path> [--repo PATH]`
   - A name resolves under the configured worktree root.
@@ -108,8 +108,8 @@ then switches the active client.
 - A branch already checked out elsewhere is reused. File setup is skipped and `created` is false.
 - A missing checkout recorded by git is pruned before recreation.
 - An existing target directory is accepted only when it is a worktree for the same repository and requested branch. Non-worktree directories, other repositories, detached heads, and slash-to-dash branch collisions fail before file setup.
-- Existing local branches are never force-updated when they have diverged from origin.
-- An existing tmux session is replaced when the worktree was recreated or a pane working directory disappeared.
+- Existing local branches are never force-updated when they have diverged from origin. PR URL requests fail instead of reusing a diverged or dirty worktree.
+- An existing tmux session is replaced when the worktree was recreated, its session root does not match, or a pane working directory disappeared.
 - Custom session names cannot be derived during removal, so match sessions by `#{session_path}` before also checking the default name.
 
 ## Dependencies

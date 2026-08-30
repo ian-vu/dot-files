@@ -93,7 +93,7 @@ help_branches() {
 help_worktrees() {
   section "wt worktrees"
   cmd_doc 'wt worktrees list [--repo PATH] [--merged] [--format plain|fzf|json]' 'List worktree directories and optional merge status.'
-  cmd_doc 'wt worktrees add <branch|pr-url> [--session NAME] [--base REF] [--fetch] [--local-base] [--repo PATH] [--format text|json]' 'Create/setup a worktree using .ivu config, copy_paths, and symlinks. New branches fetch the configured origin base before creation; --local-base uses the local base and marks the JSON metadata for a later sync. Existing local branches fast-forward to origin when safe; --fetch additionally discovers branches with no cached remote-tracking ref. A GitHub PR url is resolved to its head branch via gh (forks add a remote). --session passes a tmux session-name override through JSON metadata.'
+  cmd_doc 'wt worktrees add <branch|pr-url> [--session NAME] [--base REF] [--fetch] [--local-base] [--repo PATH] [--format text|json]' 'Create/setup a worktree using .ivu config, copy_paths, and symlinks. New branches fetch the configured origin base before creation; --local-base uses the local base and marks the JSON metadata for a later sync. Existing local branches fast-forward to origin when safe; --fetch additionally discovers branches with no cached remote-tracking ref. A GitHub PR URL is resolved to its exact head commit via gh (forks add a remote); existing clean PR worktrees fast-forward to that commit. --session passes a tmux session-name override through JSON metadata.'
   cmd_doc 'wt worktrees rm <worktree-dir-or-path> [--repo PATH]' 'Remove a worktree and prune stale git metadata.'
 }
 

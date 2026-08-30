@@ -46,9 +46,9 @@ Read these fields from the JSON:
 
 Before creating a tmux session:
 
-1. If the exact session exists and `created` is false, leave it running; switch only if requested.
+1. If the exact session exists and `created` is false, reuse it only when its session root matches `worktree_path`.
 2. If `created` is true, replace an exact-name stale session.
-3. Also replace a session if any of its pane working directories no longer exists.
+3. Also replace a session if its root does not match `worktree_path` or any pane working directory no longer exists.
 4. Create the replacement detached from `worktree_path`.
 5. If `base_sync_pending` is true, send `git fetch origin <base_sync_branch> && git merge --no-edit origin/<base_sync_branch>` to the captured pane ID.
 6. Send a non-empty `startup_cmd` to the captured pane ID.
@@ -59,7 +59,7 @@ For a GitHub PR:
 wt worktrees add https://github.com/owner/repo/pull/123 --format json
 ```
 
-`wt` resolves the head branch with `gh`; fork PRs get a `pr-<owner>` remote.
+`wt` resolves the exact head commit with `gh`; existing clean PR worktrees fast-forward to it, and fork PRs get a `pr-<owner>` remote.
 
 ## List and remove worktrees
 

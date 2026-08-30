@@ -38,7 +38,9 @@ tmux_worktree (popup + picker loop)
 - Per-repo config lives in `.ivu.yml` or `.ivu.yaml` (see `~/.config/ivu/template.yml`). `wt` reads and initializes this file so tmux and non-tmux workflows share behavior.
 - Session names default to the `<repo>/wt/<worktree_dir>` convention parsed by `format-session.sh`; direct input or `wt worktrees add --session NAME --format json` can pass through an explicit session name.
 - `tmux_worktree` uses `exec` when handing off to `tmux_worktree_add` so the popup lifecycle (spinners, session switch) stays in one process.
+- An existing tmux session is reused only when its session root matches the resolved worktree path; stale sessions are replaced.
 - `tmux_worktree_add` uses `wt worktrees add --local-base`, so new branches start from the cached local base without waiting for the network. After the session starts, it sends `git fetch origin <base> && git merge --no-edit origin/<base>` to the first pane before `startup_cmd`.
+- Pasted PR URLs are resolved to the exact `gh` head commit. Existing clean worktrees are fast-forwarded to that commit; dirty or diverged worktrees fail instead of silently opening the wrong code.
 - `tmux_worktree_add` sends commands to the pane id returned by `tmux new-session`; this avoids tmux treating an exact session target as “no pane” and silently skipping them.
 - Prefix+w opens the floating picker immediately. In branch mode, type a branch/PR URL, or type a session name followed by the branch/PR URL, then press Enter.
 - `tmux_worktree --pane-path PATH` is used by the tmux binding so repo detection follows the pane that launched the popup.
