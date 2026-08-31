@@ -66,6 +66,7 @@ BOLD = "\x1b[1m"
 RED = "\x1b[31m"
 GREEN = "\x1b[32m"
 YELLOW = "\x1b[33m"
+GLYPH_STYLES = {"waiting": RED, "running": YELLOW, "done": GREEN, "idle": DIM}
 CYAN = "\x1b[36m"
 WHITE = "\x1b[97m"
 ORANGE = "\x1b[38;2;255;150;108m"
@@ -722,9 +723,11 @@ def render(
                 child_states.append(s2.state)
             agg = max(child_states, key=lambda s: STATE_PRIORITY[s], default="idle")
             glyph = GLYPHS[agg]
-            prefix = f"{glyph} " if glyph else ""
-            name = truncate(label, width - 3 - visible_len(prefix))
-            lines.append(f"  {DIM}{prefix}{name}{RESET}")
+            prefix_width = visible_len(glyph) + 1 if glyph else 0
+            name = truncate(label, width - 3 - prefix_width)
+            lines.append(
+                f"  {GLYPH_STYLES[agg]}{glyph}{RESET} {DIM}{name}{RESET}"
+            )
             continue
 
         marker = "›" if focused else " "
@@ -735,12 +738,7 @@ def render(
         )
         row_reset = RESET + row_style
         glyph = GLYPHS[sess.state]
-        glyph_style = "" if themed_current else {
-            "waiting": RED,
-            "running": YELLOW,
-            "done": GREEN,
-            "idle": DIM,
-        }[sess.state]
+        glyph_style = "" if themed_current else GLYPH_STYLES[sess.state]
 
         elapsed_label = ""
         elapsed_style = "" if themed_current else DIM
