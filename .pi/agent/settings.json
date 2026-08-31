@@ -3,14 +3,15 @@
   "defaultProvider": "openai-codex",
   "defaultModel": "gpt-5.6-luna",
   "defaultThinkingLevel": "high",
+  "modelThinkingLevels": {
+    "openai-codex/gpt-5.6-sol": "high",
+    "openai-codex/gpt-5.6-terra": "xhigh",
+    "openrouter/moonshotai/kimi-k3": "medium",
+    "openrouter/anthropic/claude-fable-5": "high"
+  },
   "showHardwareCursor": true,
   "enableInstallTelemetry": false,
-  "npmCommand": [
-    "mise",
-    "exec",
-    "--",
-    "npm"
-  ],
+  "npmCommand": ["mise", "exec", "--", "npm"],
   "doubleEscapeAction": "tree",
   "theme": "toykonight",
   "editorPaddingX": 1,
@@ -27,14 +28,17 @@
     "npm:@tintinweb/pi-subagents",
     "git:github.com/MasuRii/pi-tool-display"
   ],
-  "hideThinkingBlock": true,
+  "hideThinkingBlock": false,
   "markdown": {
     "codeBlockIndent": " "
   },
   "treeFilterMode": "no-tools",
   "enabledModels": [
-    "openai-codex/gpt-5.6-sol:high",
+    "openai-codex/gpt-5.6-sol",
     "openrouter/anthropic/claude-fable-5",
-    "openai-codex/gpt-5.6-terra:xhigh"
+    "openai-codex/gpt-5.6-terra",
+    "openrouter/moonshotai/kimi-k3",
+    "openrouter/z-ai/glm-5.3"
   ]
 }
+
